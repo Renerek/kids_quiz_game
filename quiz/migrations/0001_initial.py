@@ -15,34 +15,83 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='MathQuestion',
+            name="MathQuestion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('question_text', models.CharField(max_length=100)),
-                ('answer', models.IntegerField()),
-                ('type', models.CharField(choices=[('add', 'Addition'), ('sub', 'Subtraction'), ('mul', 'Multiplication'), ('div', 'Division')], max_length=10)),
-                ('difficulty', models.IntegerField(default=1)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("question_text", models.CharField(max_length=100)),
+                ("answer", models.IntegerField()),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("add", "Addition"),
+                            ("sub", "Subtraction"),
+                            ("mul", "Multiplication"),
+                            ("div", "Division"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("difficulty", models.IntegerField(default=1)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='QuizSession',
+            name="QuizSession",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('started_at', models.DateTimeField(auto_now_add=True)),
-                ('ended_at', models.DateTimeField(blank=True, null=True)),
-                ('score', models.IntegerField(default=0)),
-                ('total_questions', models.IntegerField(default=0)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("started_at", models.DateTimeField(auto_now_add=True)),
+                ("ended_at", models.DateTimeField(blank=True, null=True)),
+                ("score", models.IntegerField(default=0)),
+                ("total_questions", models.IntegerField(default=0)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserProgress',
+            name="UserProgress",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('highest_level', models.IntegerField(default=1)),
-                ('last_played', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("highest_level", models.IntegerField(default=1)),
+                ("last_played", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
