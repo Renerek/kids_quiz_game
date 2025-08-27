@@ -1,3 +1,2 @@
-Django==5.2.5
-pillow==11.0.0
-# Add other libs your app needs (e.g. djangorestframework, whitenoise) as you discover them
+gunicorn==23.0.0
+packaging==25.0

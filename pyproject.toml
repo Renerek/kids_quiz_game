@@ -1,0 +1,5 @@
+[tool.black]
+exclude = '''/(venv|\.venv|site-packages)/'''
+
+[tool.isort]
+skip = ["venv", ".venv", "site-packages"]
