@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-wukd0ycl4i8h4r(^xemjjfu4d8yn0zmk=" "awml(#8%)#zsh0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'math-quiz-game.onrender.com']
 
 
 # Application definition
