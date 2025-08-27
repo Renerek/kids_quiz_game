@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Math Quiz Game for Kids</title>
+	<link rel="stylesheet" href="{% static 'quiz/style.css' %}">
+	<link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
+	<style>
+		body {
+			background-image: url('{% static "quiz/images/background.jpg" %}');
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+			color: white;
+			text-shadow: 2px 2px 4px #000000;
+			font-family: 'Comic Sans MS', cursive, sans-serif;
+			min-height: 100vh;
+		}
+		.big-heading {
+			font-size: 3rem;
+			text-align: center;
+			margin-top: 20px;
+		}
+		.game-modes {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 30px;
+			padding: 20px;
+		}
+		.mode-card {
+			width: 250px;
+			height: 280px;
+			background-color: rgba(255, 255, 255, 0.9);
+			border-radius: 15px;
+			padding: 15px;
+			box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+			transition: all 0.3s ease;
+			cursor: pointer;
+			text-shadow: none;
+			color: #333;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+		}
+		.mode-card:hover {
+			transform: translateY(-10px);
+			box-shadow: 0 15px 20px rgba(0,0,0,0.4);
+		}
+		.mode-title {
+			font-size: 1.5rem;
+			font-weight: bold;
+			margin: 10px 0;
+			color: #007bff;
+		}
+		.mode-description {
+			font-size: 1rem;
+			color: #555;
+			margin-top: 10px;
+		}
+		.quiz-icon {
+			width: 80px;
+			height: 80px;
+			margin-top: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<audio id="welcome-audio" src="{% static 'quiz/audio/welcome.mp3' %}" preload="auto"></audio>
+		<div style="text-align: center; margin-bottom: 20px;">
+			<img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 400px; width: 100%;" />
+		</div>
+		<h1 class="big-heading">Fun Learning for Kids!</h1>
+		<h1 class="rainbow-text">Interactive Learning Games</h1>
+		<h2>Choose Your Game Mode</h2>
+		<div style="text-align: center; margin: 20px 0;">
+			<img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+		</div>
+		<div class="game-modes">
+			<div class="mode-card" onclick="window.location.href='/quiz/start/?mode=add'">
+				<img src="https://cdn-icons-png.flaticon.com/512/992/992700.png" alt="Addition" class="quiz-icon" />
+				<div class="mode-title">Addition</div>
+				<p class="mode-description">Practice adding numbers and improve your math skills!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/start/?mode=sub'">
+				<img src="https://cdn-icons-png.flaticon.com/512/992/992703.png" alt="Subtraction" class="quiz-icon" />
+				<div class="mode-title">Subtraction</div>
+				<p class="mode-description">Learn to subtract numbers quickly and accurately!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/start/?mode=mixed'">
+				<img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" alt="Mixed" class="quiz-icon" />
+				<div class="mode-title">Mixed</div>
+				<p class="mode-description">Challenge yourself with both addition and subtraction problems!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/spelling/'">
+				<img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling" class="quiz-icon" />
+				<div class="mode-title">Spelling (English)</div>
+				<p class="mode-description">Listen to words and practice your spelling skills!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/what-time/'">
+				<img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Clock" class="quiz-icon" />
+				<div class="mode-title">What Time Is It?</div>
+				<p class="mode-description">Learn to tell time by looking at the clock!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/basic-questions/'">
+				<img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" alt="Questions" class="quiz-icon" />
+				<div class="mode-title">Basic Questions</div>
+				<p class="mode-description">Answer fun questions about yourself and your family!</p>
+			</div>
+		</div>
+		<hr>
+		<h3>Track your progress and challenge yourself!</h3>
+	</div>
+	
+	<script>
+		// Play welcome audio when the page loads
+		window.addEventListener('DOMContentLoaded', function() {
+			// Create a user interaction to trigger audio
+			const container = document.querySelector('.container');
+			
+			function playAudio() {
+				const welcomeAudio = document.getElementById('welcome-audio');
+				welcomeAudio.volume = 1.0;
+				welcomeAudio.play().catch(error => {
+					console.log('Audio play failed:', error);
+				});
+				// Remove the event listener after first interaction
+				document.removeEventListener('click', playAudio);
+			}
+			
+			// Auto-play attempt with fallback to click
+			setTimeout(function() {
+				const welcomeAudio = document.getElementById('welcome-audio');
+				welcomeAudio.volume = 1.0;
+				welcomeAudio.play().catch(error => {
+					console.log('Auto-play failed, waiting for user interaction');
+					// Add click listener as fallback
+					document.addEventListener('click', playAudio);
+				});
+			}, 1000);
+			
+			// Add visible play button as another fallback
+			const audioButton = document.createElement('button');
+			audioButton.textContent = '🔊 Play Welcome Sound';
+			audioButton.className = 'game-button';
+			audioButton.style.marginBottom = '20px';
+			audioButton.addEventListener('click', playAudio);
+			container.insertBefore(audioButton, container.firstChild.nextSibling);
+		});
+	</script>
+</body>
+</html>

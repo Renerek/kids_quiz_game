@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Game</title>
+    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
+    <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
+    <style>
+        body {
+            background-image: url('{% static "quiz/images/background.jpg" %}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        .big-heading {
+            font-size: 3rem;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spelling-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            color: #333;
+            text-shadow: none;
+        }
+        .typing-effect {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 4s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: black; }
+        }
+        #speakWord, #toggleWord {
+            background-color: #ff9900;
+            color: white;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        #speakWord:hover, #toggleWord:hover {
+            background-color: #e08800;
+            transform: scale(1.05);
+        }
+        .word-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .word-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+            text-align: center;
+            letter-spacing: 3px;
+        }
+        input[type="text"] {
+            font-size: 1.5rem;
+            padding: 10px;
+            width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        button[type="submit"] {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+        .animate-correct {
+            animation: correct-animation 2s;
+            background-color: rgba(40, 167, 69, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .animate-wrong {
+            animation: wrong-animation 2s;
+            background-color: rgba(220, 53, 69, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        @keyframes correct-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes wrong-animation {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
+        </div>
+        <h1 class="big-heading">Spelling Game</h1>
+        <div class="header">
+            <h2>Welcome, {{ user_name }}!</h2>
+            <p class="typing-effect">Let's improve your spelling skills!</p>
+        </div>
+        
+        <div class="spelling-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling Icon" class="quiz-icon" />
+            <h2>Listen to the word and type the correct spelling:</h2>
+            
+            <button id="speakWord">🔊 Speak Word</button>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="word-container">
+                    <h3 id="word" class="word-display" style="display: none;">{{ word }}</h3>
+                    <button type="button" id="toggleWord">👁️ Show/Hide Word</button>
+                </div>
+                <input type="text" name="spelling" required autofocus />
+                <button type="submit">Submit Answer</button>
+            </form>
+            
+            {% if result is not None %}
+                <div class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
+                    {% if result %}
+                        <h3>Correct! 🎉</h3>
+                        <p>Great job spelling "{{ word }}"!</p>
+                    {% else %}
+                        <h3>Incorrect</h3>
+                        <p>The correct spelling is <strong>{{ word }}</strong>.</p>
+                    {% endif %}
+                </div>
+                <p><a href="/quiz/spelling/"><button>Try Another Word</button></a></p>
+            {% endif %}
+        </div>
+        
+        <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
+        
+        <div style="text-align: center; margin: 30px 0 20px 0;">
+            <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+        </div>
+    </div>
+    
+    <script>
+        // Auto-speak the word when page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                speakWord();
+            }, 1000);
+        });
+        
+        document.getElementById('speakWord').addEventListener('click', speakWord);
+        
+        // Toggle word visibility
+        document.getElementById('toggleWord').addEventListener('click', function() {
+            const wordElement = document.getElementById('word');
+            if (wordElement.style.display === 'none') {
+                wordElement.style.display = 'block';
+                this.textContent = '🙈 Hide Word';
+            } else {
+                wordElement.style.display = 'none';
+                this.textContent = '👁️ Show Word';
+            }
+        });
+        
+        function speakWord() {
+            const word = document.getElementById('word').textContent;
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = 0.8; // Slightly slower speech for clarity
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>

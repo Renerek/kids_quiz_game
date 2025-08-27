@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz Result</title>
+    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        {% if result == 'timeout' %}
+            <h2 class="feedback animate-wrong">Time's up! Please play again.</h2>
+        {% elif result %}
+            <h2 class="feedback animate-correct">Correct! 🎉</h2>
+        {% else %}
+            <h2 class="feedback animate-wrong">Incorrect. The correct answer was {{ correct_answer }}.</h2>
+        {% endif %}
+        <p><a href="/quiz/question/"><button>Next Question</button></a></p>
+    </div>
+</body>
+</html>

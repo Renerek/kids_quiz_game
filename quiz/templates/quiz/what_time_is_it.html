@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Time Is It?</title>
+    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
+    <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
+    <style>
+        .big-heading {
+            font-size: 3rem;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .clock-container {
+            width: 300px;
+            height: 370px;
+            margin: 20px auto;
+            position: relative;
+        }
+        .analog-clock {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 10px solid #333;
+            background-color: white;
+            position: relative;
+        }
+        #hour-hand {
+            position: absolute;
+            width: 8px;
+            height: 80px;
+            background-color: #333;
+            top: 50%;
+            left: 50%;
+            margin-left: -4px;
+            margin-top: -80px;
+            transform-origin: bottom center;
+        }
+        #minute-hand {
+            position: absolute;
+            width: 4px;
+            height: 120px;
+            background-color: #555;
+            top: 50%;
+            left: 50%;
+            margin-left: -2px;
+            margin-top: -120px;
+            transform-origin: bottom center;
+        }
+        .clock-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin-left: -10px;
+            margin-top: -10px;
+            background-color: #333;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        .digital-clock {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .digital-time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background-color: #333;
+            color: #00ff00;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: monospace;
+        }
+        .clock-number {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .n1 { top: 15%; right: 30%; }
+        .n2 { top: 30%; right: 15%; }
+        .n3 { top: 50%; right: 5%; margin-top: -12px; }
+        .n4 { bottom: 30%; right: 15%; }
+        .n5 { bottom: 15%; right: 30%; }
+        .n6 { bottom: 5%; left: 50%; margin-left: -8px; }
+        .n7 { bottom: 15%; left: 30%; }
+        .n8 { bottom: 30%; left: 15%; }
+        .n9 { top: 50%; left: 5%; margin-top: -12px; }
+        .n10 { top: 30%; left: 15%; }
+        .n11 { top: 15%; left: 30%; }
+        .n12 { top: 5%; left: 50%; margin-left: -12px; }
+        .feedback {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .correct {
+            background-color: rgba(0, 255, 0, 0.2);
+            border: 1px solid green;
+        }
+        .incorrect {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid red;
+        }
+        .time-form {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #333;
+            text-shadow: none;
+        }
+        button[type="submit"] {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            margin-top: 15px;
+        }
+        button[type="submit"]:hover {
+            background-color: #e64a19;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        .analog-clock {
+            border: 10px solid #0066cc; /* ABCmouse blue */
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
+        </div>
+        <h1 class="big-heading">What Time Is It?</h1>
+        <p>Welcome, {{ user_name }}! Look at the clock and tell us what time it shows.</p>
+        
+        <audio id="introAudio" src="{% static 'quiz/audio/time_intro.mp3' %}" preload="auto"></audio>
+        
+        <div class="clock-container">
+            <!-- Digital clock display -->
+            <div class="digital-clock">
+                <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
+            </div>
+            
+            <!-- Analog clock -->
+            <div class="analog-clock">
+                <div id="hour-hand"></div>
+                <div id="minute-hand"></div>
+                <div class="clock-center"></div>
+                
+                <!-- Clock numbers -->
+                <div class="clock-number n1">1</div>
+                <div class="clock-number n2">2</div>
+                <div class="clock-number n3">3</div>
+                <div class="clock-number n4">4</div>
+                <div class="clock-number n5">5</div>
+                <div class="clock-number n6">6</div>
+                <div class="clock-number n7">7</div>
+                <div class="clock-number n8">8</div>
+                <div class="clock-number n9">9</div>
+                <div class="clock-number n10">10</div>
+                <div class="clock-number n11">11</div>
+                <div class="clock-number n12">12</div>
+            </div>
+        </div>
+        
+        <script>
+            // Set clock hands
+            const hourHand = document.getElementById('hour-hand');
+            const minuteHand = document.getElementById('minute-hand');
+            
+            const hour = {{ hour }};
+            const minute = {{ minute }};
+            
+            const hourDegrees = (hour * 30) + (minute * 0.5);
+            const minuteDegrees = minute * 6;
+            
+            hourHand.style.transform = `rotate(${hourDegrees}deg)`;
+            minuteHand.style.transform = `rotate(${minuteDegrees}deg)`;
+        </script>
+        
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="clock_time" value="{{ clock_time }}">
+            <label for="user_time">What time is it? (Format: h:mm)</label>
+            <input type="text" id="user_time" name="user_time" placeholder="Example: 3:15" required style="font-size: 1.5rem; padding: 10px; width: 100%; max-width: 400px; border: 2px solid #007bff; border-radius: 10px; margin-top: 10px; text-align: center;">
+            <button type="submit">Submit</button>
+        </form>
+        
+        {% if result is not None %}
+            <div class="feedback {% if result %}correct{% else %}incorrect{% endif %}">
+                {% if result %}
+                    <p>Correct! The time is {{ correct_time }}. 🎉</p>
+                {% else %}
+                    <p>Incorrect. The correct time is {{ correct_time }}. Try again!</p>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
+        
+        <div style="text-align: center; margin: 30px 0 20px 0;">
+            <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+        </div>
+    </div>
+    <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+    <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+    <script>
+        // Play sound feedback based on result
+        const result = "{{ result }}";
+        if (result === "True") {
+            const correctSound = document.getElementById('correctSound');
+            correctSound.play().catch(error => console.error('Error playing correct sound:', error));
+        } else if (result === "False") {
+            const incorrectSound = document.getElementById('incorrectSound');
+            incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
+        }
+        
+        // Play intro audio when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only play intro if not coming back from a submission
+            if (result !== "True" && result !== "False") {
+                setTimeout(() => {
+                    const introAudio = document.getElementById('introAudio');
+                    introAudio.play().catch(error => console.error('Error playing intro sound:', error));
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
