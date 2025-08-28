@@ -44,11 +44,26 @@ python manage.py migrate
 python manage.py createsuperuser  # optional
 ```
 
-## Run the development server
+
+## Running the App
+
+Make sure you are in the project root directory (`math_quiz_game`) where `manage.py` is located before running any Django commands.
+
+To start the development server:
 
 ```bash
+cd math_quiz_game  # if not already in this folder
+source venv/bin/activate  # activate your virtual environment
 python manage.py runserver
 # Visit http://127.0.0.1:8000/ in your browser
+```
+
+For deployment (e.g. on Render), ensure your `requirements.txt` is up to date and your `ALLOWED_HOSTS` setting in `mathquiz/settings.py` includes your deployed domain (e.g. `math-quiz-game.onrender.com`).
+
+To run with Gunicorn in production:
+
+```bash
+gunicorn mathquiz.wsgi
 ```
 
 ## Notes
