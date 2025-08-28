@@ -4,19 +4,23 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Math Quiz Game for Kids</title>
+	<title>Learning Quiz Game for Kids</title>
 	<link rel="stylesheet" href="{% static 'quiz/style.css' %}">
 	<link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
 	<style>
 		body {
-			background-image: url('{% static "quiz/images/background.jpg" %}');
-			background-size: cover;
-			background-repeat: no-repeat;
-			background-attachment: fixed;
+			background: linear-gradient(270deg, #ffb347, #ffccff, #b3e6ff, #baffc9, #ffd6e0, #f3ffbd, #c1c8e4);
+			background-size: 1400% 1400%;
+			animation: rainbowBG 18s ease infinite;
 			color: white;
 			text-shadow: 2px 2px 4px #000000;
 			font-family: 'Comic Sans MS', cursive, sans-serif;
 			min-height: 100vh;
+		}
+		@keyframes rainbowBG {
+			0% {background-position:0% 50%}
+			50% {background-position:100% 50%}
+			100% {background-position:0% 50%}
 		}
 		.big-heading {
 			font-size: 3rem;
@@ -74,7 +78,7 @@
 		<div style="text-align: center; margin-bottom: 20px;">
 			<img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 400px; width: 100%;" />
 		</div>
-		<h1 class="big-heading">Fun Learning for Kids!</h1>
+		<h1 class="big-heading">Rene Rek's Fun Learning for Kids!</h1>
 		<h1 class="rainbow-text">Interactive Learning Games</h1>
 		<h2>Choose Your Game Mode</h2>
 		<div style="text-align: center; margin: 20px 0;">
@@ -110,6 +114,11 @@
 				<img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" alt="Questions" class="quiz-icon" />
 				<div class="mode-title">Basic Questions</div>
 				<p class="mode-description">Answer fun questions about yourself and your family!</p>
+			</div>
+			<div class="mode-card" onclick="window.location.href='/quiz/colors-shapes/'">
+				<img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" alt="Colors and Shapes" class="quiz-icon" />
+				<div class="mode-title">Colors & Shapes</div>
+				<p class="mode-description">Learn about colors and shapes with interactive cards!</p>
 			</div>
 		</div>
 		<hr>
