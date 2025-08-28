@@ -1,9 +1,18 @@
 body {
     font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(120deg, #f0f8ff 60%, #ffe0e0 100%);
+    background: linear-gradient(270deg, #ffb347, #ffccff, #b3e6ff, #baffc9, #ffd6e0, #f3ffbd, #c1c8e4);
+    background-size: 1400% 1400%;
+    animation: rainbowBG 18s ease infinite;
     margin: 0;
     padding: 0;
     min-height: 100vh;
+}
+
+@keyframes rainbowBG {
+    0% {background-position:0% 50%}
+    50% {background-position:100% 50%}
+    100% {background-position:0% 50%}
+}
 }
 
 .container {

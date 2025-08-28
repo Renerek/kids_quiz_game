@@ -1,6 +1,9 @@
-import random
 
+import random
 from django.shortcuts import redirect, render
+
+def colors_shapes(request):
+    return render(request, "quiz/colors_shapes.html")
 
 from .models import QuizSession
 
