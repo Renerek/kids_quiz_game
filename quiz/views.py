@@ -1,3 +1,24 @@
+from django.core.mail import send_mail
+from django.conf import settings
+def contact(request):
+    sent = False
+    if request.method == "POST":
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+        full_message = f"From: {email}\nSubject: {subject}\nMessage:\n{message}"
+        send_mail(
+            f"Contact Form: {subject}",
+            full_message,
+            settings.DEFAULT_FROM_EMAIL,
+            ["ntumngiar@gmail.com"],
+            fail_silently=False,
+        )
+        sent = True
+    return render(request, "quiz/contact.html", {"sent": sent})
+
+def login(request):
+    return render(request, "quiz/login.html")
 
 import random
 from django.shortcuts import redirect, render

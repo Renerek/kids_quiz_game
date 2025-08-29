@@ -134,8 +134,40 @@
         }
     </style>
     {% block head %}{% endblock %}
+    <style>
+        .top-nav {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: auto;
+            background: rgba(255,255,255,0.95);
+            z-index: 2000;
+            padding: 10px 24px;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .top-nav a {
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 1.08rem;
+            padding: 7px 18px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .top-nav a:hover {
+            background: #e3f2fd;
+        }
+    </style>
 </head>
-</body>
+<body>
+    <div class="top-nav">
+        <a href="/">Home</a>
+        <a href="/quiz/login/">Login</a>
+        <a href="/quiz/contact/">Contact Us</a>
+    </div>
     <div class="sidebar">
         <div class="sidebar-content">
             <div class="menu-title">Game Menu</div>
@@ -143,6 +175,7 @@
             <a href="/quiz/start/?mode=add" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992700.png" class="menu-icon" alt="Addition">Addition</a>
             <a href="/quiz/start/?mode=sub" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992703.png" class="menu-icon" alt="Subtraction">Subtraction</a>
             <a href="/quiz/start/?mode=mixed" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" class="menu-icon" alt="Mixed">Mixed</a>
+            <!-- Login removed from sidebar -->
             <a href="/quiz/spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" class="menu-icon" alt="Spelling">Spelling</a>
             <a href="/quiz/what-time/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" class="menu-icon" alt="Clock">What Time Is It?</a>
             <a href="/quiz/basic-questions/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" class="menu-icon" alt="Questions">Basic Questions</a>

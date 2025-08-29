@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 40px auto;">
+    <h1 class="big-heading">Login</h1>
+    <div class="feedback animate-wrong" style="margin-bottom: 24px;">Login is unavailable at the moment.</div>
+    <p>If you have any questions or need help, please use the contact form below:</p>
+    <form method="post" action="/quiz/contact/">
+        {% csrf_token %}
+        <label for="email">Your Email:</label>
+        <input type="email" id="email" name="email" required style="width:100%;margin-bottom:12px;">
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" required style="width:100%;margin-bottom:12px;">
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="5" required style="width:100%;margin-bottom:12px;"></textarea>
+        <button type="submit" style="width:100%;">Send Message</button>
+    </form>
+</div>
+{% endblock %}

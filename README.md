@@ -66,6 +66,16 @@ To run with Gunicorn in production:
 gunicorn mathquiz.wsgi
 ```
 
+## Running Tests
+
+To run all automated tests for the project, use:
+
+```bash
+python manage.py test
+```
+
+This will discover and run all tests in the `quiz/tests.py` file and any other test modules in your Django apps.
+
 ## Notes
 
 - The repository may include a pre-built `venv/` directory. If present you can activate it with `source venv/bin/activate`.
