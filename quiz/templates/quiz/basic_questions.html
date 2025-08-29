@@ -68,6 +68,10 @@
 </head>
 <body>
     <div class="container">
+        {% extends "base.html" %}
+        {% load static %}
+        {% block title %}Basic Questions Game{% endblock %}
+        {% block content %}
         <div style="text-align: center; margin-bottom: 20px;">
             <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
         </div>
@@ -89,6 +93,10 @@
         <div style="text-align: center; margin: 30px 0 20px 0;">
             <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
         </div>
+        {% endblock %}
+        {% block scripts %}
+        <script src="{% static 'quiz/basic_questions.js' %}"></script>
+        {% endblock %}
     </div>
 </body>
 </html>
