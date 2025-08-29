@@ -183,24 +183,51 @@ def what_time_is_it(request):
 
     result = None
     correct_time = None
+    choices = []
+
+    # Track attempts in session
+    if 'time_attempts' not in request.session:
+        request.session['time_attempts'] = 0
 
     if request.method == "POST":
-        user_time = request.POST.get("user_time", "")
+        user_choice = request.POST.get("user_choice", "")
         clock_time = request.POST.get("clock_time", "")
         try:
             hour, minute = map(int, clock_time.split(":"))
             correct_time = f"{hour}:{minute:02d}"
-            result = user_time == correct_time
+            if user_choice == correct_time:
+                result = 'correct'
+                request.session['time_attempts'] = 0
+            else:
+                request.session['time_attempts'] += 1
+                if request.session['time_attempts'] == 1:
+                    result = 'incorrect'  # allow retry
+                else:
+                    result = 'show_answer'  # show correct answer and reset
+                    request.session['time_attempts'] = 0
         except (ValueError, TypeError):
-            result = False
+            result = 'show_answer'
             correct_time = clock_time
+            request.session['time_attempts'] = 0
 
-        # Generate new time for next question
-        hour = random.randint(1, 12)
-        minute = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
-        clock_time = f"{hour}:{minute:02d}"
+        # Only generate new time if answer was correct or after showing answer
+        if result == 'correct' or result == 'show_answer':
+            hour = random.randint(1, 12)
+            minute = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+            clock_time = f"{hour}:{minute:02d}"
 
-    # Create digital clock display
+    # Generate 3 distractor choices
+    correct = f"{hour}:{minute:02d}"
+    distractors = set()
+    while len(distractors) < 3:
+        dhour = random.randint(1, 12)
+        dminute = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+        dstr = f"{dhour}:{dminute:02d}"
+        if dstr != correct:
+            distractors.add(dstr)
+    choices = list(distractors) + [correct]
+    random.shuffle(choices)
+
     hour_str = str(hour)
     minute_str = f"{minute:02d}"
 
@@ -216,6 +243,7 @@ def what_time_is_it(request):
             "result": result,
             "correct_time": correct_time,
             "user_name": request.session.get("user_name", "Player"),
+            "choices": choices,
         },
     )
 

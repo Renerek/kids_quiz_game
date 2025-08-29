@@ -1,22 +1,30 @@
+
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Quiz Result</title>
-    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
-</head>
-<body>
-    <div class="container">
-        {% if result == 'timeout' %}
-            <h2 class="feedback animate-wrong">Time's up! Please play again.</h2>
-        {% elif result %}
-            <h2 class="feedback animate-correct">Correct! 🎉</h2>
-        {% else %}
-            <h2 class="feedback animate-wrong">Incorrect. The correct answer was {{ correct_answer }}.</h2>
-        {% endif %}
-        <p><a href="/quiz/question/"><button>Next Question</button></a></p>
-    </div>
-</body>
-</html>
+{% block title %}Math Quiz Result{% endblock %}
+{% block content %}
+<div class="container">
+    {% if result == 'timeout' %}
+        <h2 class="feedback animate-wrong">Time's up! Please play again.</h2>
+    {% elif result %}
+        <h2 class="feedback animate-correct">Correct! 🎉</h2>
+    {% else %}
+        <h2 class="feedback animate-wrong">Incorrect. The correct answer was {{ correct_answer }}.</h2>
+    {% endif %}
+    <p><a href="/quiz/question/"><button>Next Question</button></a></p>
+</div>
+<audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+<audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        const result = "{{ result }}";
+        if (result === 'timeout') {
+            document.getElementById('incorrectSound').play().catch(()=>{});
+        } else if (result === 'True' || result === 'true' || result === '1') {
+            document.getElementById('correctSound').play().catch(()=>{});
+        } else if (result === 'False' || result === 'false' || result === '0') {
+            document.getElementById('incorrectSound').play().catch(()=>{});
+        }
+    });
+</script>
+{% endblock %}

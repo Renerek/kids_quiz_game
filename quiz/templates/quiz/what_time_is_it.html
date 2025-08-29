@@ -2,83 +2,119 @@
 {% load static %}
 {% block title %}What Time Is It?{% endblock %}
 {% block content %}
-<h1 class="big-heading">What Time Is It?</h1>
-<p>Welcome, {{ user_name }}! Look at the clock and select the correct time.</p>
-<audio id="introAudio" src="{% static 'quiz/audio/time_intro.mp3' %}" preload="auto"></audio>
-<div class="clock-container">
-    <div class="digital-clock">
-        <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
-    </div>
-    <div class="analog-clock">
-        <div id="hour-hand"></div>
-        <div id="minute-hand"></div>
-        <div class="clock-center"></div>
-        <div class="clock-number n1">1</div>
-        <div class="clock-number n2">2</div>
-        <div class="clock-number n3">3</div>
-        <div class="clock-number n4">4</div>
-        <div class="clock-number n5">5</div>
-        <div class="clock-number n6">6</div>
-        <div class="clock-number n7">7</div>
-        <div class="clock-number n8">8</div>
-        <div class="clock-number n9">9</div>
-        <div class="clock-number n10">10</div>
-        <div class="clock-number n11">11</div>
-        <div class="clock-number n12">12</div>
-    </div>
-</div>
-<form method="post" action="">
-    {% csrf_token %}
-    <input type="hidden" name="clock_time" value="{{ clock_time }}">
-    <div class="time-form">
-        <label for="user_choice">What time is it?</label>
-        <div style="margin-top: 18px;">
-            {% for choice in choices %}
-                <button type="submit" name="user_choice" value="{{ choice }}" style="font-size: 1.3rem; margin: 8px; padding: 12px 28px; border-radius: 18px; background-color: #007bff; color: white; border: none; cursor: pointer; transition: background 0.2s;">{{ choice }}</button>
-            {% endfor %}
+<div class="container" style="margin: 40px auto; text-align: center;">
+    <h1 class="big-heading">What Time Is It?</h1>
+    <p>Welcome, {{ user_name }}! Look at the clock and select the correct time.</p>
+    <audio id="introAudio" src="{% static 'quiz/audio/time_intro.mp3' %}" preload="auto"></audio>
+    <div class="clock-container" style="display: inline-block;">
+        <div class="digital-clock">
+            <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
+        </div>
+        <div class="analog-clock" style="margin: 0 auto; display: flex; justify-content: center; align-items: center;">
+            <svg id="svg-clock" width="220" height="220" viewBox="0 0 220 220">
+                <circle cx="110" cy="110" r="100" fill="#fffbe6" stroke="#333" stroke-width="4" />
+                <!-- Hour marks (adjusted positions) -->
+                <text x="110" y="38" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">12</text>
+                <text x="150" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">1</text>
+                <text x="180" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">2</text>
+                <text x="195" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">3</text>
+                <text x="180" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">4</text>
+                <text x="150" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">5</text>
+                <text x="110" y="202" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">6</text>
+                <text x="70" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">7</text>
+                <text x="40" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">8</text>
+                <text x="25" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">9</text>
+                <text x="40" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">10</text>
+                <text x="70" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">11</text>
+                <!-- Hour hand -->
+                <line id="svg-hour-hand" x1="110" y1="110" x2="110" y2="60" stroke="#333" stroke-width="6" stroke-linecap="round" />
+                <!-- Minute hand -->
+                <line id="svg-minute-hand" x1="110" y1="110" x2="110" y2="40" stroke="#007bff" stroke-width="4" stroke-linecap="round" />
+                <circle cx="110" cy="110" r="8" fill="#333" />
+            </svg>
         </div>
     </div>
-</form>
-{% if result is not None %}
-    <div class="feedback {% if result %}correct{% else %}incorrect{% endif %}">
-        {% if result %}
-            <p>Correct! The time is {{ correct_time }}. 🎉</p>
-        {% else %}
-            <p>Incorrect. The correct time is {{ correct_time }}. Try again!</p>
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="clock_time" value="{{ clock_time }}">
+        <div class="time-form">
+            <label for="user_choice">What time is it?</label>
+            <div style="margin-top: 18px;">
+                {% for choice in choices %}
+                    <button type="submit" name="user_choice" value="{{ choice }}" style="font-size: 1.3rem; margin: 8px; padding: 12px 28px; border-radius: 18px; background-color: #007bff; color: white; border: none; cursor: pointer; transition: background 0.2s;">{{ choice }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+    <div id="feedback-area">
+        {% if result == 'correct' %}
+            <div class="feedback correct">
+                <p>Correct! The time is {{ correct_time }}. 🎉</p>
+            </div>
+        {% elif result == 'incorrect' %}
+            <div class="feedback incorrect">
+                <p>Incorrect. Try again!</p>
+            </div>
+        {% elif result == 'show_answer' %}
+            <div class="feedback incorrect">
+                <p>Incorrect. The correct time is {{ correct_time }}.</p>
+            </div>
         {% endif %}
     </div>
-{% endif %}
-<p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
-<div style="text-align: center; margin: 30px 0 20px 0;">
-    <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+    <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
+    <div style="margin: 30px 0 20px 0;">
+        <img src="{% static 'quiz/images/boy-girl-are-reading-books.jpg' %}" alt="Boy and Girl Reading Books" style="max-width: 500px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+    </div>
 </div>
 {% endblock %}
 {% block scripts %}
 <script>
-    // Set clock hands
-    const hourHand = document.getElementById('hour-hand');
-    const minuteHand = document.getElementById('minute-hand');
-    const hour = {{ hour }};
-    const minute = {{ minute }};
-    const hourDegrees = (hour * 30) + (minute * 0.5);
-    const minuteDegrees = minute * 6;
-    hourHand.style.transform = `rotate(${hourDegrees}deg)`;
-    minuteHand.style.transform = `rotate(${minuteDegrees}deg)`;
-    // Play sound feedback based on result
-    const result = "{{ result }}";
-    if (result === "True") {
-        const correctSound = document.getElementById('correctSound');
-        correctSound.play().catch(error => console.error('Error playing correct sound:', error));
-    } else if (result === "False") {
-        const incorrectSound = document.getElementById('incorrectSound');
-        incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
+    // Set SVG clock hands
+    function setClockHands(hour, minute) {
+        const hourHand = document.getElementById('svg-hour-hand');
+        const minuteHand = document.getElementById('svg-minute-hand');
+        // Calculate angles
+        const hourAngle = ((hour % 12) + minute / 60) * 30;
+        const minuteAngle = minute * 6;
+        // Calculate hand positions
+        const hourLength = 50;
+        const minuteLength = 70;
+        const centerX = 110;
+        const centerY = 110;
+        // Hour hand
+        const hourRadians = (Math.PI / 180) * (hourAngle - 90);
+        hourHand.setAttribute('x2', centerX + hourLength * Math.cos(hourRadians));
+        hourHand.setAttribute('y2', centerY + hourLength * Math.sin(hourRadians));
+        // Minute hand
+        const minuteRadians = (Math.PI / 180) * (minuteAngle - 90);
+        minuteHand.setAttribute('x2', centerX + minuteLength * Math.cos(minuteRadians));
+        minuteHand.setAttribute('y2', centerY + minuteLength * Math.sin(minuteRadians));
     }
-    // Play intro audio when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        if (result !== "True" && result !== "False") {
+        setClockHands(parseInt("{{ hour }}"), parseInt("{{ minute }}"));
+        // Play sound feedback based on result
+        const result = "{{ result }}";
+        if (result === 'correct') {
+            const correctSound = document.getElementById('correctSound');
+            correctSound.play().catch(()=>{});
+            setTimeout(function() {
+                document.getElementById('feedback-area').style.display = 'none';
+            }, 5000);
+        } else if (result === 'incorrect') {
+            const incorrectSound = document.getElementById('incorrectSound');
+            incorrectSound.play().catch(()=>{});
+        } else if (result === 'show_answer') {
+            const incorrectSound = document.getElementById('incorrectSound');
+            incorrectSound.play().catch(()=>{});
+            setTimeout(function() {
+                document.getElementById('feedback-area').style.display = 'none';
+            }, 5000);
+        }
+        // Play intro audio when page loads
+        if (!result) {
             setTimeout(() => {
                 const introAudio = document.getElementById('introAudio');
-                introAudio.play().catch(error => console.error('Error playing intro sound:', error));
+                introAudio.play().catch(()=>{});
             }, 500);
         }
     });

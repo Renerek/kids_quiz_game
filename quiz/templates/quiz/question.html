@@ -1,98 +1,57 @@
+
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Quiz Question</title>
-    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
-    <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
-    <style>
-        body {
-            background-image: url('{% static "quiz/images/background.jpg" %}');
-            background-size: cover;
-            background-repeat: no-repeat;
-            color: white;
-            text-shadow: 2px 2px 4px #000000;
-        }
-        .big-heading {
-            font-size: 3rem;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .quiz-icon {
-            display: block;
-            margin: 20px auto;
-            width: 150px;
-        }
-        .typing-effect {
-            display: inline-block;
-            overflow: hidden;
-            white-space: nowrap;
-            animation: typing 4s steps(40, end), blink-caret 0.75s step-end infinite;
-        }
-
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        @keyframes blink-caret {
-            from, to { border-color: transparent; }
-            50% { border-color: black; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
-        </div>
-        <h1 class="big-heading">Welcome to the Fun Quiz!</h1>
-        <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/201/201818.png'">
-        <div class="header">
-            <h2>Welcome, {{ user_name }}!</h2>
-            <p class="typing-effect">Let's test your math skills and have some fun!</p>
-        </div>
-        <div class="timer">Time left: <span id="timer">15</span>s</div>
-        <h2>{{ question }}</h2>
-        <form method="post" action="/quiz/submit/" id="quizForm">
-            {% csrf_token %}
-            <input type="hidden" name="timeout" id="timeout" value="false">
-            <input type="number" name="answer" required style="font-size: 1.5rem; padding: 10px; width: 100%; max-width: 400px; border: 2px solid #007bff; border-radius: 10px; margin-top: 10px; text-align: center;" />
-            <button type="submit">Submit Answer</button>
-        </form>
-        <div class="progress-bar"><div class="progress" id="progress" style="width: 0%"></div></div>
-        <div class="score" id="score"></div>
-        <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
-        
-        <div style="text-align: center; margin: 30px 0 20px 0;">
-            <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
-        </div>
+{% block title %}Math Quiz Question{% endblock %}
+{% block content %}
+<div class="container">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
-    <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
-    <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
-    <script>
-        let timeLeft = 15;
-        let timer = setInterval(function() {
-            timeLeft--;
-            document.getElementById('timer').textContent = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                document.getElementById('timeout').value = "true";
-                document.getElementById('quizForm').submit();
-            }
-        }, 1000);
-
-        // Play sound feedback based on result
-        const result = "{{ result|default:'' }}";
-        if (result === "correct") {
-            const correctSound = document.getElementById('correctSound');
-            correctSound.play().catch(error => console.error('Error playing correct sound:', error));
-        } else if (result === "incorrect") {
-            const incorrectSound = document.getElementById('incorrectSound');
-            incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
+    <h1 class="big-heading">Welcome to the Fun Quiz!</h1>
+    <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/201/201818.png'">
+    <div class="header">
+        <h2>Welcome, {{ user_name }}!</h2>
+        <p class="typing-effect">Let's test your math skills and have some fun!</p>
+    </div>
+    <div class="timer">Time left: <span id="timer">15</span>s</div>
+    <h2>{{ question }}</h2>
+    <form method="post" action="/quiz/submit/" id="quizForm">
+        {% csrf_token %}
+        <input type="hidden" name="timeout" id="timeout" value="false">
+        <input type="number" name="answer" required style="font-size: 1.5rem; padding: 10px; width: 100%; max-width: 400px; border: 2px solid #007bff; border-radius: 10px; margin-top: 10px; text-align: center;" />
+        <button type="submit">Submit Answer</button>
+    </form>
+    <div class="progress-bar"><div class="progress" id="progress" style="width: 0%"></div></div>
+    <div class="score" id="score"></div>
+    <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
+    <div style="text-align: center; margin: 30px 0 20px 0;">
+        <img src="{% static 'quiz/images/boy-girl-are-reading-books.jpg' %}" alt="Boy and Girl Reading Books" style="max-width: 500px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+<audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+<script>
+    let timeLeft = 15;
+    let timer = setInterval(function() {
+        timeLeft--;
+        document.getElementById('timer').textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            document.getElementById('timeout').value = "true";
+            document.getElementById('quizForm').submit();
         }
-    </script>
-</body>
-</html>
+    }, 1000);
+
+    // Play sound feedback based on result
+    const result = "{{ result|default:'' }}";
+    if (result === "correct") {
+        const correctSound = document.getElementById('correctSound');
+        correctSound.play().catch(error => console.error('Error playing correct sound:', error));
+    } else if (result === "incorrect") {
+        const incorrectSound = document.getElementById('incorrectSound');
+        incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
+    }
+</script>
+{% endblock %}
