@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Math Quiz Game{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
+    <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 60px;
+            background: linear-gradient(180deg, #007bff 80%, #6ec6ff 100%);
+            z-index: 1000;
+            transition: width 0.3s cubic-bezier(.4,0,.2,1);
+            overflow-x: hidden;
+        }
+        .sidebar:hover {
+            width: 260px;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.12);
+        }
+        .sidebar .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px 10px 10px 10px;
+            height: 100%;
+        }
+        .sidebar .menu-title {
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 18px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sidebar:hover .menu-title {
+            opacity: 1;
+        }
+        .sidebar .menu-link {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 10px 0 10px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            opacity: 0;
+            transition: background 0.2s, opacity 0.3s;
+        }
+        .sidebar:hover .menu-link {
+            opacity: 1;
+        }
+        .sidebar .menu-link:hover {
+            background: rgba(255,255,255,0.18);
+        }
+        .sidebar .menu-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .side-image {
+            position: fixed;
+            left: 80px;
+            z-index: 10;
+            margin-top: 80px;
+            padding: 24px 0;
+        }
+        .side-image.right {
+            left: auto;
+            right: 80px;
+        }
+        .side-image img {
+            display: block;
+            max-width: 310px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 48px;
+        }
+        .bottom-banner {
+            width: 100vw;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            background: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            font-family: 'Segoe UI',Arial,sans-serif;
+            z-index: 999;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
+        }
+        .main-content {
+            margin-left: 70px;
+            margin-right: 220px;
+            transition: margin-left 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .sidebar:hover ~ .main-content {
+            margin-left: 270px;
+        }
+        @media (max-width: 900px) {
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .side-image {
+                display: none;
+            }
+            .sidebar {
+                width: 44px;
+            }
+            .sidebar:hover {
+                width: 180px;
+            }
+            .sidebar .menu-title {
+                font-size: 1rem;
+            }
+            .sidebar .menu-link {
+                font-size: 0.95rem;
+            }
+            .sidebar .menu-icon {
+                width: 24px;
+                height: 24px;
+                margin-right: 8px;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+</body>
+    <div class="sidebar">
+        <div class="sidebar-content">
+            <div class="menu-title">Game Menu</div>
+            <a href="/" class="menu-link"><img src="{% static 'quiz/images/logo.png' %}" class="menu-icon" alt="Home">Home</a>
+            <a href="/quiz/start/?mode=add" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992700.png" class="menu-icon" alt="Addition">Addition</a>
+            <a href="/quiz/start/?mode=sub" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992703.png" class="menu-icon" alt="Subtraction">Subtraction</a>
+            <a href="/quiz/start/?mode=mixed" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" class="menu-icon" alt="Mixed">Mixed</a>
+            <a href="/quiz/spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" class="menu-icon" alt="Spelling">Spelling</a>
+            <a href="/quiz/what-time/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" class="menu-icon" alt="Clock">What Time Is It?</a>
+            <a href="/quiz/basic-questions/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" class="menu-icon" alt="Questions">Basic Questions</a>
+            <a href="/quiz/colors-shapes/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" class="menu-icon" alt="Colors & Shapes">Colors & Shapes</a>
+        </div>
+    </div>
+    <div class="side-image left">
+        <img src="{% static 'quiz/images/Image_Aug_28_2025_03_55_27_PM.png' %}" alt="Bear Mascot" />
+        <img src="{% static 'quiz/images/mouse_3D_image_of.png' %}" alt="Mouse 3D" />
+    </div>
+    <div class="side-image right">
+        <img src="{% static 'quiz/images/Image_Aug_28_2025_03_52_05_PM.png' %}" alt="Learning Path" />
+        <img src="{% static 'quiz/images/reading_3D_dulls.png' %}" alt="Reading 3D" />
+    </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    <div class="bottom-banner">
+        Rene & Sons © 2007-2025 Rene Rek, Inc. All rights reserved.
+    </div>
+    {% block scripts %}{% endblock %}
+</html>
