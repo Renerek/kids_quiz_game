@@ -1,236 +1,196 @@
+
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Colors & Shapes Learning Game{% endblock %}
 {% block content %}
 <h1 class="big-heading">Colors & Shapes Learning Game</h1>
-<div id="game-area">
-    <!-- Game content will be injected here by JS -->
-<div style="text-align:center;margin:30px 0 10px 0;">
-    <button onclick="window.location.href='/'" class="game-button">Back to Home</button>
- </div>
+<div class="container">
+    <h1>Learn Colors and Shapes!</h1>
+    <a href="/quiz/" style="display:inline-block;margin-bottom:20px;padding:10px 20px;background:#3498db;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.12);">&#8592; Back to Home</a>
+    <div class="color-shape-container">
+    <div class="color-card" style="background: #e74c3c;">Red</div>
+    <div class="color-card" style="background: #3498db;">Blue</div>
+    <div class="color-card" style="background: #27ae60;">Green</div>
+    <div class="color-card" style="background: #f1c40f; color: #333;">Yellow</div>
+    <div class="color-card" style="background: #9b59b6;">Purple</div>
+    <div class="color-card" style="background: #e67e22;">Orange</div>
+    <div class="color-card" style="background: #ff69b4; color: #333;">Pink</div>
+    <div class="color-card" style="background: #8b4513; color: #fff;">Brown</div>
+    <div class="color-card" style="background: #808080; color: #fff;">Gray</div>
+    <div class="color-card" style="background: #00bcd4; color: #333;">Cyan</div>
+    <div class="color-card" style="background: #ffd700; color: #333;">Gold</div>
+    <div class="color-card" style="background: #c0c0c0; color: #333;">Silver</div>
+    <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;">White</div>
+    <div class="color-card" style="background: #333; color: #fff;">Black</div>
+    </div>
+    <h2>Shapes</h2>
+    <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <circle cx="30" cy="30" r="24" fill="#3498db" />
+            </svg>
+            Circle
+        </div>
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <rect x="12" y="12" width="36" height="36" fill="#e74c3c" />
+            </svg>
+            Square
+        </div>
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <polygon points="30,6 54,54 6,54" fill="#27ae60" />
+            </svg>
+            Triangle
+        </div>
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <rect x="6" y="18" width="48" height="24" fill="#f1c40f" />
+            </svg>
+            Rectangle
+        </div>
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <ellipse cx="30" cy="30" rx="24" ry="15" fill="#9b59b6" />
+            </svg>
+            Oval
+        </div>
+        <div class="shape-card">
+            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                <polygon points="30,6 36,23 54,23 39,34 45,51 30,41 15,51 21,34 6,23 24,23" fill="#e67e22" />
+            </svg>
+            Star
+        </div>
+    </div>
+    <h2>Exercise: Match the Color and Shape!</h2>
+    <div id="targetRequest" style="font-size:1.3rem;font-weight:bold;margin-bottom:20px;"></div>
+    <form id="colorShapeForm" style="margin-top:10px;">
+        <label for="colorSelect">Pick a color:</label>
+        <select id="colorSelect" name="colorSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
+            <option value="">--Choose--</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+            <option value="Pink">Pink</option>
+            <option value="Brown">Brown</option>
+            <option value="Gray">Gray</option>
+            <option value="Cyan">Cyan</option>
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+            <option value="White">White</option>
+            <option value="Black">Black</option>
+        </select>
+        <label for="shapeSelect">Pick a shape:</label>
+        <select id="shapeSelect" name="shapeSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
+            <option value="">--Choose--</option>
+            <option value="Circle">Circle</option>
+            <option value="Square">Square</option>
+            <option value="Triangle">Triangle</option>
+            <option value="Rectangle">Rectangle</option>
+            <option value="Oval">Oval</option>
+            <option value="Star">Star</option>
+        </select>
+        <button type="button" onclick="checkMatch()" style="padding:8px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:bold;margin-left:10px;">Check</button>
+    </form>
+    <div id="exerciseResult" style="margin-top:20px;font-size:1.2rem;font-weight:bold;"></div>
+    <div id="showAnswer" style="margin-top:20px;"></div>
+</div>
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'quiz/colors_shapes.js' %}"></script>
+<script>
+    // Color and shape data
+    const colors = [
+        {name: 'Red', code: '#e74c3c'},
+        {name: 'Blue', code: '#3498db'},
+        {name: 'Green', code: '#27ae60'},
+        {name: 'Yellow', code: '#f1c40f'},
+        {name: 'Purple', code: '#9b59b6'},
+        {name: 'Orange', code: '#e67e22'},
+        {name: 'Pink', code: '#ff69b4'},
+        {name: 'Brown', code: '#8b4513'},
+        {name: 'Gray', code: '#808080'},
+        {name: 'Cyan', code: '#00bcd4'},
+        {name: 'Gold', code: '#ffd700'},
+        {name: 'Silver', code: '#c0c0c0'},
+        {name: 'White', code: '#fff'},
+        {name: 'Black', code: '#333'}
+    ];
+    const shapes = ['Circle', 'Square', 'Triangle', 'Rectangle', 'Oval', 'Star'];
+
+    let targetColor = '';
+    let targetShape = '';
+
+    function randomTarget() {
+        targetColor = colors[Math.floor(Math.random() * colors.length)].name;
+        targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+        document.getElementById('targetRequest').textContent = `Select the ${targetColor} ${targetShape}`;
+        document.getElementById('exerciseResult').textContent = '';
+        document.getElementById('showAnswer').innerHTML = '';
+        document.getElementById('colorSelect').value = '';
+        document.getElementById('shapeSelect').value = '';
+    }
+
+    function checkMatch() {
+        var color = document.getElementById('colorSelect').value;
+        var shape = document.getElementById('shapeSelect').value;
+        var result = document.getElementById('exerciseResult');
+        var answerDiv = document.getElementById('showAnswer');
+        var correctSound = document.getElementById('correctSound');
+        var incorrectSound = document.getElementById('incorrectSound');
+        if (!color || !shape) {
+            result.textContent = 'Please select both a color and a shape.';
+            result.style.color = '#e74c3c';
+            answerDiv.innerHTML = '';
+            incorrectSound.play().catch(()=>{});
+            return;
+        }
+        if (color === targetColor && shape === targetShape) {
+            result.textContent = 'Correct!';
+            result.style.color = '#27ae60';
+            correctSound.play().catch(()=>{});
+            // Show correct shape and color
+            answerDiv.innerHTML = renderShape(color, shape);
+            setTimeout(randomTarget, 4000);
+        } else {
+            result.textContent = 'Try again!';
+            result.style.color = '#e74c3c';
+            answerDiv.innerHTML = '';
+            incorrectSound.play().catch(()=>{});
+        }
+    }
+
+    function renderShape(color, shape) {
+        let colorCode = colors.find(c => c.name === color).code;
+        let border = '';
+        let bg = '';
+        let labelColor = (color === 'Black') ? 'color:#fff;' : '';
+        if (color === 'White') {
+            border = "stroke='black' stroke-width='4'";
+            bg = "style='background:#222;display:inline-block;border-radius:12px;'";
+        }
+        let svgSize = 140;
+        if (shape === 'Circle') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><circle cx='70' cy='70' r='56' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        } else if (shape === 'Square') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><rect x='28' y='28' width='84' height='84' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        } else if (shape === 'Triangle') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><polygon points='70,14 126,126 14,126' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        } else if (shape === 'Rectangle') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><rect x='14' y='42' width='112' height='56' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        } else if (shape === 'Oval') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><ellipse cx='70' cy='70' rx='56' ry='35' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        } else if (shape === 'Star') {
+            return `<div ${bg}><svg width='${svgSize}' height='${svgSize}'><polygon points='70,14 84,46 126,46 91,68 105,100 70,80 35,100 49,68 14,46 56,46' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.3rem;${labelColor}'>${color} ${shape}</div>`;
+        }
+        return '';
+    }
+
+    // Start with a random target
+    randomTarget();
+</script>
+<audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+<audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 {% endblock %}
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colors and Shapes Learning</title>
-    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
-    <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
-    <style>
-        body {
-            background: linear-gradient(270deg, #ffb347, #ffccff, #b3e6ff, #baffc9, #ffd6e0, #f3ffbd, #c1c8e4);
-            background-size: 1400% 1400%;
-            animation: rainbowBG 18s ease infinite;
-            color: white;
-            text-shadow: 2px 2px 4px #000000;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            min-height: 100vh;
-        }
-        @keyframes rainbowBG {
-            0% {background-position:0% 50%}
-            50% {background-position:100% 50%}
-            100% {background-position:0% 50%}
-        }
-        .color-shape-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 40px;
-        }
-        .color-card, .shape-card {
-            width: 180px;
-            height: 180px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            margin-bottom: 20px;
-        }
-        .color-card {
-            color: #fff;
-            font-weight: bold;
-        }
-        .shape-card {
-            background: #fff;
-            color: #333;
-            font-weight: bold;
-        }
-        .shape-svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Learn Colors and Shapes!</h1>
-        <a href="/quiz/" style="display:inline-block;margin-bottom:20px;padding:10px 20px;background:#3498db;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.12);">← Back to Home</a>
-        <div class="color-shape-container">
-            <div class="color-card" style="background: #e74c3c;">Red</div>
-            <div class="color-card" style="background: #3498db;">Blue</div>
-            <div class="color-card" style="background: #27ae60;">Green</div>
-            <div class="color-card" style="background: #f1c40f; color: #333;">Yellow</div>
-            <div class="color-card" style="background: #9b59b6;">Purple</div>
-            <div class="color-card" style="background: #e67e22;">Orange</div>
-            <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;">White</div>
-            <div class="color-card" style="background: #333;">Black</div>
-        </div>
-        <h2>Shapes</h2>
-        <div class="color-shape-container">
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="#3498db" />
-                </svg>
-                Circle
-            </div>
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <rect x="20" y="20" width="60" height="60" fill="#e74c3c" />
-                </svg>
-                Square
-            </div>
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <polygon points="50,10 90,90 10,90" fill="#27ae60" />
-                </svg>
-                Triangle
-            </div>
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <rect x="10" y="30" width="80" height="40" fill="#f1c40f" />
-                </svg>
-                Rectangle
-            </div>
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <ellipse cx="50" cy="50" rx="40" ry="25" fill="#9b59b6" />
-                </svg>
-                Oval
-            </div>
-            <div class="shape-card">
-                <svg class="shape-svg" viewBox="0 0 100 100">
-                    <polygon points="50,10 61,39 92,39 66,59 76,89 50,70 24,89 34,59 8,39 39,39" fill="#e67e22" />
-                </svg>
-                Star
-            </div>
-        </div>
-        <h2>Exercise: Match the Color and Shape!</h2>
-        <div id="targetRequest" style="font-size:1.3rem;font-weight:bold;margin-bottom:20px;"></div>
-        <form id="colorShapeForm" style="margin-top:10px;">
-            <label for="colorSelect">Pick a color:</label>
-            <select id="colorSelect" name="colorSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
-                <option value="">--Choose--</option>
-                <option value="Red">Red</option>
-                <option value="Blue">Blue</option>
-                <option value="Green">Green</option>
-                <option value="Yellow">Yellow</option>
-                <option value="Purple">Purple</option>
-                <option value="Orange">Orange</option>
-                <option value="White">White</option>
-                <option value="Black">Black</option>
-            </select>
-            <label for="shapeSelect">Pick a shape:</label>
-            <select id="shapeSelect" name="shapeSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
-                <option value="">--Choose--</option>
-                <option value="Circle">Circle</option>
-                <option value="Square">Square</option>
-                <option value="Triangle">Triangle</option>
-                <option value="Rectangle">Rectangle</option>
-                <option value="Oval">Oval</option>
-                <option value="Star">Star</option>
-            </select>
-            <button type="button" onclick="checkMatch()" style="padding:8px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:bold;margin-left:10px;">Check</button>
-        </form>
-        <div id="exerciseResult" style="margin-top:20px;font-size:1.2rem;font-weight:bold;"></div>
-        <div id="showAnswer" style="margin-top:20px;"></div>
-        <script>
-            // Color and shape data
-            const colors = [
-                {name: 'Red', code: '#e74c3c'},
-                {name: 'Blue', code: '#3498db'},
-                {name: 'Green', code: '#27ae60'},
-                {name: 'Yellow', code: '#f1c40f'},
-                {name: 'Purple', code: '#9b59b6'},
-                {name: 'Orange', code: '#e67e22'},
-                {name: 'White', code: '#fff'},
-                {name: 'Black', code: '#333'}
-            ];
-            const shapes = ['Circle', 'Square', 'Triangle', 'Rectangle', 'Oval', 'Star'];
-
-            let targetColor = '';
-            let targetShape = '';
-
-            function randomTarget() {
-                targetColor = colors[Math.floor(Math.random() * colors.length)].name;
-                targetShape = shapes[Math.floor(Math.random() * shapes.length)];
-                document.getElementById('targetRequest').textContent = `Select the ${targetColor} ${targetShape}`;
-                document.getElementById('exerciseResult').textContent = '';
-                document.getElementById('showAnswer').innerHTML = '';
-                document.getElementById('colorSelect').value = '';
-                document.getElementById('shapeSelect').value = '';
-            }
-
-            function checkMatch() {
-                var color = document.getElementById('colorSelect').value;
-                var shape = document.getElementById('shapeSelect').value;
-                var result = document.getElementById('exerciseResult');
-                var answerDiv = document.getElementById('showAnswer');
-                if (!color || !shape) {
-                    result.textContent = 'Please select both a color and a shape.';
-                    result.style.color = '#e74c3c';
-                    answerDiv.innerHTML = '';
-                    return;
-                }
-                if (color === targetColor && shape === targetShape) {
-                    result.textContent = 'Correct!';
-                    result.style.color = '#27ae60';
-                    // Show correct shape and color
-                    answerDiv.innerHTML = renderShape(color, shape);
-                    setTimeout(randomTarget, 4000);
-                } else {
-                    result.textContent = 'Try again!';
-                    result.style.color = '#e74c3c';
-                    answerDiv.innerHTML = '';
-                }
-            }
-
-            function renderShape(color, shape) {
-                let colorCode = colors.find(c => c.name === color).code;
-                let border = '';
-                let bg = '';
-                if (color === 'White') {
-                    border = "stroke='black' stroke-width='4'";
-                    bg = "style='background:#222;display:inline-block;border-radius:12px;'";
-                }
-                if (shape === 'Circle') {
-                    return `<div ${bg}><svg width='100' height='100'><circle cx='50' cy='50' r='40' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                } else if (shape === 'Square') {
-                    return `<div ${bg}><svg width='100' height='100'><rect x='20' y='20' width='60' height='60' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                } else if (shape === 'Triangle') {
-                    return `<div ${bg}><svg width='100' height='100'><polygon points='50,10 90,90 10,90' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                } else if (shape === 'Rectangle') {
-                    return `<div ${bg}><svg width='100' height='100'><rect x='10' y='30' width='80' height='40' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                } else if (shape === 'Oval') {
-                    return `<div ${bg}><svg width='100' height='100'><ellipse cx='50' cy='50' rx='40' ry='25' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                } else if (shape === 'Star') {
-                    return `<div ${bg}><svg width='100' height='100'><polygon points='50,10 61,39 92,39 66,59 76,89 50,70 24,89 34,59 8,39 39,39' fill='${colorCode}' ${border} /></svg></div><div style='font-size:1.1rem;'>${color} ${shape}</div>`;
-                }
-                return '';
-            }
-
-            // Start with a random target
-            randomTarget();
-        </script>
-    </div>
-</body>
-</html>

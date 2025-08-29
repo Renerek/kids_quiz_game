@@ -117,5 +117,5 @@ Notes:
 
 - Always activate the appropriate virtualenv before running `manage.py` (avoids ModuleNotFoundError for Django).
 - `requirements.txt` at the project root enables `pip install -r requirements.txt` (a minimal one is included for local testing).
-- Static images live under `quiz/static/quiz/images/` (e.g. `learning_path.png`). If an image doesn't appear in the browser, check the file exists and that the template uses the `{% static %}` tag.
+- Static images live under `quiz/static/quiz/images/` (e.g. `boy-girl-are-reading-books.jpg`). If an image doesn't appear in the browser, check the file exists and that the template uses the `{% static %}` tag.
 - If CI fails on pre-commit or linters, run `pre-commit run --all-files` and fix the reported issues locally before pushing.

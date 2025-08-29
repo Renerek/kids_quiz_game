@@ -2,52 +2,63 @@
 {% load static %}
 {% block title %}Spelling Game{% endblock %}
 {% block content %}
-<div style="text-align: center; margin-bottom: 20px;">
-    <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
-</div>
-<h1 class="big-heading">Spelling Game</h1>
-<div class="header">
-    <h2>Welcome, {{ user_name }}!</h2>
-    <p class="typing-effect">Let's improve your spelling skills!</p>
-</div>
-<div class="spelling-container">
-    <img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling Icon" class="quiz-icon" />
-    <h2>Listen to the word and type the correct spelling:</h2>
-    <button id="speakWord">🔊 Speak Word</button>
-    <form method="post">
-        {% csrf_token %}
-        <div class="word-container">
-            <h3 id="word" class="word-display" style="display: none;">{{ word }}</h3>
-            <button type="button" id="toggleWord">👁️ Show/Hide Word</button>
-        </div>
-        <input type="text" name="spelling" required autofocus />
-        <button type="submit">Submit Answer</button>
-    </form>
-    {% if result is not None %}
-        <div class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
-            {% if result %}
-                <h3>Correct! 🎉</h3>
-                <p>Great job spelling "{{ word }}"!</p>
-            {% else %}
-                <h3>Incorrect</h3>
-                <p>The correct spelling is <strong>{{ word }}</strong>.</p>
-            {% endif %}
-        </div>
-        <p><a href="/quiz/spelling/"><button>Try Another Word</button></a></p>
-    {% endif %}
-</div>
-<p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
-<div style="text-align: center; margin: 30px 0 20px 0;">
-    <img src="{% static 'quiz/images/learning_path.png' %}" alt="Learning Path" style="max-width: 600px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+<div class="container" style="margin: 40px auto; text-align: center;">
+    <div style="margin-bottom: 20px;">
+        <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
+    </div>
+    <h1 class="big-heading">Spelling Game</h1>
+    <div class="header">
+        <h2>Welcome, {{ user_name }}!</h2>
+        <p class="typing-effect">Let's improve your spelling skills!</p>
+    </div>
+    <div class="spelling-container" style="display: inline-block; text-align: center;">
+        <img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling Icon" class="quiz-icon" />
+        <h2>Listen to the word and type the correct spelling:</h2>
+        <button id="speakWord">🔊 Speak Word</button>
+        <form method="post">
+            {% csrf_token %}
+            <div class="word-container">
+                <h3 id="word" class="word-display" style="display: none;">{{ word }}</h3>
+                <button type="button" id="toggleWord">👁️ Show/Hide Word</button>
+            </div>
+            <input type="text" name="spelling" required autofocus />
+            <button type="submit">Submit Answer</button>
+        </form>
+        {% if result is not None %}
+            <div class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
+                {% if result %}
+                    <h3>Correct! 🎉</h3>
+                    <p>Great job spelling "{{ word }}"!</p>
+                {% else %}
+                    <h3>Incorrect</h3>
+                    <p>The correct spelling is <strong>{{ word }}</strong>.</p>
+                {% endif %}
+            </div>
+            <p><a href="/quiz/spelling/"><button>Try Another Word</button></a></p>
+        {% endif %}
+    </div>
+    <p><a href="/quiz/" style="display: inline-block; margin-top: 20px; background-color: #0066cc; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s;">&#8592; Back to Home</a></p>
+    <div style="margin: 30px 0 20px 0;">
+        <img src="{% static 'quiz/images/boy-girl-are-reading-books.jpg' %}" alt="Boy and Girl Reading Books" style="max-width: 500px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
+    </div>
 </div>
 {% endblock %}
 {% block scripts %}
+<audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+<audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 <script>
     // Auto-speak the word when page loads
     window.addEventListener('load', function() {
         setTimeout(function() {
             speakWord();
         }, 1000);
+        // Play correct/incorrect sound
+        const result = "{{ result|default:'' }}";
+        if (result === "True" || result === "true" || result === "1") {
+            document.getElementById('correctSound').play().catch(()=>{});
+        } else if (result === "False" || result === "false" || result === "0") {
+            document.getElementById('incorrectSound').play().catch(()=>{});
+        }
     });
     document.getElementById('speakWord').addEventListener('click', speakWord);
     // Toggle word visibility

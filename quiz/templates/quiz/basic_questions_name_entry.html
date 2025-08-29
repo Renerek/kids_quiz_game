@@ -1,84 +1,21 @@
+
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Your Name</title>
-    <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
-    <style>
-        body {
-            background-image: url('{% static "quiz/images/background.jpg" %}');
-            background-size: cover;
-            background-repeat: no-repeat;
-            color: white;
-            text-shadow: 2px 2px 4px #000000;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-        }
-        .big-heading {
-            font-size: 3rem;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .name-container {
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px auto;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            color: #333;
-            text-shadow: none;
-        }
-        input[type="text"] {
-            font-size: 1.5rem;
-            padding: 10px 20px;
-            width: 80%;
-            border: 2px solid #007bff;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        button {
-            font-size: 1.5rem;
-            padding: 12px 30px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-        .questions-icon {
-            width: 100px;
-            height: 100px;
-            margin: 20px auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="big-heading">Basic Questions</h1>
-        
-        <div class="name-container">
-            <img src="{% static 'quiz/images/questions_icon.png' %}" alt="Questions" class="questions-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1946/1946488.png'">
-            <h2>Let's Get to Know You!</h2>
-            <p>Before we begin, please enter your name:</p>
-            
-            <form method="post">
-                {% csrf_token %}
-                <input type="text" name="name" placeholder="Your Name" required autofocus>
-                <input type="hidden" name="name_submit" value="true">
-                <button type="submit">Start Questions</button>
-            </form>
-        </div>
-        
-        <p><a href="/quiz/">&#8592; Back to Home</a></p>
+{% block title %}Enter Your Name{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="big-heading">Basic Questions</h1>
+    <div class="name-container">
+        <img src="{% static 'quiz/images/questions_icon.png' %}" alt="Questions" class="questions-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1946/1946488.png'">
+        <h2>Let's Get to Know You!</h2>
+        <p>Before we begin, please enter your name:</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Your Name" required autofocus>
+            <input type="hidden" name="name_submit" value="true">
+            <button type="submit">Start Questions</button>
+        </form>
     </div>
-</body>
-</html>
+    <p><a href="/quiz/">&#8592; Back to Home</a></p>
+</div>
+{% endblock %}
