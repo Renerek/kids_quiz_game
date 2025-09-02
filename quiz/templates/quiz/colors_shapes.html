@@ -7,55 +7,55 @@
 <div class="container">
     <h1>Learn Colors and Shapes!</h1>
     <!-- Back to Home button removed -->
-    <div class="color-shape-container">
-    <div class="color-card" style="background: #e74c3c;">Red</div>
-    <div class="color-card" style="background: #3498db;">Blue</div>
-    <div class="color-card" style="background: #27ae60;">Green</div>
-    <div class="color-card" style="background: #f1c40f; color: #333;">Yellow</div>
-    <div class="color-card" style="background: #9b59b6;">Purple</div>
-    <div class="color-card" style="background: #e67e22;">Orange</div>
-    <div class="color-card" style="background: #ff69b4; color: #333;">Pink</div>
-    <div class="color-card" style="background: #8b4513; color: #fff;">Brown</div>
-    <div class="color-card" style="background: #808080; color: #fff;">Gray</div>
-    <div class="color-card" style="background: #00bcd4; color: #333;">Cyan</div>
-    <div class="color-card" style="background: #ffd700; color: #333;">Gold</div>
-    <div class="color-card" style="background: #c0c0c0; color: #333;">Silver</div>
-    <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;">White</div>
-    <div class="color-card" style="background: #333; color: #fff;">Black</div>
+    <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
+        <div class="color-card" style="background: #e74c3c;" data-audio="Red">Red</div>
+        <div class="color-card" style="background: #3498db;" data-audio="Blue">Blue</div>
+        <div class="color-card" style="background: #27ae60;" data-audio="Green">Green</div>
+        <div class="color-card" style="background: #f1c40f; color: #333;" data-audio="Yellow">Yellow</div>
+        <div class="color-card" style="background: #9b59b6;" data-audio="Purple">Purple</div>
+        <div class="color-card" style="background: #e67e22;" data-audio="Orange">Orange</div>
+        <div class="color-card" style="background: #ff69b4; color: #333;" data-audio="Pink">Pink</div>
+        <div class="color-card" style="background: #8b4513; color: #fff;" data-audio="Brown">Brown</div>
+        <div class="color-card" style="background: #808080; color: #fff;" data-audio="Gray">Gray</div>
+        <div class="color-card" style="background: #00bcd4; color: #333;" data-audio="Cyan">Cyan</div>
+        <div class="color-card" style="background: #ffd700; color: #333;" data-audio="Gold">Gold</div>
+        <div class="color-card" style="background: #c0c0c0; color: #333;" data-audio="Silver">Silver</div>
+        <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;" data-audio="White">White</div>
+        <div class="color-card" style="background: #333; color: #fff;" data-audio="Black">Black</div>
     </div>
     <h2>Shapes</h2>
     <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Circle">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <circle cx="30" cy="30" r="24" fill="#3498db" />
             </svg>
             Circle
         </div>
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Square">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <rect x="12" y="12" width="36" height="36" fill="#e74c3c" />
             </svg>
             Square
         </div>
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Triangle">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <polygon points="30,6 54,54 6,54" fill="#27ae60" />
             </svg>
             Triangle
         </div>
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Rectangle">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <rect x="6" y="18" width="48" height="24" fill="#f1c40f" />
             </svg>
             Rectangle
         </div>
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Oval">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <ellipse cx="30" cy="30" rx="24" ry="15" fill="#9b59b6" />
             </svg>
             Oval
         </div>
-        <div class="shape-card">
+        <div class="shape-card" data-audio="Star">
             <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
                 <polygon points="30,6 36,23 54,23 39,34 45,51 30,41 15,51 21,34 6,23 24,23" fill="#e67e22" />
             </svg>
@@ -122,6 +122,34 @@
 
     let targetColor = '';
     let targetShape = '';
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 0.9;
+            utter.pitch = 1.1;
+            window.speechSynthesis.speak(utter);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.color-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                speakText(card.getAttribute('data-audio'));
+            });
+            card.addEventListener('touchstart', function() {
+                speakText(card.getAttribute('data-audio'));
+            });
+        });
+        document.querySelectorAll('.shape-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                speakText(card.getAttribute('data-audio'));
+            });
+            card.addEventListener('touchstart', function() {
+                speakText(card.getAttribute('data-audio'));
+            });
+        });
+    });
 
     function randomTarget() {
         targetColor = colors[Math.floor(Math.random() * colors.length)].name;

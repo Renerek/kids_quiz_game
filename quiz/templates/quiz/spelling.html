@@ -34,7 +34,6 @@
                     <p>The correct spelling is <strong>{{ word }}</strong>.</p>
                 {% endif %}
             </div>
-            <p><a href="/quiz/spelling/"><button>Try Another Word</button></a></p>
         {% endif %}
     </div>
     <!-- Back to Home button removed -->
@@ -44,19 +43,93 @@
 </div>
 {% endblock %}
 {% block scripts %}
+<audio id="spellIntro" src="{% static 'quiz/audio/spell_word_intro.mp3' %}" preload="auto"></audio>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 <script>
-    // Auto-speak the word when page loads
+    // Use female voice for spelling words
+    function speakWord() {
+        const word = document.getElementById('word').textContent;
+        function doSpeak() {
+            const voices = window.speechSynthesis.getVoices();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = 0.8;
+            const female = voices.find(v => v.name.toLowerCase().includes('female') || v.gender === 'female') || voices.find(v => v.name.toLowerCase().includes('woman'));
+            if (female) utterance.voice = female;
+            else if (voices.length > 1) utterance.voice = voices[1];
+            window.speechSynthesis.speak(utterance);
+        }
+        // Some browsers need voices to be loaded asynchronously
+        if (window.speechSynthesis.getVoices().length === 0) {
+            window.speechSynthesis.onvoiceschanged = doSpeak;
+        } else {
+            doSpeak();
+        }
+    }
+
+    function stopAllAudio() {
+        [document.getElementById('correctSound'), document.getElementById('incorrectSound'), document.getElementById('spellIntro')].forEach(function(audio) {
+            if (!audio.paused) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        });
+        window.speechSynthesis.cancel();
+    }
+    function playSpellIntroAndWord(word) {
+        stopAllAudio();
+        const intro = document.getElementById('spellIntro');
+        intro.play();
+        intro.onended = function() {
+            speakWord();
+        };
+    }
+
+    // Play correct sound, then speak next word
+    function playCongratsAndNextWord(nextWord) {
+        const correctSound = document.getElementById('correctSound');
+        correctSound.play();
+        correctSound.onended = function() {
+            // Update the word in the DOM and speak it
+            document.getElementById('word').textContent = nextWord;
+            speakWord();
+        };
+    }
+
+    // Use gTTS-generated audio for prompts/messages
+    function speakWordPrompt(text) {
+        // If you have a gTTS-generated mp3, play it here
+        // Example: let audio = new Audio('/static/quiz/audio/' + text + '.mp3'); audio.play();
+        // Otherwise, fallback to speech synthesis
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voices = window.speechSynthesis.getVoices();
+        const female = voices.find(v => v.name.toLowerCase().includes('female') || v.gender === 'female') || voices.find(v => v.name.toLowerCase().includes('woman'));
+        if (female) utterance.voice = female;
+        else if (voices.length > 1) utterance.voice = voices[1];
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function speakWordOnLoad() {
+        playSpellIntroAndWord(document.getElementById('word').textContent);
+    }
     window.addEventListener('load', function() {
         setTimeout(function() {
-            speakWord();
+            speakWordOnLoad();
         }, 1000);
         // Play correct/incorrect sound
         const result = "{{ result|default:'' }}";
+        const nextWord = "{{ next_word|default:'' }}";
         if (result === "True" || result === "true" || result === "1") {
-            document.getElementById('correctSound').play().catch(()=>{});
+            if (nextWord) {
+                document.getElementById('word').textContent = nextWord;
+                stopAllAudio();
+                document.getElementById('correctSound').onended = function() {
+                    playSpellIntroAndWord(nextWord);
+                };
+                document.getElementById('correctSound').play().catch(()=>{});
+            }
         } else if (result === "False" || result === "false" || result === "0") {
+            stopAllAudio();
             document.getElementById('incorrectSound').play().catch(()=>{});
         }
     });
@@ -72,11 +145,5 @@
             this.textContent = '👁️ Show Word';
         }
     });
-    function speakWord() {
-        const word = document.getElementById('word').textContent;
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.rate = 0.8; // Slightly slower speech for clarity
-        window.speechSynthesis.speak(utterance);
-    }
 </script>
 {% endblock %}
