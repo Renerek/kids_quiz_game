@@ -1,3 +1,59 @@
+from django.test import TestCase, Client
+from django.urls import reverse
+from unittest.mock import patch
+from .models import MathQuestion, QuizSession, UserProgress
+
+class QuizModelTests(TestCase):
+	def test_math_question_creation(self):
+		q = MathQuestion.objects.create(question_text="2+2", answer=4, type="add", difficulty=2)
+		self.assertEqual(str(q), "2+2 (Level 2)")
+		self.assertEqual(q.answer, 4)
+		self.assertEqual(q.type, "add")
+
+	def test_quiz_session_defaults(self):
+		session = QuizSession.objects.create()
+		self.assertEqual(session.score, 0)
+		self.assertEqual(session.total_questions, 0)
+
+	def test_user_progress_creation(self):
+		from django.contrib.auth.models import User
+		user = User.objects.create(username="tester")
+		progress = UserProgress.objects.create(user=user, highest_level=3)
+		self.assertEqual(progress.highest_level, 3)
+
+class SpellingGameTests(TestCase):
+	def setUp(self):
+		self.client = Client()
+
+	def test_spelling_game_post_correct(self):
+		session = self.client.session
+		session['current_spelling_word'] = 'apple'
+		session.save()
+		response = self.client.post(reverse('quiz:spelling'), {'spelling': 'apple'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Correct')
+		self.assertIn('next_word', response.context)
+
+	def test_spelling_game_post_incorrect(self):
+		session = self.client.session
+		session['current_spelling_word'] = 'banana'
+		session.save()
+		response = self.client.post(reverse('quiz:spelling'), {'spelling': 'wrong'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Incorrect')
+		self.assertIsNone(response.context.get('next_word'))
+
+class ContactFormTests(TestCase):
+	@patch('quiz.views.send_mail')
+	def test_contact_form_post(self, mock_send_mail):
+		response = self.client.post(reverse('quiz:contact'), {
+			'email': 'test@example.com',
+			'subject': 'Hello',
+			'message': 'Test message'
+		})
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(response.context['sent'])
+		mock_send_mail.assert_called_once()
 
 from django.test import TestCase, Client
 from django.urls import reverse

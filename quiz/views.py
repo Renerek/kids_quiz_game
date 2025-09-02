@@ -88,10 +88,14 @@ def spelling_game(request):
         word = request.session.get("current_spelling_word", "").lower()
         user_spelling = request.POST.get("spelling", "").strip().lower()
         result = user_spelling == word
+        next_word = None
+        if result:
+            next_word = random.choice(SPELLING_WORDS)
+            request.session["current_spelling_word"] = next_word
         return render(
             request,
             "quiz/spelling.html",
-            {"word": word, "result": result},
+            {"word": word, "result": result, "next_word": next_word},
         )
 
     # Generate a new word for GET requests
