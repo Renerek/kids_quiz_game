@@ -98,6 +98,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt   # or pip install Django==5.2.5 pillow
 python manage.py migrate
+python manage.py collectstatic
 python manage.py runserver
 # Verify static assets, e.g. http://127.0.0.1:8000/static/quiz/images/learning_path.png
 ```
