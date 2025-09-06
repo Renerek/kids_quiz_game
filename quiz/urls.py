@@ -15,4 +15,6 @@ urlpatterns = [
     path("colors-shapes/", views.colors_shapes, name="colors_shapes"),
     path("contact/", views.contact, name="contact"),
     path("login/", views.login, name="login"),
+    path("animals-game/", views.animals_game, name="animals_game"),
+    path("fruits-game/", views.fruits_game, name="fruits_game"),
 ]

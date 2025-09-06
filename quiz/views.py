@@ -1,3 +1,205 @@
+import os
+def animals_game(request):
+    # Animal name, image filename, and summary (3 sentences)
+    animals = [
+        ("Snake", "snake.png", "This animal is a long, legless reptile that slithers on the ground. Most are harmless, but some are venomous. They are found in many habitats around the world."),
+        ("Cheetah", "cheetah.png", "This animal is the fastest land animal, capable of running up to 70 mph. It has a slender body and distinctive black spots. They are wild cats found in Africa."),
+        ("Cow", "cow.png", "This animal is a large, gentle farm animal raised for milk and meat. They are social animals and often live in herds. They are important in agriculture worldwide."),
+        ("Crocodile", "crocodile.png", "This animal is a large reptile that lives in rivers and lakes. It has powerful jaws and is an excellent swimmer. These animals are ancient and have existed for millions of years."),
+        ("Donkey", "donkey.png", "This animal is sturdy and known for its strength and endurance. They are often used as working animals on farms. They have long ears and a friendly nature."),
+        ("Goat", "goat.png", "This animal is playful and curious, raised for milk, meat, and fiber. They can climb steep hills and rocky terrain. They are found on farms all over the world."),
+        ("Pig", "pig.png", "This animal is intelligent and social, and loves to root in the ground. They are raised for their meat, called pork. They can be found on farms and sometimes as pets."),
+        ("Rat", "rat.png", "This animal is small and clever, living in many environments. They are known for their adaptability and intelligence. Some people keep them as pets."),
+        ("Sheep", "sheep.png", "This animal is gentle and raised for its wool, meat, and milk. They live in flocks and graze on grass. They have been domesticated for thousands of years."),
+        ("Lion", "lion.png", "This animal is known as the king of the jungle. They live in groups called prides and are powerful hunters. They are wild animals found in Africa."),
+        ("Tiger", "tiger.png", "This animal is the largest wild cat in the world. It has orange fur with black stripes and is an excellent swimmer. They live in forests and grasslands in Asia."),
+        ("Elephant", "elephant.png", "This animal is the largest land animal on Earth. It has a long trunk and big ears. They are intelligent and live in family groups."),
+        ("Giraffe", "giraffe.png", "This animal is the tallest in the world. It has a long neck to reach leaves high in trees. They live in the savannas of Africa."),
+        ("Zebra", "zebra.png", "This animal is known for its black and white stripes. Each pattern is unique. They live in herds on the African plains."),
+        ("Bear", "bear.png", "This animal is large and strong, found in forests and mountains. They eat both plants and animals. Some hibernate during the winter."),
+        ("Monkey", "monkey.png", "This animal is playful and intelligent, living in trees. They use their tails and hands to swing and climb. They are found in many parts of the world."),
+        ("Kangaroo", "kangaroo.png", "This animal is a marsupial from Australia. It has strong legs for jumping and carries its babies in a pouch. They live in groups called mobs."),
+        ("Panda", "panda.png", "This animal is black and white and eats mostly bamboo. They are native to China and are known for their gentle nature. They are a symbol of wildlife conservation."),
+        ("Fox", "fox.png", "This animal is small and clever with a bushy tail. They are known for their cunning and adaptability. They live in forests, grasslands, and even cities."),
+        ("Rabbit", "rabbit.png", "This animal is small and gentle with long ears. They love to hop and eat vegetables. They can be found in the wild and as pets."),
+        ("Dog", "dog.png", "This animal is loyal and friendly, often called man's best friend. They come in many breeds and sizes. They are kept as pets and help people in many ways."),
+        ("Cat", "cat.png", "This animal is graceful and independent, and loves to play and nap. They are popular pets around the world. They can be affectionate and curious."),
+        ("Horse", "horse.png", "This animal is strong and fast, used for riding and work. They have been companions to humans for thousands of years. They live on farms and in the wild."),
+        ("Penguin", "penguin.png", "This animal is a bird that cannot fly but is an excellent swimmer. They live in cold regions like Antarctica. They have black and white feathers and waddle when they walk."),
+        ("Owl", "owl.png", "This animal is a bird of prey with large eyes and excellent night vision. They are known for their hooting calls. They hunt small animals and live in forests and fields."),
+        ("Frog", "frog.png", "This animal is a small amphibian that lives near water. It has smooth skin and long legs for jumping. They lay eggs in ponds and eat insects."),
+        ("Turtle", "turtle.png", "This animal is a reptile with a hard shell that protects its body. They can live on land or in water. They move slowly and can live for many years."),
+        ("Dolphin", "dolphin.png", "This animal is intelligent and playful, and lives in the ocean. They communicate with clicks and whistles. They are known for their friendly nature."),
+        ("Parrot", "parrot.png", "This animal is a colorful bird that can mimic sounds and speech. They live in tropical regions and eat fruits and seeds. They are popular pets because of their intelligence.")
+    ]
+    animal_dict = {a[0]: a for a in animals}
+    if request.method == "POST":
+        correct_animal = request.session.get("current_animal_name")
+        answer = request.POST.get("answer")
+        result = (answer == correct_animal)
+        if result:
+            # On correct, switch to new animal and show its hint
+            animal = random.choice(animals)
+            request.session["current_animal_name"] = animal[0]
+            animal_image_url = os.path.join("quiz/images/animals", animal[1])
+            options = [animal[0]]
+            while len(options) < 4:
+                opt = random.choice(animals)[0]
+                if opt not in options:
+                    options.append(opt)
+            random.shuffle(options)
+            request.session["current_animal_options"] = options
+            animal_name = animal[0]
+            summary = animal[2].replace(animal_name, "...")
+            return render(request, "quiz/animals_game.html", {
+                "animal_image_url": f"/static/{animal_image_url}",
+                "options": options,
+                "result": result,
+                "summary": summary,
+                "animal_name": animal_name,
+            })
+        else:
+            # Show same animal and hint again
+            animal_name = correct_animal
+            animal = animal_dict[animal_name]
+            animal_image_url = os.path.join("quiz/images/animals", animal[1])
+            options = request.session.get("current_animal_options")
+            if not options:
+                options = [animal_name]
+                while len(options) < 4:
+                    opt = random.choice(animals)[0]
+                    if opt not in options:
+                        options.append(opt)
+                random.shuffle(options)
+            summary = animal[2].replace(animal_name, "...")
+            return render(request, "quiz/animals_game.html", {
+                "animal_image_url": f"/static/{animal_image_url}",
+                "options": options,
+                "result": result,
+                "summary": summary,
+                "animal_name": animal_name,
+            })
+    # GET: show new animal
+    animal = random.choice(animals)
+    request.session["current_animal_name"] = animal[0]
+    animal_image_url = os.path.join("quiz/images/animals", animal[1])
+    options = [animal[0]]
+    while len(options) < 4:
+        opt = random.choice(animals)[0]
+        if opt not in options:
+            options.append(opt)
+    random.shuffle(options)
+    request.session["current_animal_options"] = options
+    animal_name = animal[0]
+    summary = animal[2].replace(animal_name, "...")
+    return render(request, "quiz/animals_game.html", {
+        "animal_image_url": f"/static/{animal_image_url}",
+        "options": options,
+        "result": None,
+        "summary": summary,
+        "animal_name": animal_name,
+    })
+
+def fruits_game(request):
+    # Fruit name, image filename, and summary (3 sentences)
+    fruits = [
+        ("Apple", "apple.png", "This fruit is sweet and crunchy, and comes in red, green, or yellow. They are great for snacks and are used in many desserts. They are rich in fiber and vitamins."),
+        ("Avocado", "avocado.png", "This fruit is creamy with a large seed inside. It is packed with healthy fats and nutrients. It is often used in salads and spreads like guacamole."),
+        ("Banana", "banana.png", "This fruit is long and yellow with a soft, sweet inside. It is easy to peel and makes a great snack. It is a good source of potassium."),
+        ("Blackberry", "blackberry.png", "This fruit is small and dark purple, growing on bushes. It is juicy and sweet with a slightly tart flavor. It is rich in vitamins and antioxidants."),
+        ("Blue Grapes", "blue_grapes.png", "This fruit is small and round, growing in clusters. It is sweet and juicy, perfect for eating fresh or making juice. Grapes are also used to make raisins and wine."),
+        ("Cherry", "cherry.png", "This fruit is small and round, and can be red or dark purple. It is sweet or tart and often used in pies and desserts. It is high in antioxidants."),
+        ("Coconut", "coconut.png", "This fruit has a hard, brown shell and white, edible flesh inside. The water and milk from it are refreshing drinks. It grows on palm trees in tropical regions."),
+        ("Cranberry", "cranberry.png", "This fruit is small and red with a tart taste. It is often used in juices and sauces. It is known for its health benefits, especially for the urinary tract."),
+        ("Dragon Fruit", "dragon_fruit.png", "This fruit has a bright pink skin and white or red flesh with tiny black seeds. It is mildly sweet and very refreshing. It is also called pitaya and grows in warm climates."),
+        ("Kiwi", "kiwi.png", "This fruit is small and brown with fuzzy skin and bright green flesh. It has a sweet and tangy flavor. It is rich in vitamin C and fiber."),
+        ("Lemon", "lemon.png", "This fruit is yellow and sour, used to add flavor to food and drinks. It is high in vitamin C. Its juice is often used in cooking and baking."),
+        ("Lime", "lime.png", "This fruit is small and green with a tart taste. It is used in drinks, desserts, and savory dishes. It is a good source of vitamin C."),
+        ("Mango", "mango.png", "This fruit is juicy and tropical with orange flesh. It is sweet and fragrant, often called the king of fruits. It is enjoyed fresh or in smoothies and desserts."),
+        ("Orange", "orange.png", "This fruit is round and orange-colored. It is juicy and sweet, perfect for eating or making juice. It is famous for its vitamin C content."),
+        ("Papaya", "papaya.png", "This fruit is tropical with orange flesh and black seeds. It is sweet and soft, great for breakfast or smoothies. It helps with digestion and is rich in vitamins."),
+        ("Passion Fruit", "passion_fruit.png", "This fruit has a tough purple skin and yellow, juicy seeds inside. It has a unique, sweet-tart flavor. It is used in drinks, desserts, and jams."),
+        ("Peach", "peach.png", "This fruit is round and fuzzy with juicy, sweet flesh. It is delicious fresh or in pies and cobblers. It is a good source of vitamins A and C."),
+        ("Pear", "pear.png", "This fruit is bell-shaped with soft, sweet flesh. It comes in green, yellow, or red varieties. It is great for snacking and baking."),
+        ("Pineapple", "pineapple.png", "This fruit is tropical with spiky skin and sweet, yellow flesh. It is juicy and tangy, perfect for fruit salads. It is rich in vitamin C and enzymes."),
+        ("Plum", "plum.png", "This fruit is small and round with smooth skin and a pit inside. It can be sweet or tart and comes in many colors. It is good for digestion and makes a tasty snack."),
+        ("Pomegranate", "pomegranate.png", "This fruit has thick, red skin and is filled with juicy seeds. The seeds are sweet and tart, packed with antioxidants. It is often eaten fresh or juiced."),
+        ("Strawberry", "strawberry.png", "This fruit is bright red and heart-shaped with tiny seeds on the outside. It is sweet and juicy, perfect for desserts. It is high in vitamin C."),
+        ("Tomato", "tomato.png", "This fruit is red or yellow and often used as a vegetable. It is juicy and slightly tangy, used in salads, sauces, and soups. It is rich in vitamins and antioxidants."),
+        ("Watermelon", "watermelon.png", "This fruit is large and green with sweet, juicy red flesh. It is very refreshing, especially in summer. It is mostly water and helps keep you hydrated."),
+        ("Grapes", "grapes.png", "This fruit is small and round, growing in bunches. It can be green, red, or purple and is sweet and juicy. It is eaten fresh, dried as raisins, or made into juice."),
+        ("Blueberries", "blueberries.png", "This fruit is tiny and blue-purple, growing on bushes. It is sweet and packed with antioxidants. It is great in cereals, muffins, and smoothies."),
+        ("Raspberry", "raspberry.png", "This fruit is small and red or black with a sweet-tart flavor. It is soft and juicy, perfect for desserts. It is high in fiber and vitamins."),
+        ("Pumpkin", "pumpkin.png", "This fruit is large and round with orange skin and flesh. It is used in soups, pies, and decorations for Halloween. It is rich in vitamins and fiber.")
+    ]
+    fruit_dict = {f[0]: f for f in fruits}
+    if request.method == "POST":
+        correct_fruit = request.session.get("current_fruit_name")
+        answer = request.POST.get("answer")
+        result = (answer == correct_fruit)
+        if result:
+            # On correct, switch to new fruit and show its hint
+            fruit = random.choice(fruits)
+            request.session["current_fruit_name"] = fruit[0]
+            fruit_image_url = os.path.join("quiz/images/fruits", fruit[1])
+            options = [fruit[0]]
+            while len(options) < 4:
+                opt = random.choice(fruits)[0]
+                if opt not in options:
+                    options.append(opt)
+            random.shuffle(options)
+            request.session["current_fruit_options"] = options
+            fruit_name = fruit[0]
+            summary = fruit[2]
+            return render(request, "quiz/fruits_game.html", {
+                "fruit_image_url": f"/static/{fruit_image_url}",
+                "options": options,
+                "result": result,
+                "summary": summary,
+                "fruit_name": fruit_name,
+            })
+        else:
+            # Show same fruit and hint again
+            fruit_name = correct_fruit
+            fruit = fruit_dict[fruit_name]
+            fruit_image_url = os.path.join("quiz/images/fruits", fruit[1])
+            options = request.session.get("current_fruit_options")
+            if not options:
+                options = [fruit_name]
+                while len(options) < 4:
+                    opt = random.choice(fruits)[0]
+                    if opt not in options:
+                        options.append(opt)
+                random.shuffle(options)
+            summary = fruit[2]
+            return render(request, "quiz/fruits_game.html", {
+                "fruit_image_url": f"/static/{fruit_image_url}",
+                "options": options,
+                "result": result,
+                "summary": summary,
+                "fruit_name": fruit_name,
+            })
+    else:
+        # GET: show new fruit
+        fruit = random.choice(fruits)
+        request.session["current_fruit_name"] = fruit[0]
+        fruit_image_url = os.path.join("quiz/images/fruits", fruit[1])
+        options = [fruit[0]]
+        while len(options) < 4:
+            opt = random.choice(fruits)[0]
+            if opt not in options:
+                options.append(opt)
+        random.shuffle(options)
+        request.session["current_fruit_options"] = options
+        fruit_name = fruit[0]
+        summary = fruit[2]
+        return render(request, "quiz/fruits_game.html", {
+            "fruit_image_url": f"/static/{fruit_image_url}",
+            "options": options,
+            "result": None,
+            "summary": summary,
+            "fruit_name": fruit_name,
+        })
 from django.core.mail import send_mail
 from django.conf import settings
 def contact(request):
@@ -120,11 +322,13 @@ def start_quiz(request):
         name = request.POST.get("name", "Player")
         request.session["user_name"] = name
         mode = request.POST.get("mode", "mixed")
+        difficulty = request.POST.get("difficulty", "easy")
         session = QuizSession.objects.create(
             user=request.user if request.user.is_authenticated else None
         )
         request.session["quiz_session_id"] = session.id
         request.session["game_mode"] = mode
+        request.session["difficulty"] = difficulty
         return redirect("quiz:question")
     return render(request, "quiz/start.html")
 
@@ -134,8 +338,17 @@ def question(request):
     session = QuizSession.objects.get(id=session_id)
     mode = request.session.get("game_mode", "mixed")
     user_name = request.session.get("user_name", "Player")
-    a = random.randint(1, 20)
-    b = random.randint(1, 20)
+    difficulty = request.session.get("difficulty", "easy")
+    # Set number range by difficulty
+    if difficulty == "easy":
+        min_num, max_num = 1, 10
+    elif difficulty == "medium":
+        min_num, max_num = 5, 30
+    else:  # hard
+        min_num, max_num = 10, 100
+
+    a = random.randint(min_num, max_num)
+    b = random.randint(min_num, max_num)
     if mode == "add":
         answer = a + b
         qtext = f"{a} + {b} = ?"
@@ -161,6 +374,7 @@ def question(request):
         {
             "question": qtext,
             "user_name": user_name,
+            "difficulty": difficulty,
         },
     )
 

@@ -1,26 +1,33 @@
 
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 {% block title %}Start Quiz{% endblock %}
 {% block content %}
 <div class="container">
     <div style="text-align: center; margin-bottom: 20px;">
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
-    <h1 class="big-heading">Welcome to the Math Quiz!</h1>
+    <h1 class="big-heading">{% trans "Welcome to the Math Quiz!" %}</h1>
     <div class="start-form">
         <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon">
         <form method="post" action="">
             {% csrf_token %}
-            <label for="name">Enter your name:</label>
-            <input type="text" id="name" name="name" placeholder="Your Name" required>
-            <label for="mode">Select Game Mode:</label>
+            <label for="name">{% trans "Enter your name:" %}</label>
+            <input type="text" id="name" name="name" placeholder="{% trans 'Your Name' %}" required>
+            <label for="mode">{% trans "Select Game Mode:" %}</label>
             <select id="mode" name="mode">
-                <option value="mixed">Mixed</option>
-                <option value="add">Addition</option>
-                <option value="sub">Subtraction</option>
+                <option value="mixed">{% trans "Mixed" %}</option>
+                <option value="add">{% trans "Addition" %}</option>
+                <option value="sub">{% trans "Subtraction" %}</option>
             </select>
-            <button type="submit">Start Quiz</button>
+            <label for="difficulty">{% trans "Select Difficulty:" %}</label>
+            <select id="difficulty" name="difficulty">
+                <option value="easy">{% trans "Easy" %}</option>
+                <option value="medium">{% trans "Medium" %}</option>
+                <option value="hard">{% trans "Hard" %}</option>
+            </select>
+            <button type="submit">{% trans "Start Quiz" %}</button>
         </form>
     </div>
     <!-- Back to Home button removed -->

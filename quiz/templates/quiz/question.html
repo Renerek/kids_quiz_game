@@ -12,6 +12,7 @@
     <div class="header">
         <h2>Welcome, {{ user_name }}!</h2>
         <p class="typing-effect">Let's test your math skills and have some fun!</p>
+        <div style="margin-top:10px;font-weight:bold;">Difficulty: {{ difficulty|title }}</div>
     </div>
     <div class="timer">Time left: <span id="timer">15</span>s</div>
     <h2>{{ question }}</h2>
