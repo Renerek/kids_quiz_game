@@ -26,9 +26,16 @@ staticfiles/
 .coverage
 .coverage.*
 htmlcov/
+test-results.xml
+.tox/
 
 # MyPy / lint caches
 .mypy_cache/
+
+# CI/CD artifacts
+.cache/
+.gitlab-ci-cache/
+artifacts/
 
 # Editors and OS files
 .DS_Store
@@ -40,3 +47,13 @@ htmlcov/
 # Node
 node_modules/
 npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Security
+*.pem
+*.key
+secrets.yml

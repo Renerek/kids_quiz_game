@@ -1,0 +1,147 @@
+# GitLab CI/CD configuration for Kids Learning Game (Django)
+# This file defines the CI/CD pipeline to test and deploy the application
+
+# Define stages for the pipeline
+stages:
+  - test
+  - quality
+  - deploy
+
+# Global variables
+variables:
+  # Use Python 3.12 to match development environment
+  PYTHON_VERSION: "3.12"
+  # Pip cache directory
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # Django settings
+  DJANGO_SETTINGS_MODULE: "mathquiz.settings"
+  # Disable Django debug mode in CI
+  DEBUG: "False"
+
+# Cache configuration to speed up builds
+cache:
+  paths:
+    - .cache/pip/
+    - .venv/
+
+# Before script - runs before each job
+before_script:
+  - echo "Python version being used:"
+  - python3 --version
+  - echo "Installing dependencies..."
+  - python3 -m pip install --upgrade pip
+  - python3 -m venv .venv
+  - source .venv/bin/activate
+  - pip install -r requirements.txt
+
+# Test Job - Run Django tests
+test:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - echo "Running Django tests..."
+    - source .venv/bin/activate
+    - python manage.py check --deploy
+    - python manage.py migrate
+    - python manage.py collectstatic --noinput
+    - python manage.py test --verbosity=2
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      junit: test-results.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  only:
+    - develop
+    - main
+    - merge_requests
+
+# Code Quality Job - Run linting and formatting checks
+code_quality:
+  stage: quality
+  image: python:3.12-slim
+  script:
+    - echo "Running code quality checks..."
+    - source .venv/bin/activate
+    - pip install black flake8 isort
+    - echo "Checking code formatting with black..."
+    - black --check --diff .
+    - echo "Checking imports with isort..."
+    - isort --check-only --diff .
+    - echo "Running flake8 linting..."
+    - flake8 .
+  allow_failure: true
+  only:
+    - develop
+    - main
+    - merge_requests
+
+# Security Check Job - Check for security vulnerabilities
+security_check:
+  stage: quality
+  image: python:3.12-slim
+  script:
+    - echo "Running security checks..."
+    - source .venv/bin/activate
+    - pip install safety bandit
+    - echo "Checking for known security vulnerabilities in dependencies..."
+    - safety check
+    - echo "Running bandit security linter..."
+    - bandit -r . -x .venv/,venv/,test_*
+  allow_failure: true
+  only:
+    - develop
+    - main
+    - merge_requests
+
+# Deploy to Staging - Deploy to staging environment
+deploy_staging:
+  stage: deploy
+  image: python:3.12-slim
+  script:
+    - echo "Deploying to staging environment..."
+    - source .venv/bin/activate
+    - python manage.py check --deploy
+    - echo "Staging deployment would happen here"
+    # Add your deployment commands here
+    # Example: rsync, scp, docker build/push, etc.
+  environment:
+    name: staging
+    url: https://math-quiz-staging.example.com
+  only:
+    - develop
+  when: manual
+
+# Deploy to Production - Deploy to production environment
+deploy_production:
+  stage: deploy
+  image: python:3.12-slim
+  script:
+    - echo "Deploying to production environment..."
+    - source .venv/bin/activate
+    - python manage.py check --deploy
+    - echo "Production deployment would happen here"
+    # Add your deployment commands here
+  environment:
+    name: production
+    url: https://math-quiz-game.example.com
+  only:
+    - main
+  when: manual
+
+# Performance Test Job - Optional performance testing
+performance_test:
+  stage: quality
+  image: python:3.12-slim
+  script:
+    - echo "Running performance tests..."
+    - source .venv/bin/activate
+    - pip install locust
+    - echo "Performance testing would run here"
+    # Example: locust -f locustfile.py --headless -u 10 -r 2 -t 30s --host=http://localhost:8000
+  allow_failure: true
+  only:
+    - develop
+    - main
+  when: manual
