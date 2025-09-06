@@ -48,16 +48,33 @@
     </form>
     <div id="feedback-area">
         {% if result == 'correct' %}
-            <div class="feedback correct">
+            <div id="feedback" class="feedback correct">
                 <p>Correct! The time is {{ correct_time }}. 🎉</p>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                        window.location.href = window.location.pathname;
+                    }, 5000);
+                </script>
             </div>
         {% elif result == 'incorrect' %}
-            <div class="feedback incorrect">
+            <div id="feedback" class="feedback incorrect">
                 <p>Incorrect. Try again!</p>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                    }, 5000);
+                </script>
             </div>
         {% elif result == 'show_answer' %}
-            <div class="feedback incorrect">
+            <div id="feedback" class="feedback incorrect">
                 <p>Incorrect. The correct time is {{ correct_time }}.</p>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                        window.location.href = window.location.pathname;
+                    }, 5000);
+                </script>
             </div>
         {% endif %}
     </div>

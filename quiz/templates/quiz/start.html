@@ -15,19 +15,31 @@
             {% csrf_token %}
             <label for="name">{% trans "Enter your name:" %}</label>
             <input type="text" id="name" name="name" placeholder="{% trans 'Your Name' %}" required>
-            <label for="mode">{% trans "Select Game Mode:" %}</label>
-            <select id="mode" name="mode">
-                <option value="mixed">{% trans "Mixed" %}</option>
-                <option value="add">{% trans "Addition" %}</option>
-                <option value="sub">{% trans "Subtraction" %}</option>
-            </select>
-            <label for="difficulty">{% trans "Select Difficulty:" %}</label>
-            <select id="difficulty" name="difficulty">
-                <option value="easy">{% trans "Easy" %}</option>
-                <option value="medium">{% trans "Medium" %}</option>
-                <option value="hard">{% trans "Hard" %}</option>
-            </select>
-            <button type="submit">{% trans "Start Quiz" %}</button>
+            
+            <div style="display: flex; gap: 20px; align-items: end; margin-top: 20px; justify-content: center;">
+                <div style="flex: 0 0 auto;">
+                    <label for="mode">{% trans "Mode:" %}</label>
+                    <select id="mode" name="mode" style="width: auto; min-width: 200px;" required>
+                        <option value="" disabled selected>{% trans "Select Game Mode" %}</option>
+                        <option value="mixed">{% trans "Mixed (All Operations)" %}</option>
+                        <option value="add">{% trans "Addition" %}</option>
+                        <option value="sub">{% trans "Subtraction" %}</option>
+                        <option value="mul">{% trans "Multiplication" %}</option>
+                        <option value="div">{% trans "Division" %}</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <label for="difficulty">{% trans "Difficulty:" %}</label>
+                    <select id="difficulty" name="difficulty" style="width: auto; min-width: 180px;" required>
+                        <option value="" disabled selected>{% trans "Select Difficulty" %}</option>
+                        <option value="easy">{% trans "Easy (1 minute)" %}</option>
+                        <option value="medium">{% trans "Medium (30 seconds)" %}</option>
+                        <option value="hard">{% trans "Hard (15 seconds)" %}</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" style="margin-top: 25px;">{% trans "Start Quiz" %}</button>
         </form>
     </div>
     <!-- Back to Home button removed -->
