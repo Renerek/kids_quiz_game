@@ -53,6 +53,8 @@ def animals_game(request):
                 "result": result,
                 "summary": summary,
                 "animal_name": animal_name,
+                "user_answer": answer,
+                "correct_answer": correct_animal,
             })
         else:
             # Show same animal and hint again
@@ -74,6 +76,8 @@ def animals_game(request):
                 "result": result,
                 "summary": summary,
                 "animal_name": animal_name,
+                "user_answer": answer,
+                "correct_answer": correct_animal,
             })
     # GET: show new animal
     animal = random.choice(animals)
@@ -147,6 +151,8 @@ def fruits_game(request):
                 "result": result,
                 "summary": summary,
                 "fruit_name": fruit_name,
+                "user_answer": answer,
+                "correct_answer": correct_fruit,
             })
         else:
             # Show same fruit and hint again
@@ -168,6 +174,8 @@ def fruits_game(request):
                 "result": result,
                 "summary": summary,
                 "fruit_name": fruit_name,
+                "user_answer": answer,
+                "correct_answer": correct_fruit,
             })
     else:
         # GET: show new fruit
