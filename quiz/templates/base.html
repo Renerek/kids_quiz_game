@@ -167,6 +167,23 @@
         <a href="/">Home</a>
         <a href="/quiz/login/">Login</a>
         <a href="/quiz/contact/">Contact Us</a>
+        <form action="{% url 'set_language' %}" method="post" style="display:inline; margin-left:18px;">
+            {% csrf_token %}
+            <select name="language" onchange="this.form.submit()" style="padding:4px 8px; border-radius:6px; border:1px solid #007bff;">
+                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+                <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>Français</option>
+                <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>Español</option>
+                <option value="de" {% if LANGUAGE_CODE == 'de' %}selected{% endif %}>Deutsch</option>
+                <option value="sw" {% if LANGUAGE_CODE == 'sw' %}selected{% endif %}>Kiswahili</option>
+                <option value="yo" {% if LANGUAGE_CODE == 'yo' %}selected{% endif %}>Yorùbá</option>
+                <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
+                <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>Русский</option>
+                <option value="zh_Hans" {% if LANGUAGE_CODE == 'zh_Hans' %}selected{% endif %}>中文</option>
+                <option value="it" {% if LANGUAGE_CODE == 'it' %}selected{% endif %}>Italiano</option>
+                <option value="pt" {% if LANGUAGE_CODE == 'pt' %}selected{% endif %}>Português</option>
+                <option value="ha" {% if LANGUAGE_CODE == 'ha' %}selected{% endif %}>Hausa</option>
+            </select>
+        </form>
     </div>
     <div class="sidebar">
         <div class="sidebar-content">
@@ -180,6 +197,8 @@
             <a href="/quiz/what-time/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" class="menu-icon" alt="Clock">What Time Is It?</a>
             <a href="/quiz/basic-questions/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" class="menu-icon" alt="Questions">Basic Questions</a>
             <a href="/quiz/colors-shapes/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" class="menu-icon" alt="Colors & Shapes">Colors & Shapes</a>
+            <a href="/quiz/animals-game/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="menu-icon" alt="Animals">Animals Game</a>
+            <a href="/quiz/fruits-game/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/415/415733.png" class="menu-icon" alt="Fruits">Fruits Game</a>
         </div>
     </div>
     <div class="side-image left">

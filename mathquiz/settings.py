@@ -28,7 +28,31 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'math-quiz-game.onrender.com']
 
 
-# Application definition
+
+# Internationalization
+LANGUAGE_CODE = 'en'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+from django.utils.translation import gettext_lazy as _
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('French')),
+    ('es', _('Spanish')),
+    ('de', _('German')),
+    ('it', _('Italian')),
+    ('pt', _('Portuguese')),
+    ('ru', _('Russian')),
+    ('zh-hans', _('Chinese (Simplified)')),
+    ('ar', _('Arabic')),
+    ('sw', _('Swahili')),
+    ('yo', _('Yoruba')),
+    ('ig', _('Igbo')),
+    ('ha', _('Hausa')),
+    # Add more as needed
+]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
