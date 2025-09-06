@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mixed Game{% endblock %}
+{% block content %}
+<div class="container" style="text-align:center;">
+    <h1>Mixed Game</h1>
+    {% if game_type == "math" %}
+        <h2>{{ question }}</h2>
+        <form method="post">{% csrf_token %}
+            <input type="number" name="answer" required autofocus>
+            <button type="submit">Submit</button>
+        </form>
+    {% elif game_type == "animal" %}
+        <div style="margin: 30px 0;">
+            <img src="{{ animal_image_url }}" alt="Animal" style="max-width:320px;max-height:320px;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);background:#fff;" />
+        </div>
+        <div style="margin-bottom:18px;">{{ summary }}</div>
+        <form method="post">{% csrf_token %}
+            {% for option in options %}
+                <button type="submit" name="answer" value="{{ option }}" class="game-button">{{ option }}</button>
+            {% endfor %}
+        </form>
+    {% elif game_type == "fruit" %}
+        <div style="margin: 30px 0;">
+            <img src="{{ fruit_image_url }}" alt="Fruit" style="max-width:320px;max-height:320px;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);background:#fff;" />
+        </div>
+        <div style="margin-bottom:18px;">{{ summary }}</div>
+        <form method="post">{% csrf_token %}
+            {% for option in options %}
+                <button type="submit" name="answer" value="{{ option }}" class="game-button">{{ option }}</button>
+            {% endfor %}
+        </form>
+    {% elif game_type == "spelling" %}
+        <h2>Spell the word you hear:</h2>
+        <button type="button" class="game-button" onclick="speakWord('{{ spelling_word|escapejs }}')">🔊 Play Word</button>
+        <form method="post">{% csrf_token %}
+            <input type="text" name="spelling" required autofocus>
+            <button type="submit">Submit</button>
+        </form>
+    {% elif game_type == "time" %}
+        <h2>What time is shown?</h2>
+        <div style="font-size:2.2rem;margin:18px 0;">🕒 {{ clock_time }}</div>
+        <form method="post">{% csrf_token %}
+            {% for c in choices %}
+                <button type="submit" name="user_choice" value="{{ c }}" class="game-button">{{ c }}</button>
+            {% endfor %}
+        </form>
+    {% elif game_type == "basic" %}
+        <h2>{{ basic_question }}</h2>
+        <form method="post">{% csrf_token %}
+            <input type="text" name="answer" required autofocus>
+            <button type="submit">Next</button>
+        </form>
+    {% endif %}
+    <audio id="correct-sound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
+    <audio id="incorrect-sound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+    {% if result is not None %}
+        <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
+            {% if result %}
+                <span style="color:green;">Correct!</span>
+                <script>
+                    document.getElementById('correct-sound').play();
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                        // Redirect to same page with GET request to get new question
+                        window.location.href = window.location.pathname;
+                    }, 5000);
+                </script>
+            {% else %}
+                <span style="color:red;">Incorrect! Please try again.</span>
+                <script>
+                    document.getElementById('incorrect-sound').play();
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                    }, 5000);
+                </script>
+            {% endif %}
+        </div>
+    {% endif %}
+    <script>
+    function speakWord(word) {
+        if ('speechSynthesis' in window) {
+            var utter = new SpeechSynthesisUtterance(word);
+            utter.lang = 'en-US';
+            window.speechSynthesis.speak(utter);
+        } else {
+            alert('Sorry, your browser does not support speech synthesis.');
+        }
+    }
+    </script>
+</div>
+{% endblock %}

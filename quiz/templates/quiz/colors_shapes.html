@@ -181,12 +181,19 @@
             correctSound.play().catch(()=>{});
             // Show correct shape and color
             answerDiv.innerHTML = renderShape(color, shape);
-            setTimeout(randomTarget, 4000);
+            setTimeout(function() {
+                result.textContent = '';
+                answerDiv.innerHTML = '';
+                randomTarget();
+            }, 5000);
         } else {
             result.textContent = 'Try again!';
             result.style.color = '#e74c3c';
             answerDiv.innerHTML = '';
             incorrectSound.play().catch(()=>{});
+            setTimeout(function() {
+                result.textContent = '';
+            }, 5000);
         }
     }
 

@@ -22,13 +22,24 @@
         </div>
     </form>
     {% if result is not None %}
-        <div style="margin-top:20px;font-size:1.3rem;">
+        <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
             {% if result %}
                 <span style="color:green;">{% trans "Correct!" %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                        window.location.href = window.location.pathname;
+                    }, 5000);
+                </script>
             {% else %}
                 <span style="color:red;">{% trans "Incorrect! Please try again." %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/incorrect.mp3' %}"></audio>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('feedback').style.display = 'none';
+                    }, 5000);
+                </script>
             {% endif %}
         </div>
     {% endif %}

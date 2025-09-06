@@ -25,13 +25,24 @@
             <button type="submit">Submit Answer</button>
         </form>
         {% if result is not None %}
-            <div class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
+            <div id="feedback" class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
                 {% if result %}
                     <h3>Correct! 🎉</h3>
                     <p>Great job spelling "{{ word }}"!</p>
+                    <script>
+                        setTimeout(function() {
+                            document.getElementById('feedback').style.display = 'none';
+                            window.location.href = window.location.pathname;
+                        }, 5000);
+                    </script>
                 {% else %}
                     <h3>Incorrect</h3>
                     <p>The correct spelling is <strong>{{ word }}</strong>.</p>
+                    <script>
+                        setTimeout(function() {
+                            document.getElementById('feedback').style.display = 'none';
+                        }, 5000);
+                    </script>
                 {% endif %}
             </div>
         {% endif %}
