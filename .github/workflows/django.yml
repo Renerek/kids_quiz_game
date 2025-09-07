@@ -2,9 +2,11 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'    # Triggers on push to any branch
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - '**'    # Triggers on PRs from any branch
 
 jobs:
   build:
