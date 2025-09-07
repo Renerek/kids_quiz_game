@@ -9,6 +9,13 @@
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
     <h1 class="big-heading">{% trans "Welcome to the Math Quiz!" %}</h1>
+    
+    {% if error %}
+    <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+    
     <div class="start-form">
         <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon">
         <form method="post" action="">

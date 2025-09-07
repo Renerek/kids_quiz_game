@@ -19,16 +19,23 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
-staticfiles/
+# staticfiles/ - commented out for deployment compatibility
 
 # Testing / reporting
 .pytest_cache/
 .coverage
 .coverage.*
 htmlcov/
+test-results.xml
+.tox/
 
 # MyPy / lint caches
 .mypy_cache/
+
+# CI/CD artifacts
+.cache/
+.gitlab-ci-cache/
+artifacts/
 
 # Editors and OS files
 .DS_Store
@@ -40,3 +47,16 @@ htmlcov/
 # Node
 node_modules/
 npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Security
+*.pem
+*.key
+secrets.yml
+
+# Audio generation script (keep local for development)
+make_intro.py

@@ -74,7 +74,20 @@ To run all automated tests for the project, use:
 python manage.py test
 ```
 
-This will discover and run all tests in the `quiz/tests.py` file and any other test modules in your Django apps.
+### Run Specific Test Categories
+
+For faster testing during development, run specific test categories:
+
+```bash
+# Core functionality only
+python manage.py test quiz.tests.QuizModelTests quiz.tests.SpellingGameTests quiz.tests.FruitGameTests quiz.tests.AnimalGameTests
+
+# All game features
+python manage.py test quiz.tests.FruitGameTests quiz.tests.AnimalGameTests quiz.tests.MixedGameTests quiz.tests.MathQuizTests
+
+# Use the automated test runner script (for CI/CD)
+python run_tests.py
+```
 
 ## Notes
 

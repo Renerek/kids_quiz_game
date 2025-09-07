@@ -53,6 +53,8 @@ def animals_game(request):
                 "result": result,
                 "summary": summary,
                 "animal_name": animal_name,
+                "user_answer": answer,
+                "correct_answer": correct_animal,
             })
         else:
             # Show same animal and hint again
@@ -74,6 +76,8 @@ def animals_game(request):
                 "result": result,
                 "summary": summary,
                 "animal_name": animal_name,
+                "user_answer": answer,
+                "correct_answer": correct_animal,
             })
     # GET: show new animal
     animal = random.choice(animals)
@@ -147,6 +151,8 @@ def fruits_game(request):
                 "result": result,
                 "summary": summary,
                 "fruit_name": fruit_name,
+                "user_answer": answer,
+                "correct_answer": correct_fruit,
             })
         else:
             # Show same fruit and hint again
@@ -168,6 +174,8 @@ def fruits_game(request):
                 "result": result,
                 "summary": summary,
                 "fruit_name": fruit_name,
+                "user_answer": answer,
+                "correct_answer": correct_fruit,
             })
     else:
         # GET: show new fruit
@@ -280,10 +288,21 @@ def home(request):
 
 def start_quiz(request):
     if request.method == "POST":
-        name = request.POST.get("name", "Player")
-        request.session["user_name"] = name
+        name = request.POST.get("name", "").strip()
         mode = request.POST.get("mode", "mixed")
         difficulty = request.POST.get("difficulty", "easy")
+        
+        # Validate form data and escape HTML to prevent XSS
+        if not name:
+            return render(request, "quiz/start.html", {
+                "error": "Please fill out all fields"
+            })
+        
+        # Escape HTML characters to prevent XSS attacks
+        import html
+        name = html.escape(name)
+        
+        request.session["user_name"] = name
         session = QuizSession.objects.create(
             user=request.user if request.user.is_authenticated else None
         )
@@ -296,7 +315,14 @@ def start_quiz(request):
 
 def question(request):
     session_id = request.session.get("quiz_session_id")
-    session = QuizSession.objects.get(id=session_id)
+    if not session_id:
+        return redirect("quiz:start")
+    
+    try:
+        session = QuizSession.objects.get(id=session_id)
+    except QuizSession.DoesNotExist:
+        return redirect("quiz:start")
+        
     mode = request.session.get("game_mode", "mixed")
     user_name = request.session.get("user_name", "Player")
     difficulty = request.session.get("difficulty", "easy")
@@ -422,7 +448,14 @@ def submit_answer(request):
         else:
             # Wrong answer - stay on question page with feedback
             session_id = request.session.get("quiz_session_id")
-            session = QuizSession.objects.get(id=session_id)
+            if not session_id:
+                return redirect("quiz:start")
+                
+            try:
+                session = QuizSession.objects.get(id=session_id)
+            except QuizSession.DoesNotExist:
+                return redirect("quiz:start")
+                
             mode = request.session.get("game_mode", "mixed")
             user_name = request.session.get("user_name", "Player")
             difficulty = request.session.get("difficulty", "easy")
