@@ -1,0 +1,178 @@
+/* Fun icons for the quiz */
+.quiz-icon {
+    width: 60px;
+    height: 60px;
+    margin: 10px auto;
+    display: block;
+}
+.game-modes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    justify-items: center;
+    align-items: center;
+    margin: 32px auto;
+    max-width: 520px;
+    place-items: center;
+}
+.mode-card {
+    background: linear-gradient(to bottom, #ffffff, #f0f8ff) !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: 230px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid #e1eeff !important;
+    margin: 0 auto !important;
+}
+.mode-card:hover {
+    transform: scale(1.07);
+    background: #b2ebf2;
+}
+.mode-title {
+    font-size: 1.1em;
+    color: #00796b;
+    margin-top: 8px;
+}
+
+/* Animation for elements */
+.animated-text {
+    animation: rainbow 8s linear infinite;
+}
+
+@keyframes rainbow {
+    0% { color: #ff0000; }
+    14% { color: #ff7f00; }
+    28% { color: #ffff00; }
+    42% { color: #00ff00; }
+    57% { color: #0000ff; }
+    71% { color: #4b0082; }
+    85% { color: #9400d3; }
+    100% { color: #ff0000; }
+}
+
+.rainbow-text {
+    background-image: linear-gradient(to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, 
+        #0000ff, #4b0082, #9400d3);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow-move 8s linear infinite;
+    background-size: 200% auto;
+}
+
+@keyframes rainbow-move {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* Fix for background image issues */
+body {
+    background-color: #f5f9ff !important; /* ABCmouse-like light blue background */
+    background-image: linear-gradient(to bottom, #f5f9ff 0%, #d0e4ff 100%) !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+}
+
+/* Additional container styling */
+.container {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    max-width: 850px !important;
+    padding: 30px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    margin: 40px auto !important;
+    text-align: center !important;
+    color: #333 !important;
+    text-shadow: none !important;
+    border: 2px solid #e1eeff !important;
+}
+
+/* ABCmouse-style game button */
+.game-button {
+    background-color: #ff5722 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 25px !important;
+    padding: 12px 30px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+    font-family: 'Comic Sans MS', cursive, sans-serif !important;
+}
+
+.game-button:hover {
+    background-color: #e64a19 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* ABCmouse-style mode cards */
+.mode-card {
+    background: linear-gradient(to bottom, #ffffff, #f0f8ff) !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    width: 230px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid #e1eeff !important;
+}
+
+.mode-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow: 0 15px 20px rgba(0, 0, 0, 0.15) !important;
+    border-color: #b6d9ff !important;
+}
+
+.mode-title {
+    font-size: 1.3em !important;
+    color: #0066cc !important;
+    margin-top: 12px !important;
+    font-weight: bold !important;
+}
+.side-image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.side-image img {
+    display: block;
+    max-width: 180px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+    .game-modes {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        gap: 18px;
+        margin: 18px auto;
+    }
+    .mode-card {
+        width: 90vw !important;
+        max-width: 320px !important;
+    }
+    .side-image {
+        display: none !important;
+    }
+}
+@media (max-width: 700px) {
+    .game-modes {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        gap: 18px;
+    }
+    .mode-card {
+        width: 90vw !important;
+        max-width: 320px !important;
+    }
+}

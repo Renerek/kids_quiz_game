@@ -195,9 +195,10 @@ class MixedGameTests(TestCase):
 	def test_mixed_game_post_correct_math(self):
 		"""Test correct math answer in mixed game"""
 		session = self.client.session
-		session['current_mixed_question'] = '5 + 3 = ?'
-		session['current_mixed_answer'] = 8
-		session['current_mixed_type'] = 'math'
+		session['mixed_type'] = 'math'
+		session['mixed_math_answer'] = 8
+		session['mixed_question_context'] = {'question': '5 + 3 = ?', 'game_type': 'math'}
+		session['mixed_correct'] = False  # Prevent picking a new question
 		session.save()
 		
 		response = self.client.post(reverse('quiz:mixed_game'), {'answer': '8'})
@@ -207,9 +208,10 @@ class MixedGameTests(TestCase):
 	def test_mixed_game_post_incorrect_math(self):
 		"""Test incorrect math answer in mixed game"""
 		session = self.client.session
-		session['current_mixed_question'] = '5 + 3 = ?'
-		session['current_mixed_answer'] = 8
-		session['current_mixed_type'] = 'math'
+		session['mixed_type'] = 'math'
+		session['mixed_math_answer'] = 8
+		session['mixed_question_context'] = {'question': '5 + 3 = ?', 'game_type': 'math'}
+		session['mixed_correct'] = False  # Prevent picking a new question
 		session.save()
 		
 		response = self.client.post(reverse('quiz:mixed_game'), {'answer': '10'})
@@ -255,14 +257,18 @@ class MathQuizTests(TestCase):
 
 	def test_math_question_generation_all_operations(self):
 		"""Test all math operations are generated correctly"""
-		operations = ['addition', 'subtraction', 'multiplication', 'division']
+		operations = ['add', 'sub', 'mul', 'div']
 		
 		for operation in operations:
 			with self.subTest(operation=operation):
+				# Create a quiz session first
+				quiz_session = QuizSession.objects.create()
+				
 				session = self.client.session
 				session['user_name'] = 'TestUser'
 				session['game_mode'] = operation
 				session['difficulty'] = 'easy'
+				session['quiz_session_id'] = quiz_session.id
 				session.save()
 				
 				response = self.client.get(reverse('quiz:question'))
@@ -270,13 +276,13 @@ class MathQuizTests(TestCase):
 				
 				# Check that appropriate operator is in the question
 				content = response.content.decode()
-				if operation == 'addition':
+				if operation == 'add':
 					self.assertIn('+', content)
-				elif operation == 'subtraction':
+				elif operation == 'sub':
 					self.assertIn('-', content)
-				elif operation == 'multiplication':
+				elif operation == 'mul':
 					self.assertIn('×', content)
-				elif operation == 'division':
+				elif operation == 'div':
 					self.assertIn('÷', content)
 
 	def test_math_difficulty_levels(self):
@@ -285,10 +291,14 @@ class MathQuizTests(TestCase):
 		
 		for difficulty in difficulties:
 			with self.subTest(difficulty=difficulty):
+				# Create a quiz session first
+				quiz_session = QuizSession.objects.create()
+				
 				session = self.client.session
 				session['user_name'] = 'TestUser'
-				session['game_mode'] = 'addition'
+				session['game_mode'] = 'add'
 				session['difficulty'] = difficulty
+				session['quiz_session_id'] = quiz_session.id
 				session.save()
 				
 				response = self.client.get(reverse('quiz:question'))
@@ -414,6 +424,8 @@ class SessionManagementTests(TestCase):
 class EdgeCaseTests(TestCase):
 	def setUp(self):
 		self.client = Client()
+		# Create a quiz session for tests that need it
+		self.quiz_session = QuizSession.objects.create()
 
 	def test_division_by_zero_prevention(self):
 		"""Test that division operations don't create division by zero"""
@@ -421,6 +433,7 @@ class EdgeCaseTests(TestCase):
 		session['user_name'] = 'TestUser'
 		session['game_mode'] = 'division'
 		session['difficulty'] = 'easy'
+		session['quiz_session_id'] = self.quiz_session.id
 		session.save()
 		
 		# Generate multiple division questions to ensure no division by zero
@@ -441,6 +454,7 @@ class EdgeCaseTests(TestCase):
 		session['user_name'] = 'TestUser'
 		session['game_mode'] = 'subtraction'
 		session['difficulty'] = 'easy'
+		session['quiz_session_id'] = self.quiz_session.id
 		session.save()
 		
 		# Generate multiple subtraction questions
@@ -640,6 +654,8 @@ class PerformanceTests(TestCase):
 	
 	def setUp(self):
 		self.client = Client()
+		# Create a quiz session for tests that need it
+		self.quiz_session = QuizSession.objects.create()
 
 	def test_multiple_question_generation(self):
 		"""Test generating multiple questions doesn't cause issues"""
@@ -647,6 +663,7 @@ class PerformanceTests(TestCase):
 		session['user_name'] = 'TestUser'
 		session['game_mode'] = 'addition'
 		session['difficulty'] = 'medium'
+		session['quiz_session_id'] = self.quiz_session.id
 		session.save()
 		
 		# Generate 20 questions rapidly
