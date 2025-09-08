@@ -3,6 +3,7 @@
 
 # Define stages for the pipeline
 stages:
+  - debug
   - test
   - quality
   - deploy
@@ -24,10 +25,36 @@ cache:
     - .cache/pip/
     - .venv/
 
+# Debug Job - Environment debugging (manual trigger)
+debug_environment:
+  stage: debug
+  image: python:3.12-slim
+  script:
+    - echo "=== COMPREHENSIVE ENVIRONMENT DEBUG ==="
+    - python3 debug_environment.py
+    - echo "=== CHECKING SYSTEM PACKAGES ==="
+    - apt list --installed | grep -E "(python|pip)" || echo "No apt packages found"
+    - echo "=== CHECKING DISK SPACE ==="
+    - df -h
+    - echo "=== CHECKING MEMORY ==="
+    - free -h
+  when: manual
+  allow_failure: true
+  artifacts:
+    reports:
+      junit: debug-output.txt
+    expire_in: 1 day
+  only:
+    - develop
+    - main
+    - merge_requests
+
 # Before script - runs before each job
 before_script:
   - echo "Python version being used:"
   - python3 --version
+  - echo "Running environment debug script..."
+  - python3 debug_environment.py
   - echo "Installing dependencies..."
   - python3 -m pip install --upgrade pip
   - python3 -m venv .venv
