@@ -55,6 +55,10 @@
 {% endblock %}
 {% block scripts %}
 <audio id="spellIntro" src="{% static 'quiz/audio/spell_word_intro.mp3' %}" preload="auto"></audio>
+<audio id="spellingGameIntro" src="{% static 'quiz/audio/spelling_intro.mp3' %}" preload="auto"></audio>
+<audio id="encouragementKeepGoing" src="{% static 'quiz/audio/keep_going.mp3' %}" preload="auto"></audio>
+<audio id="encouragementExcellent" src="{% static 'quiz/audio/excellent_work.mp3' %}" preload="auto"></audio>
+<audio id="encouragementTryAgain" src="{% static 'quiz/audio/try_again.mp3' %}" preload="auto"></audio>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 <script>
@@ -121,7 +125,15 @@
     }
 
     function speakWordOnLoad() {
-        playSpellIntroAndWord(document.getElementById('word').textContent);
+        // Play overall game intro first time only per session using localStorage flag
+        const gameIntro = document.getElementById('spellingGameIntro');
+        if (!localStorage.getItem('playedSpellingIntro')) {
+            gameIntro.play().catch(()=>{});
+            localStorage.setItem('playedSpellingIntro', '1');
+            gameIntro.onended = function(){ playSpellIntroAndWord(document.getElementById('word').textContent); };
+        } else {
+            playSpellIntroAndWord(document.getElementById('word').textContent);
+        }
     }
     window.addEventListener('load', function() {
         setTimeout(function() {
@@ -138,10 +150,15 @@
                     playSpellIntroAndWord(nextWord);
                 };
                 document.getElementById('correctSound').play().catch(()=>{});
+                // Light encouragement every correct cycle (alternating)
+                if (Math.random() < 0.5) {
+                    setTimeout(()=>document.getElementById('encouragementKeepGoing').play().catch(()=>{}), 2200);
+                }
             }
         } else if (result === "False" || result === "false" || result === "0") {
             stopAllAudio();
             document.getElementById('incorrectSound').play().catch(()=>{});
+            setTimeout(()=>document.getElementById('encouragementTryAgain').play().catch(()=>{}), 1500);
         }
     });
     document.getElementById('speakWord').addEventListener('click', speakWord);

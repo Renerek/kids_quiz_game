@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container" style="text-align:center;">
     <h1>{% trans "Fruits Game" %}</h1>
+    <audio id="fruitsIntro" src="{% static 'quiz/audio/fruits_intro.mp3' %}" preload="auto"></audio>
     {% if summary %}
     <div style="margin: 0 auto 18px auto; max-width: 600px; font-size: 1.15rem; color: #333; background: #f8f8f8; padding: 14px 20px; border-radius: 10px;">
         {{ summary }}
@@ -44,4 +45,15 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const intro = document.getElementById('fruitsIntro');
+    if (intro && !sessionStorage.getItem('playedFruitsIntro')) {
+        intro.play().catch(()=>{});
+        sessionStorage.setItem('playedFruitsIntro','1');
+    }
+});
+</script>
 {% endblock %}

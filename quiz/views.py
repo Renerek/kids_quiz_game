@@ -291,17 +291,15 @@ def start_quiz(request):
         name = request.POST.get("name", "").strip()
         mode = request.POST.get("mode", "mixed")
         difficulty = request.POST.get("difficulty", "easy")
-        
+
         # Validate form data and escape HTML to prevent XSS
-        if not name:
-            return render(request, "quiz/start.html", {
-                "error": "Please fill out all fields"
-            })
-        
-        # Escape HTML characters to prevent XSS attacks
-        import html
+        if not name or not mode or not difficulty:
+            return render(request, "quiz/start.html", {"error": "Please fill out all fields"})
+
+        import html  # Escape HTML characters to prevent XSS attacks
         name = html.escape(name)
-        
+
+        # Create a new quiz session only on POST (starting a new game)
         request.session["user_name"] = name
         session = QuizSession.objects.create(
             user=request.user if request.user.is_authenticated else None
@@ -309,7 +307,15 @@ def start_quiz(request):
         request.session["quiz_session_id"] = session.id
         request.session["game_mode"] = mode
         request.session["difficulty"] = difficulty
+
+        # Initialize audio / gameplay helper flags once per new game start
+        request.session["played_math_intro"] = False
+        request.session["played_mixed_intro"] = False
+        request.session["played_difficulty_audio"] = False
+        request.session["correct_streak"] = 0
         return redirect("quiz:question")
+
+    # GET: show the start form (do NOT reset session flags here to avoid wiping an in-progress game)
     return render(request, "quiz/start.html")
 
 
@@ -412,6 +418,27 @@ def question(request):
             qtext = f"{a} ÷ {b} = ?"
     request.session["current_answer"] = answer
     request.session["current_question"] = qtext
+
+    # Determine which intro/difficulty audios to play (only once per session)
+    intro_audios = []
+    if mode == "mixed":
+        if not request.session.get("played_mixed_intro", False):
+            intro_audios.append("mixed_game_intro.mp3")
+            request.session["played_mixed_intro"] = True
+    else:
+        # Any specific math mode (add/sub/mul/div)
+        if not request.session.get("played_math_intro", False):
+            intro_audios.append("math_intro.mp3")
+            request.session["played_math_intro"] = True
+    if not request.session.get("played_difficulty_audio", False):
+        diff_audio_map = {
+            "easy": "easy_mode.mp3",
+            "medium": "medium_mode.mp3",
+            "hard": "hard_mode.mp3",
+        }
+        intro_audios.append(diff_audio_map.get(difficulty, "easy_mode.mp3"))
+        request.session["played_difficulty_audio"] = True
+
     return render(
         request,
         "quiz/question.html",
@@ -420,6 +447,7 @@ def question(request):
             "user_name": user_name,
             "difficulty": difficulty,
             "time_limit": time_limit,
+            "intro_audios": intro_audios,
         },
     )
 
@@ -429,7 +457,9 @@ def submit_answer(request):
         timeout = request.POST.get("timeout", "false") == "true"
         correct_answer = request.session.get("current_answer")
         if timeout:
-            return render(request, "quiz/result.html", {"result": "timeout", "correct_answer": correct_answer})
+            # Reset streak and provide timeout voice audio
+            request.session["correct_streak"] = 0
+            return render(request, "quiz/result.html", {"result": "timeout", "correct_answer": correct_answer, "feedback_audio": "timeout_voice.mp3"})
 
         answer_str = request.POST.get("answer", None)
         try:
@@ -439,11 +469,26 @@ def submit_answer(request):
             result = False
         
         if result:
+            # Increment streak and decide on encouragement
+            streak = request.session.get("correct_streak", 0) + 1
+            request.session["correct_streak"] = streak
+            encouragement = None
+            if streak == 3:
+                encouragement = "keep_going.mp3"
+            elif streak == 5:
+                encouragement = "excellent_work.mp3"
+            elif streak == 7:
+                encouragement = "almost_done.mp3"
             # Correct answer - go to result page
             return render(
                 request,
                 "quiz/result.html",
-                {"result": result, "correct_answer": correct_answer},
+                {
+                    "result": result,
+                    "correct_answer": correct_answer,
+                    "feedback_audio": "correct_voice.mp3",
+                    "encouragement_audio": encouragement,
+                },
             )
         else:
             # Wrong answer - stay on question page with feedback
@@ -470,7 +515,8 @@ def submit_answer(request):
             
             # Get current question from session
             current_question = request.session.get("current_question", "")
-            
+            # Reset streak
+            request.session["correct_streak"] = 0
             return render(
                 request,
                 "quiz/question.html",
@@ -481,6 +527,7 @@ def submit_answer(request):
                     "time_limit": time_limit,
                     "wrong_answer": True,
                     "user_answer": user_answer if 'user_answer' in locals() else answer_str,
+                    "encouragement_audio": "try_again.mp3",
                 },
             )
     return redirect("quiz:question")

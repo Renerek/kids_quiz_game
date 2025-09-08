@@ -905,3 +905,38 @@ class ErrorHandlingTests(TestCase):
 		response = self.client.get(reverse('quiz:question'))
 		# Should handle gracefully
 		self.assertIn(response.status_code, [200, 302, 404])
+
+class AudioIntroTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def _init_session(self, mode='add', difficulty='easy'):
+        from .models import QuizSession
+        qs = QuizSession.objects.create()
+        s = self.client.session
+        s['quiz_session_id'] = qs.id
+        s['game_mode'] = mode
+        s['difficulty'] = difficulty
+        s['user_name'] = 'Tester'
+        s.save()
+
+    def test_intro_audios_only_once(self):
+        self._init_session(mode='add', difficulty='easy')
+        # First request should include math + difficulty intro
+        r1 = self.client.get(reverse('quiz:question'))
+        self.assertEqual(r1.status_code, 200)
+        self.assertIn('intro_audios', r1.context)
+        self.assertGreaterEqual(len(r1.context['intro_audios']), 1)
+        # Second request should have empty or no additional intros
+        r2 = self.client.get(reverse('quiz:question'))
+        self.assertEqual(r2.status_code, 200)
+        self.assertIn('intro_audios', r2.context)
+        self.assertEqual(len(r2.context['intro_audios']), 0)
+
+    def test_mixed_mode_uses_mixed_intro(self):
+        self._init_session(mode='mixed', difficulty='medium')
+        r1 = self.client.get(reverse('quiz:question'))
+        self.assertEqual(r1.status_code, 200)
+        auds = r1.context.get('intro_audios', [])
+        self.assertTrue(any('mixed_game_intro' in a for a in auds))
+        self.assertTrue(any('medium_mode' in a for a in auds))

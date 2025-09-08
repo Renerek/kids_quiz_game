@@ -18,6 +18,9 @@
     
     <div class="start-form">
         <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon">
+        <audio id="easyDiff" src="{% static 'quiz/audio/easy_mode.mp3' %}" preload="auto"></audio>
+        <audio id="mediumDiff" src="{% static 'quiz/audio/medium_mode.mp3' %}" preload="auto"></audio>
+        <audio id="hardDiff" src="{% static 'quiz/audio/hard_mode.mp3' %}" preload="auto"></audio>
         <form method="post" action="">
             {% csrf_token %}
             <label for="name">{% trans "Enter your name:" %}</label>
@@ -54,4 +57,19 @@
         <img src="{% static 'quiz/images/boy-girl-are-reading-books.jpg' %}" alt="Boy and Girl Reading Books" style="max-width: 500px; width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const diffSel=document.getElementById('difficulty');
+    diffSel.addEventListener('change', function(){
+        const v=this.value;
+        const map={easy:'easyDiff',medium:'mediumDiff',hard:'hardDiff'};
+        const id=map[v];
+        if(id){
+            const el=document.getElementById(id); el.currentTime=0; el.play().catch(()=>{});
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -40,8 +40,16 @@
 {% block scripts %}
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+{% if intro_audios %}
+    {% for a in intro_audios %}
+    <audio class="intro-audio" data-filename="{{ a }}" src="{% static 'quiz/audio/' %}{{ a }}" preload="auto"></audio>
+    {% endfor %}
+{% endif %}
+{% if encouragement_audio %}
+<audio id="encouragementAudio" src="{% static 'quiz/audio/' %}{{ encouragement_audio }}" preload="auto"></audio>
+{% endif %}
 <script>
-    let timeLeft = {{ time_limit }};
+    let timeLeft = parseInt("{{ time_limit }}");
     let timer = setInterval(function() {
         timeLeft--;
         document.getElementById('timer').textContent = timeLeft;
@@ -70,6 +78,27 @@
         setTimeout(function() {
             wrongFeedback.style.display = 'none';
         }, 5000);
+    }
+
+    // Play one-time intro audios sequentially
+    const introEls = Array.from(document.querySelectorAll('.intro-audio'));
+    function playSequential(list, idx=0) {
+        if (idx >= list.length) return;
+        const el = list[idx];
+        el.currentTime = 0;
+        el.play().catch(()=>{});
+        el.onended = function(){ playSequential(list, idx+1); };
+    }
+    if (introEls.length) {
+        // Delay slightly to avoid overlap with immediate feedback
+        setTimeout(()=>playSequential(introEls), 600);
+    }
+    // Encouragement audio (e.g., after wrong answer or streak milestone)
+    const encouragement = document.getElementById('encouragementAudio');
+    if (encouragement) {
+        setTimeout(()=>{
+            encouragement.play().catch(()=>{});
+        }, 800);
     }
 </script>
 {% endblock %}

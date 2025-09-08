@@ -15,6 +15,12 @@
 </div>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+{% if feedback_audio %}
+<audio id="feedbackVoice" src="{% static 'quiz/audio/' %}{{ feedback_audio }}" preload="auto"></audio>
+{% endif %}
+{% if encouragement_audio %}
+<audio id="encouragementVoice" src="{% static 'quiz/audio/' %}{{ encouragement_audio }}" preload="auto"></audio>
+{% endif %}
 <script>
     window.addEventListener('DOMContentLoaded', function() {
         const result = "{{ result }}";
@@ -24,6 +30,15 @@
             document.getElementById('correctSound').play().catch(()=>{});
         } else if (result === 'False' || result === 'false' || result === '0') {
             document.getElementById('incorrectSound').play().catch(()=>{});
+        }
+        // Play voice feedback after fx
+        const voice = document.getElementById('feedbackVoice');
+        if (voice) {
+            setTimeout(()=>voice.play().catch(()=>{}), 700);
+        }
+        const encouragement = document.getElementById('encouragementVoice');
+        if (encouragement) {
+            setTimeout(()=>encouragement.play().catch(()=>{}), 2500);
         }
     });
 </script>

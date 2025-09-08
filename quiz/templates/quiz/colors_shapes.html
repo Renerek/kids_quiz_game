@@ -4,6 +4,7 @@
 {% block title %}Colors & Shapes Learning Game{% endblock %}
 {% block content %}
 <h1 class="big-heading">Colors & Shapes Learning Game</h1>
+<audio id="colorsShapesIntro" src="{% static 'quiz/audio/colors_shapes_intro.mp3' %}" preload="auto"></audio>
 <div class="container">
     <h1>Learn Colors and Shapes!</h1>
     <!-- Back to Home button removed -->
@@ -133,6 +134,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Play intro once per session
+        const intro = document.getElementById('colorsShapesIntro');
+        if (intro && !sessionStorage.getItem('playedColorsShapesIntro')) {
+            setTimeout(()=>{ intro.play().catch(()=>{}); }, 600);
+            sessionStorage.setItem('playedColorsShapesIntro','1');
+        }
         document.querySelectorAll('.color-card').forEach(function(card) {
             const label = card.getAttribute('data-audio');
             ['click','touchstart'].forEach(evt => {

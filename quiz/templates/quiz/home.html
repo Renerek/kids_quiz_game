@@ -13,6 +13,7 @@
 		<img src="{% static 'quiz/images/mouse_3D_image_of.png' %}" alt="Mouse 3D" style="max-width:220px;width:100%;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);" />
 	</div>
 	<h2 style="text-align:center;">Choose Your Game Mode</h2>
+	<audio id="mixedGameIntro" src="{% static 'quiz/audio/mixed_game_intro.mp3' %}" preload="auto"></audio>
 	<div class="game-modes">
 		<div class="mode-card" onclick="window.location.href='/quiz/start/?mode=mixed'">
 			<img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" alt="Maths Quiz" class="quiz-icon" />
@@ -49,7 +50,7 @@
 			<div class="mode-title">Fruits Game</div>
 			<p class="mode-description">Guess the fruit from the picture and learn their names!</p>
 		</div>
-		<div class="mode-card" onclick="window.location.href='/quiz/mixed-game/'">
+		<div class="mode-card" onclick="playMixedAndGo()">
 			<img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="Mixed Game" class="quiz-icon" />
 			<div class="mode-title">Mixed Game</div>
 			<p class="mode-description">Get a random question from all games: math, animals, fruits, spelling, time, and more!</p>
@@ -64,6 +65,17 @@
 {% endblock %}
 {% block scripts %}
 	<script>
+		function playMixedAndGo(){
+			const a=document.getElementById('mixedGameIntro');
+			if(!a){window.location.href='/quiz/mixed-game/';return;}
+			if(!sessionStorage.getItem('playedMixedGameIntro')){
+				a.play().catch(()=>{window.location.href='/quiz/mixed-game/';});
+				a.onended=function(){window.location.href='/quiz/mixed-game/';};
+				sessionStorage.setItem('playedMixedGameIntro','1');
+			}else{
+				window.location.href='/quiz/mixed-game/';
+			}
+		}
 		// Play welcome audio when the page loads
 		window.addEventListener('DOMContentLoaded', function() {
 			// Create a user interaction to trigger audio

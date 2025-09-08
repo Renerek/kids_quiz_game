@@ -6,6 +6,8 @@
     <h1 class="big-heading">What Time Is It?</h1>
     <p>Welcome, {{ user_name }}! Look at the clock and select the correct time.</p>
     <audio id="introAudio" src="{% static 'quiz/audio/time_intro.mp3' %}" preload="auto"></audio>
+    <audio id="correctVoice" src="{% static 'quiz/audio/correct_voice.mp3' %}" preload="auto"></audio>
+    <audio id="tryAgainVoice" src="{% static 'quiz/audio/try_again.mp3' %}" preload="auto"></audio>
     <div class="clock-container" style="display: inline-block;">
         <div class="digital-clock">
             <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
@@ -117,15 +119,18 @@
             setTimeout(function() {
                 document.getElementById('feedback-area').style.display = 'none';
             }, 5000);
+            setTimeout(()=>{document.getElementById('correctVoice').play().catch(()=>{});}, 1200);
         } else if (result === 'incorrect') {
             const incorrectSound = document.getElementById('incorrectSound');
             incorrectSound.play().catch(()=>{});
+            setTimeout(()=>{document.getElementById('tryAgainVoice').play().catch(()=>{});}, 1200);
         } else if (result === 'show_answer') {
             const incorrectSound = document.getElementById('incorrectSound');
             incorrectSound.play().catch(()=>{});
             setTimeout(function() {
                 document.getElementById('feedback-area').style.display = 'none';
             }, 5000);
+            setTimeout(()=>{document.getElementById('tryAgainVoice').play().catch(()=>{});}, 1200);
         }
         // Play intro audio when page loads
         if (!result) {
