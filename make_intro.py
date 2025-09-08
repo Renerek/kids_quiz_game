@@ -52,6 +52,30 @@ AUDIO_FILES = {
     'easy_mode.mp3': "Easy mode! Perfect for learning!",
     'medium_mode.mp3': "Medium mode! You're getting better!",
     'hard_mode.mp3': "Hard mode! You're a math superstar!",
+
+    # Colors (for colors & shapes game)
+    'color_red.mp3': "Red",
+    'color_blue.mp3': "Blue",
+    'color_green.mp3': "Green",
+    'color_yellow.mp3': "Yellow",
+    'color_purple.mp3': "Purple",
+    'color_orange.mp3': "Orange",
+    'color_pink.mp3': "Pink",
+    'color_brown.mp3': "Brown",
+    'color_gray.mp3': "Gray",
+    'color_cyan.mp3': "Cyan",
+    'color_gold.mp3': "Gold",
+    'color_silver.mp3': "Silver",
+    'color_white.mp3': "White",
+    'color_black.mp3': "Black",
+
+    # Shapes
+    'shape_circle.mp3': "Circle",
+    'shape_square.mp3': "Square",
+    'shape_triangle.mp3': "Triangle",
+    'shape_rectangle.mp3': "Rectangle",
+    'shape_oval.mp3': "Oval",
+    'shape_star.mp3': "Star",
 }
 
 def generate_audio_file(text, filename, pitch=DEFAULT_PITCH, speed=DEFAULT_SPEED, output_dir="quiz/static/quiz/audio"):
@@ -184,7 +208,7 @@ def list_audio_files():
     print("     Text: Oops! Try again. You can do it!")
     
     print("=" * 60)
-    print(f"Total: {len(AUDIO_FILES) + 2} audio files")
+    print(f"Total: {len(AUDIO_FILES) + 2} audio files (including colors & shapes and feedback)")
 
 def main():
     parser = argparse.ArgumentParser(

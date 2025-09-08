@@ -123,30 +123,32 @@
     let targetColor = '';
     let targetShape = '';
 
-    function speakText(text) {
-        if ('speechSynthesis' in window) {
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.rate = 0.9;
-            utter.pitch = 1.1;
-            window.speechSynthesis.speak(utter);
+    function playAudioFor(label, type) {
+        const id = `${type}_${label.toLowerCase()}`; // e.g., color_red or shape_circle
+        const el = document.getElementById(id);
+        if (el) {
+            el.currentTime = 0;
+            el.play().catch(()=>{});
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.color-card').forEach(function(card) {
-            card.addEventListener('click', function() {
-                speakText(card.getAttribute('data-audio'));
-            });
-            card.addEventListener('touchstart', function() {
-                speakText(card.getAttribute('data-audio'));
+            const label = card.getAttribute('data-audio');
+            ['click','touchstart'].forEach(evt => {
+                card.addEventListener(evt, function(e) {
+                    e.preventDefault();
+                    playAudioFor(label, 'color');
+                });
             });
         });
         document.querySelectorAll('.shape-card').forEach(function(card) {
-            card.addEventListener('click', function() {
-                speakText(card.getAttribute('data-audio'));
-            });
-            card.addEventListener('touchstart', function() {
-                speakText(card.getAttribute('data-audio'));
+            const label = card.getAttribute('data-audio');
+            ['click','touchstart'].forEach(evt => {
+                card.addEventListener(evt, function(e) {
+                    e.preventDefault();
+                    playAudioFor(label, 'shape');
+                });
             });
         });
     });
@@ -228,4 +230,28 @@
 </script>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+<!-- Preloaded audio for colors -->
+<div style="display:none;">
+    <audio id="color_red" src="{% static 'quiz/audio/color_red.mp3' %}" preload="auto"></audio>
+    <audio id="color_blue" src="{% static 'quiz/audio/color_blue.mp3' %}" preload="auto"></audio>
+    <audio id="color_green" src="{% static 'quiz/audio/color_green.mp3' %}" preload="auto"></audio>
+    <audio id="color_yellow" src="{% static 'quiz/audio/color_yellow.mp3' %}" preload="auto"></audio>
+    <audio id="color_purple" src="{% static 'quiz/audio/color_purple.mp3' %}" preload="auto"></audio>
+    <audio id="color_orange" src="{% static 'quiz/audio/color_orange.mp3' %}" preload="auto"></audio>
+    <audio id="color_pink" src="{% static 'quiz/audio/color_pink.mp3' %}" preload="auto"></audio>
+    <audio id="color_brown" src="{% static 'quiz/audio/color_brown.mp3' %}" preload="auto"></audio>
+    <audio id="color_gray" src="{% static 'quiz/audio/color_gray.mp3' %}" preload="auto"></audio>
+    <audio id="color_cyan" src="{% static 'quiz/audio/color_cyan.mp3' %}" preload="auto"></audio>
+    <audio id="color_gold" src="{% static 'quiz/audio/color_gold.mp3' %}" preload="auto"></audio>
+    <audio id="color_silver" src="{% static 'quiz/audio/color_silver.mp3' %}" preload="auto"></audio>
+    <audio id="color_white" src="{% static 'quiz/audio/color_white.mp3' %}" preload="auto"></audio>
+    <audio id="color_black" src="{% static 'quiz/audio/color_black.mp3' %}" preload="auto"></audio>
+    <!-- Shapes -->
+    <audio id="shape_circle" src="{% static 'quiz/audio/shape_circle.mp3' %}" preload="auto"></audio>
+    <audio id="shape_square" src="{% static 'quiz/audio/shape_square.mp3' %}" preload="auto"></audio>
+    <audio id="shape_triangle" src="{% static 'quiz/audio/shape_triangle.mp3' %}" preload="auto"></audio>
+    <audio id="shape_rectangle" src="{% static 'quiz/audio/shape_rectangle.mp3' %}" preload="auto"></audio>
+    <audio id="shape_oval" src="{% static 'quiz/audio/shape_oval.mp3' %}" preload="auto"></audio>
+    <audio id="shape_star" src="{% static 'quiz/audio/shape_star.mp3' %}" preload="auto"></audio>
+</div>
 {% endblock %}
