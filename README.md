@@ -89,6 +89,50 @@ python manage.py test quiz.tests.FruitGameTests quiz.tests.AnimalGameTests quiz.
 python run_tests.py
 ```
 
+## Audio Generation (Optional)
+
+The project includes an advanced audio generation system for creating kid-friendly voice audio files. This is optional for development but creates consistent, high-quality audio for the game.
+
+### Setup Audio Generation
+
+```bash
+# Install audio generation dependencies (optional)
+pip install -r audio_requirements.txt
+
+# On Ubuntu/Debian, you may also need system dependencies:
+sudo apt-get install ffmpeg
+
+# On macOS with Homebrew:
+brew install ffmpeg
+```
+
+### Generate Audio Files
+
+```bash
+# Generate all audio files with default kid-friendly settings
+python make_intro.py
+
+# Custom pitch and speed
+python make_intro.py --pitch 1.4 --speed 0.8
+
+# Generate single custom audio file
+python make_intro.py --text "Hello, welcome to our game!"
+
+# List all audio files that will be generated
+python make_intro.py --list
+
+# Legacy format (still supported)
+python make_intro.py 1.3 0.9 "Custom text"
+```
+
+The audio generation system creates:
+- Welcome messages and game introductions
+- Feedback sounds (correct/incorrect responses)
+- Encouragement messages
+- Game-specific audio for each activity
+
+All audio uses consistent kid-friendly pitch (higher) and speed (slightly slower for clarity).
+
 ## Notes
 
 - The repository may include a pre-built `venv/` directory. If present you can activate it with `source venv/bin/activate`.
