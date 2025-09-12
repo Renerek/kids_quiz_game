@@ -31,3 +31,15 @@ class UserProgress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     highest_level = models.IntegerField(default=1)
     last_played = models.DateTimeField(auto_now=True)
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    name = models.CharField(max_length=100)
+    age = models.PositiveIntegerField(null=True, blank=True)
+    city = models.CharField(max_length=120, blank=True)
+    country = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"

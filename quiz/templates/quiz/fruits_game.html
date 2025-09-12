@@ -25,7 +25,7 @@
     {% if result is not None %}
         <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
             {% if result %}
-                <span style="color:green;">{% blocktrans with answer=correct_answer %}Great Job! {{ answer }} is the correct answer!{% endblocktrans %}</span>
+                <span class="feedback-correct"><span class="icon-check">✔️</span> {% blocktrans with answer=correct_answer %}Great Job! <span style='color:#1ca21c;font-weight:bold;'>{{ answer }}</span> is the correct answer!{% endblocktrans %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
                 <script>
                     setTimeout(function() {
@@ -34,7 +34,7 @@
                     }, 5000);
                 </script>
             {% else %}
-                <span style="color:red;">{% blocktrans with answer=user_answer %}{{ answer }} is incorrect, please try again!{% endblocktrans %}</span>
+                <span class="feedback-incorrect"><span class="icon-x">❌</span> {% blocktrans with answer=user_answer %}<span style='color:#e53935;font-weight:bold;'>{{ answer }}</span> is incorrect, please try again!{% endblocktrans %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/incorrect.mp3' %}"></audio>
                 <script>
                     setTimeout(function() {

@@ -25,9 +25,9 @@ DEFAULT_SPEED = 0.9  # Slightly slower for clarity
 # Audio content configuration
 AUDIO_FILES = {
     # Welcome and intro audio
-    'welcome.mp3': "Welcome to the Math Quiz Game! Let's have fun learning together!",
+    'welcome.mp3': "Welcome to this Interactive Learning Game! Let's have fun learning together! Please select a game to play. ",
     'time_intro.mp3': "What time is it? Look at the clock and tell me the time!",
-    'spell_word_intro.mp3': "Please spell the word you see on the screen!",
+    'spell_word_intro.mp3': "Please spell the word!",
     
     # Feedback sounds (these use text-to-speech, not sound effects)
     'correct_voice.mp3': "Great job! That's correct! Keep going!",
@@ -216,51 +216,50 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python make_intro.py                    # Generate all files with default settings
-  python make_intro.py --pitch 1.4       # Higher pitch (more kid-like)
-  python make_intro.py --speed 0.8       # Slower speed (clearer)
-  python make_intro.py --list            # Show all files without generating
-  python make_intro.py --text "Hello!"   # Generate single file
+  python make_intro.py                              # Generate all files (defaults)
+  python make_intro.py --pitch 1.4 --speed 0.85     # Custom pitch & speed
+  python make_intro.py --text "Hello"               # Single custom file (custom_audio.mp3)
+  python make_intro.py --list                       # List planned files
+  (Legacy) python make_intro.py 1.3 0.9 "Custom"    # Generates spell_word_intro.mp3
         """
     )
-    
+
     parser.add_argument('--pitch', type=float, default=DEFAULT_PITCH,
-                       help=f'Voice pitch multiplier (default: {DEFAULT_PITCH})')
+                        help=f'Voice pitch multiplier (default: {DEFAULT_PITCH})')
     parser.add_argument('--speed', type=float, default=DEFAULT_SPEED,
-                       help=f'Speed multiplier (default: {DEFAULT_SPEED})')
+                        help=f'Speed multiplier (default: {DEFAULT_SPEED})')
     parser.add_argument('--text', type=str,
-                       help='Generate single audio file with custom text')
+                        help='Generate single audio file (custom_audio.mp3) with provided text')
     parser.add_argument('--list', action='store_true',
-                       help='List all audio files without generating')
-    
-    args = parser.parse_args()
-    
+                        help='List all audio files without generating')
+
+    # Use parse_known_args so we can gracefully handle legacy positional args
+    args, unknown = parser.parse_known_args()
+
+    # Legacy positional format: pitch speed text
+    legacy_tokens = [u for u in unknown if not u.startswith('--')]
+    if legacy_tokens:
+        try:
+            pitch = float(legacy_tokens[0]) if len(legacy_tokens) > 0 else DEFAULT_PITCH
+            speed = float(legacy_tokens[1]) if len(legacy_tokens) > 1 else DEFAULT_SPEED
+            text = legacy_tokens[2] if len(legacy_tokens) > 2 else "Please spell the word: "
+            print("🔄 Legacy positional arguments detected. Consider using --pitch/--speed/--text.\n")
+            generate_audio_file(text, "spell_word_intro.mp3", pitch, speed)
+            return
+        except ValueError:
+            print("❌ Invalid legacy arguments. Use --help for usage information.")
+            return
+
     if args.list:
         list_audio_files()
         return
-    
+
     if args.text:
-        # Generate single file with custom text
-        filename = "custom_audio.mp3"
-        generate_audio_file(args.text, filename, args.pitch, args.speed)
+        generate_audio_file(args.text, "custom_audio.mp3", args.pitch, args.speed)
         return
-    
-    # Generate all audio files
+
     generate_all_audio(args.pitch, args.speed)
 
 if __name__ == "__main__":
     main()
-
-# Legacy support for old command-line format
-# python make_intro.py 1.3 0.9 "Custom text"
-if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
-    try:
-        pitch = float(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PITCH
-        speed = float(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_SPEED
-        text = sys.argv[3] if len(sys.argv) > 3 else "Please spell the word: "
-        
-        print("🔄 Legacy mode detected. Use --help for new options.")
-        generate_audio_file(text, "spell_word_intro.mp3", pitch, speed)
-    except ValueError:
-        print("❌ Invalid arguments. Use --help for usage information.")
 

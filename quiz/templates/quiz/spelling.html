@@ -17,9 +17,9 @@
         <button id="speakWord">🔊 Speak Word</button>
         <form method="post">
             {% csrf_token %}
-            <div class="word-container">
-                <h3 id="word" class="word-display" style="display: none;">{{ word }}</h3>
-                <button type="button" id="toggleWord">👁️ Show/Hide Word</button>
+            <div class="word-container" style="position:relative;display:flex;align-items:center;gap:12px;justify-content:center;">
+                <h3 id="word" class="word-display" style="display: none; margin:0;">{{ word }}</h3>
+                <span id="toggleWord" role="button" aria-label="Show word" title="Show word" style="cursor:pointer;font-size:1.9rem;line-height:1;user-select:none;">👁️</span>
             </div>
             <input type="text" name="spelling" required autofocus />
             <button type="submit">Submit Answer</button>
@@ -27,7 +27,7 @@
         {% if result is not None %}
             <div id="feedback" class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
                 {% if result %}
-                    <h3>Correct! 🎉</h3>
+                    <h3 class="feedback-correct"><span class="icon-check">✔️</span> Correct!</h3>
                     <p>Great job spelling "{{ word }}"!</p>
                     <script>
                         setTimeout(function() {
@@ -36,7 +36,7 @@
                         }, 5000);
                     </script>
                 {% else %}
-                    <h3>Incorrect</h3>
+                    <h3 class="feedback-incorrect"><span class="icon-x">❌</span> Incorrect</h3>
                     <p>The correct spelling is <strong>{{ word }}</strong>.</p>
                     <script>
                         setTimeout(function() {
@@ -163,14 +163,19 @@
     });
     document.getElementById('speakWord').addEventListener('click', speakWord);
     // Toggle word visibility
-    document.getElementById('toggleWord').addEventListener('click', function() {
+    document.getElementById('toggleWord').addEventListener('click', function(){
         const wordElement = document.getElementById('word');
-        if (wordElement.style.display === 'none') {
-            wordElement.style.display = 'block';
-            this.textContent = '🙈 Hide Word';
+        const showing = wordElement.style.display !== 'none';
+        if(showing){
+            wordElement.style.display='none';
+            this.textContent='�️';
+            this.setAttribute('aria-label','Show word');
+            this.title='Show word';
         } else {
-            wordElement.style.display = 'none';
-            this.textContent = '👁️ Show Word';
+            wordElement.style.display='block';
+            this.textContent='�';
+            this.setAttribute('aria-label','Hide word');
+            this.title='Hide word';
         }
     });
 </script>

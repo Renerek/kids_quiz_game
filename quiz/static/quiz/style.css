@@ -1,3 +1,30 @@
+/* Feedback correct/incorrect styles for all quizzes */
+.feedback-correct {
+    color: #1ca21c;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2em;
+}
+.feedback-incorrect {
+    color: #e53935;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2em;
+}
+.icon-check {
+    font-size: 1.3em;
+    color: #1ca21c;
+    margin-right: 4px;
+}
+.icon-x {
+    font-size: 1.3em;
+    color: #e53935;
+    margin-right: 4px;
+}
 /* Mobile-first: stack everything vertically, increase touch targets, and scale containers */
 @media (max-width: 500px) {
     .container {
@@ -135,8 +162,11 @@ img, .quiz-icon, .shape-svg {
     .score, .timer {
         font-size: 1em;
     }
-    .side-image {
+    .side-image.right {
         display: none !important;
+    }
+    .side-image.left {
+        display: flex !important;
     }
     .bottom-banner {
         font-size: 0.95em;

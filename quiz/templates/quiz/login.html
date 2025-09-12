@@ -2,19 +2,31 @@
 {% load static %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 500px; margin: 40px auto;">
-    <h1 class="big-heading">Login</h1>
-    <div class="feedback animate-wrong" style="margin-bottom: 24px;">Login is unavailable at the moment.</div>
-    <p>If you have any questions or need help, please use the contact form below:</p>
-    <form method="post" action="/quiz/contact/">
-        {% csrf_token %}
-        <label for="email">Your Email:</label>
-        <input type="email" id="email" name="email" required style="width:100%;margin-bottom:12px;">
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="subject" required style="width:100%;margin-bottom:12px;">
-        <label for="message">Message:</label>
-        <textarea id="message" name="message" rows="5" required style="width:100%;margin-bottom:12px;"></textarea>
-        <button type="submit" style="width:100%;">Send Message</button>
+<div class="container" style="max-width:420px;margin-top:40px;">
+    <h2>Login</h2>
+    {% if messages %}
+        <ul style="list-style:none;padding-left:0;">
+                    {% for m in messages %}
+                        {% if m.tags == 'error' %}
+                            <li style="color:#c00;font-weight:600;">{{ m }}</li>
+                        {% elif m.tags == 'success' %}
+                            <li style="color:#060;font-weight:600;">{{ m }}</li>
+                        {% else %}
+                            <li style="color:#444;font-weight:600;">{{ m }}</li>
+                        {% endif %}
+                    {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post" style="display:flex;flex-direction:column;gap:14px;">{% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
+        <input type="password" name="password" placeholder="Password" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
+        {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+        <button type="submit" style="padding:12px 16px;border:none;border-radius:8px;background:#2d73ff;color:#fff;font-weight:600;cursor:pointer;">Login</button>
     </form>
+    <p style="margin-top:16px;">Need an account? <a href="{% url 'quiz:signup' %}">Sign up</a></p>
+    <p style="margin-top:6px; font-size:0.9rem;">
+        <a href="{% url 'quiz:password_reset' %}">Forgot password?</a> | 
+        <a href="{% url 'quiz:resend_verification' %}">Resend verification email</a>
+    </p>
 </div>
 {% endblock %}

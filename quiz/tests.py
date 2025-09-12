@@ -571,6 +571,30 @@ class QuizViewsTests(TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, "Fun Learning for Kids")
 
+	def test_resend_verification_view_get(self):
+		response = self.client.get(reverse('quiz:resend_verification'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Resend Verification')
+
+	def test_resend_verification_nonexistent_email(self):
+		response = self.client.post(reverse('quiz:resend_verification'), {'email': 'nope@example.com'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'No account found')
+
+	def test_password_reset_flow_templates(self):
+		# Request form
+		response = self.client.get(reverse('quiz:password_reset'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Reset Your Password')
+
+	def test_password_reset_post_flow(self):
+		from django.contrib.auth.models import User
+		User.objects.create_user(username='pruser', email='pr@example.com', password='x12345pw')
+		response = self.client.post(reverse('quiz:password_reset'), { 'email': 'pr@example.com' })
+		# Should redirect to done page
+		self.assertEqual(response.status_code, 302)
+		self.assertIn(reverse('quiz:password_reset_done'), response.headers.get('Location',''))
+
 	def test_colors_shapes_view(self):
 		response = self.client.get(reverse('quiz:colors_shapes'))
 		self.assertEqual(response.status_code, 200)

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Verify Email{% endblock %}
+{% block content %}
+<div class="container" style="max-width:540px;margin-top:40px;">
+  <h2>Verify Your Email</h2>
+  <p>We've sent a verification link to <strong>{{ email }}</strong>. It may take a minute to arrive.</p>
+  <p>After verifying, you can <a href="{% url 'quiz:login' %}">log in</a>.</p>
+</div>
+{% endblock %}

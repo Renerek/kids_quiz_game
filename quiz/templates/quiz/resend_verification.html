@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Resend Verification{% endblock %}
+{% block content %}
+<div class="container" style="max-width:460px;margin-top:40px;">
+  <h2>Resend Verification Email</h2>
+  <p>Enter your account email to receive a new verification link.</p>
+  {% if messages %}
+    <ul style="list-style:none;padding-left:0;">
+      {% for m in messages %}
+        <li class="msg-{{ m.tags }}" style="font-weight:600;">{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form method="post" style="display:flex;flex-direction:column;gap:14px;">{% csrf_token %}
+    <input type="email" name="email" placeholder="Email" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
+    <button type="submit" style="padding:12px 16px;border:none;border-radius:8px;background:#2d73ff;color:#fff;font-weight:600;cursor:pointer;">Resend Email</button>
+  </form>
+  <p style="margin-top:16px;"><a href="{% url 'quiz:login' %}">Back to Login</a></p>
+</div>
+{% endblock %}

@@ -200,6 +200,13 @@ def fruits_game(request):
         })
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.core import signing
+from django.utils import timezone
+from django.urls import reverse
+
 def contact(request):
     sent = False
     if request.method == "POST":
@@ -218,7 +225,142 @@ def contact(request):
     return render(request, "quiz/contact.html", {"sent": sent})
 
 def login(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if not user.is_active:
+                messages.error(request, "Account not verified yet. Please check your email or resend verification.")
+            else:
+                auth_login(request, user)
+                messages.success(request, "Logged in successfully.")
+                nxt = request.GET.get("next") or request.POST.get("next") or "quiz:home"
+                return redirect(nxt)
+        else:
+            messages.error(request, "Invalid username or password.")
     return render(request, "quiz/login.html")
+
+
+EMAIL_VERIFICATION_MAX_AGE = 60 * 60 * 48  # 48 hours
+
+def _build_verification_token(user: User) -> str:
+    signer = signing.TimestampSigner()
+    return signer.sign(user.pk)
+
+def _verify_token(token: str):
+    signer = signing.TimestampSigner()
+    try:
+        unsigned = signer.unsign(token, max_age=EMAIL_VERIFICATION_MAX_AGE)
+        return int(unsigned)
+    except (signing.BadSignature, ValueError, signing.SignatureExpired):
+        return None
+
+
+def signup(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password1 = request.POST.get("password1", "")
+        password2 = request.POST.get("password2", "")
+        email = request.POST.get("email", "").strip()
+        name = request.POST.get("name", "").strip()
+        age_raw = request.POST.get("age", "").strip()
+        city = request.POST.get("city", "").strip()
+        country = request.POST.get("country", "").strip()
+        age = None
+        if age_raw:
+            try:
+                age = int(age_raw)
+                if age < 0 or age > 120:
+                    messages.error(request, "Age must be between 0 and 120.")
+                    return render(request, "quiz/signup.html")
+            except ValueError:
+                messages.error(request, "Age must be a number.")
+                return render(request, "quiz/signup.html")
+        if not (username and password1 and password2 and email and name):
+            messages.error(request, "Username, password, email, and name are required.")
+        elif password1 != password2:
+            messages.error(request, "Passwords do not match.")
+        elif len(password1) < 6:
+            messages.error(request, "Password must be at least 6 characters long.")
+        elif User.objects.filter(username__iexact=username).exists():
+            messages.error(request, "Username already taken.")
+        elif User.objects.filter(email__iexact=email).exists():
+            messages.error(request, "Email already in use.")
+        else:
+            user = User.objects.create_user(username=username, password=password1, email=email)
+            user.is_active = False  # Require email verification
+            user.save(update_fields=["is_active"])
+            from .models import UserProfile
+            UserProfile.objects.create(user=user, name=name, age=age, city=city, country=country)
+            # Send verification email
+            _send_verification_email(request, user, name or username)
+            messages.success(request, "Account created. Check your email to verify and activate your account.")
+            return render(request, "quiz/verification_sent.html", {"email": email})
+    return render(request, "quiz/signup.html")
+
+
+def verify_email(request, token: str):
+    user_id = _verify_token(token)
+    if not user_id:
+        return render(request, "quiz/verification_invalid.html")
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return render(request, "quiz/verification_invalid.html")
+    if user.is_active:
+        messages.info(request, "Account already verified.")
+        return redirect("quiz:login")
+    user.is_active = True
+    user.save(update_fields=["is_active"])
+    messages.success(request, "Email verified. You can now log in.")
+    return render(request, "quiz/verification_success.html")
+
+
+def _send_verification_email(request, user: User, display_name: str):
+    token = _build_verification_token(user)
+    verify_url = request.build_absolute_uri(reverse("quiz:verify_email", args=[token]))
+    subject = "Verify your account"
+    body = (
+        f"Hello {display_name},\n\n"
+        f"Please verify your account by clicking the link below (valid for 48 hours):\n{verify_url}\n\n"
+        "If you did not sign up, you can ignore this email."
+    )
+    try:
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+    except Exception:
+        # Log silently; in production we'd log
+        pass
+
+
+def resend_verification(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        if not email:
+            messages.error(request, "Email is required.")
+            return render(request, "quiz/resend_verification.html")
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            messages.error(request, "No account found with that email.")
+            return render(request, "quiz/resend_verification.html")
+        if user.is_active:
+            messages.info(request, "Account already verified. You can log in.")
+            return redirect("quiz:login")
+        profile_name = getattr(getattr(user, 'profile', None), 'name', user.username)
+        _send_verification_email(request, user, profile_name)
+        messages.success(request, "Verification email resent. Please check your inbox.")
+        return render(request, "quiz/verification_sent.html", {"email": email, "resent": True})
+    return render(request, "quiz/resend_verification.html")
+
+
+def logout(request):
+    if request.method == "POST":
+        auth_logout(request)
+        messages.info(request, "Logged out.")
+        return redirect("quiz:home")
+    # For safety, redirect on GET too (no stateful action)
+    return redirect("quiz:home")
 
 import random
 from django.shortcuts import redirect, render
@@ -459,7 +601,7 @@ def submit_answer(request):
         if timeout:
             # Reset streak and provide timeout voice audio
             request.session["correct_streak"] = 0
-            return render(request, "quiz/result.html", {"result": "timeout", "correct_answer": correct_answer, "feedback_audio": "timeout_voice.mp3"})
+            return render(request, "quiz/result.html", {"result": "timeout", "correct_answer": correct_answer, "feedback_audio": "timeout_voice.mp3", "user_name": request.session.get("user_name", "Player")})
 
         answer_str = request.POST.get("answer", None)
         try:
@@ -488,6 +630,7 @@ def submit_answer(request):
                     "correct_answer": correct_answer,
                     "feedback_audio": "correct_voice.mp3",
                     "encouragement_audio": encouragement,
+                    "user_name": request.session.get("user_name", "Player"),
                 },
             )
         else:

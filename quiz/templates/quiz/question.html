@@ -3,7 +3,8 @@
 {% load static %}
 {% block title %}Math Quiz Question{% endblock %}
 {% block content %}
-<div class="container">
+<div class="container" style="position:relative;">
+    <a href="/quiz/start/" aria-label="Back to math start" class="back-arrow in-card" title="Back to start">↩</a>
     <div style="text-align: center; margin-bottom: 20px;">
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
@@ -26,8 +27,8 @@
     <div class="score" id="score"></div>
     
     {% if wrong_answer %}
-        <div id="wrong-feedback" style="margin-top:20px;font-size:1.3rem;color:red;font-weight:bold;">
-            Incorrect! Your answer: {{ user_answer }}. Try again!
+        <div id="wrong-feedback" class="feedback-incorrect" style="margin-top:20px;font-size:1.3rem;">
+            <span class="icon-x">❌</span> <span style="color:#e53935;font-weight:bold;">Incorrect!</span> Your answer: <span style="color:#e53935;font-weight:bold;">{{ user_answer }}</span>. Try again!
         </div>
     {% endif %}
     
@@ -60,21 +61,27 @@
         }
     }, 1000);
 
-    // Play sound feedback based on result
+    // Play sound feedback based on result, prevent overlap
+    function stopAllAudio() {
+        document.querySelectorAll('audio').forEach(function(audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
     const result = "{{ result|default:'' }}";
     if (result === "correct") {
+        stopAllAudio();
         const correctSound = document.getElementById('correctSound');
         correctSound.play().catch(error => console.error('Error playing correct sound:', error));
     } else if (result === "incorrect") {
+        stopAllAudio();
         const incorrectSound = document.getElementById('incorrectSound');
         incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
     }
-    
     // Hide wrong answer feedback after 5 seconds
     const wrongFeedback = document.getElementById('wrong-feedback');
     if (wrongFeedback) {
-        const incorrectSound = document.getElementById('incorrectSound');
-        incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
         setTimeout(function() {
             wrongFeedback.style.display = 'none';
         }, 5000);
@@ -100,5 +107,15 @@
             encouragement.play().catch(()=>{});
         }, 800);
     }
+    (function(){
+        if(!window.appSpeak) return;
+        const wrong = !!document.getElementById('wrong-feedback');
+        const name = "{{ user_name|default:'Player' }}";
+        if(wrong){
+            setTimeout(()=>window.appSpeak(name + ', nice try. Give it another go!'), 1200);
+        } else if(result === 'correct') {
+            setTimeout(()=>window.appSpeak('Awesome ' + name + '! You got it right.'), 1200);
+        }
+    })();
 </script>
 {% endblock %}

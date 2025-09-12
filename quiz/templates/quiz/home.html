@@ -3,14 +3,21 @@
 {% block title %}Learning Quiz Game for Kids{% endblock %}
 {% block content %}
 <div class="container">
-	<audio id="welcome-audio" src="{% static 'quiz/audio/welcome.mp3' %}" preload="auto"></audio>
+	{# Removed separate welcome audio; video will provide audio on first interaction #}
 	<div style="text-align: center; margin-bottom: 20px;">
 		<img src="{% static 'quiz/images/lets_learn.png' %}" alt="Let's Learn" style="max-width: 400px; width: 100%; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" />
 	</div>
 	<h1 class="big-heading" style="text-align:center;">Rene Rek's Fun Learning for Kids!</h1>
 	<h1 class="rainbow-text" style="text-align:center;">Interactive Learning Games</h1>
+		<!-- Login/Signup buttons removed for mobile-first design; login remains in top nav -->
 	<div style="text-align:center;margin:30px 0 10px 0;">
-		<img src="{% static 'quiz/images/mouse_3D_image_of.png' %}" alt="Mouse 3D" style="max-width:220px;width:100%;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);" />
+		<div class="hero-video-wrapper" style="position:relative;display:inline-block;max-width:400px;width:100%;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);overflow:hidden;">
+			<video id="heroMouseVideo" autoplay muted playsinline preload="auto" poster="{% static 'quiz/images/mouse_3D_image_of.png' %}" style="width:100%;display:block;border-radius:18px;">
+				<source src="{% static 'quiz/videos/talking_mouse.mp4' %}" type="video/mp4">
+				<img src="{% static 'quiz/images/mouse_3D_image_of.png' %}" alt="Talking Mouse" />
+			</video>
+			<button id="unmuteBtn" type="button" aria-label="Unmute and restart" style="position:absolute;bottom:8px;right:8px;width:56px;height:56px;border:none;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;font-size:1.4rem;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 4px 10px rgba(0,0,0,0.25);">🔊</button>
+		</div>
 	</div>
 	<h2 style="text-align:center;">Choose Your Game Mode</h2>
 	<audio id="mixedGameIntro" src="{% static 'quiz/audio/mixed_game_intro.mp3' %}" preload="auto"></audio>
@@ -76,36 +83,40 @@
 				window.location.href='/quiz/mixed-game/';
 			}
 		}
-		// Play welcome audio when the page loads
-		window.addEventListener('DOMContentLoaded', function() {
-			// Create a user interaction to trigger audio
-			const container = document.querySelector('.container');
-			function playAudio() {
-				const welcomeAudio = document.getElementById('welcome-audio');
-				welcomeAudio.volume = 1.0;
-				welcomeAudio.play().catch(error => {
-					console.log('Audio play failed:', error);
-				});
-				// Remove the event listener after first interaction
-				document.removeEventListener('click', playAudio);
+		window.addEventListener('DOMContentLoaded', function(){
+			const video = document.getElementById('heroMouseVideo');
+			// Muted autoplay (policy compliant)
+			video.muted = true; video.volume = 0;
+			video.play().catch(()=>{});
+
+			const unmuteBtn = document.getElementById('unmuteBtn');
+			const replayBtnId = 'videoReplayBtn';
+			function showReplayBtn(){
+				if(document.getElementById(replayBtnId)) return;
+				const btn = document.createElement('button');
+				btn.id = replayBtnId; btn.type='button'; btn.setAttribute('aria-label','Replay video'); btn.textContent='▶';
+				btn.style.position='absolute'; btn.style.bottom='8px'; btn.style.right='8px'; btn.style.width='56px'; btn.style.height='56px';
+				btn.style.border='none'; btn.style.borderRadius='50%'; btn.style.background='rgba(0,0,0,0.55)'; btn.style.color='#fff'; btn.style.fontSize='1.6rem'; btn.style.cursor='pointer'; btn.style.display='flex'; btn.style.alignItems='center'; btn.style.justifyContent='center'; btn.style.backdropFilter='blur(4px)'; btn.style.boxShadow='0 4px 10px rgba(0,0,0,0.25)';
+				btn.addEventListener('click', ()=>{ video.currentTime=0; video.play().catch(()=>{}); });
+				video.parentElement.appendChild(btn);
 			}
-			// Auto-play attempt with fallback to click
-			setTimeout(function() {
-				const welcomeAudio = document.getElementById('welcome-audio');
-				welcomeAudio.volume = 1.0;
-				welcomeAudio.play().catch(error => {
-					console.log('Auto-play failed, waiting for user interaction');
-					// Add click listener as fallback
-					document.addEventListener('click', playAudio);
-				});
-			}, 1000);
-			// Add visible play button as another fallback
-			const audioButton = document.createElement('button');
-			audioButton.textContent = '🔊 Play Welcome Sound';
-			audioButton.className = 'game-button';
-			audioButton.style.marginBottom = '20px';
-			audioButton.addEventListener('click', playAudio);
-			container.insertBefore(audioButton, container.firstChild.nextSibling);
+
+			unmuteBtn.addEventListener('click', ()=>{
+				unmuteBtn.disabled = true;
+				video.pause();
+				video.currentTime = 0;
+				video.muted = false; video.volume = 1.0;
+				video.play().then(()=>{ unmuteBtn.remove(); }).catch(()=>{ unmuteBtn.disabled=false; });
+			});
+
+			video.addEventListener('ended', ()=>{ if(!video.muted) showReplayBtn(); });
+
+
+			// Error fallback
+			video.addEventListener('error', ()=>{
+				fallbackAudio.currentTime=0;
+				fallbackAudio.play().catch(()=>{});
+			});
 		});
 	</script>
 {% endblock %}

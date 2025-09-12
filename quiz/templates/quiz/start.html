@@ -21,6 +21,7 @@
         <audio id="easyDiff" src="{% static 'quiz/audio/easy_mode.mp3' %}" preload="auto"></audio>
         <audio id="mediumDiff" src="{% static 'quiz/audio/medium_mode.mp3' %}" preload="auto"></audio>
         <audio id="hardDiff" src="{% static 'quiz/audio/hard_mode.mp3' %}" preload="auto"></audio>
+    <!-- Web Speech API used for Mode announcements -->
         <form method="post" action="">
             {% csrf_token %}
             <label for="name">{% trans "Enter your name:" %}</label>
@@ -68,6 +69,21 @@ document.addEventListener('DOMContentLoaded', function(){
         const id=map[v];
         if(id){
             const el=document.getElementById(id); el.currentTime=0; el.play().catch(()=>{});
+            // if(window.appSpeak){
+            //     const name = document.getElementById('name').value.trim();
+            //     window.appSpeak((name? name + ', ':'') + 'Difficulty set to ' + v + '.');
+            // }
+        }
+    });
+    const modeSel=document.getElementById('mode');
+    modeSel.addEventListener('change', function(){
+        if(window.appSpeak){
+            const val=this.value;
+            if(!val) return;
+            const phrases={mixed:'Mixed operations mode', add:'Addition', sub:'Subtraction', mul:'Multiplication', div:'Division'};
+            const base=phrases[val]||'Mode selected';
+            const name=document.getElementById('name').value.trim();
+            window.appSpeak((name? name + ', ':'') + base + '.');
         }
     });
 });
