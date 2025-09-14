@@ -1,3 +1,113 @@
+def what_time_is_it(request):
+    # Stats tracking for authenticated users
+    from .models import UserStat
+
+    # If no name yet, show name entry form
+    if "user_name" not in request.session:
+        return render(request, "quiz/time_name_entry.html")
+
+    # Generate random hour and minute for the clock
+    hour = random.randint(1, 12)
+    minute = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+    clock_time = f"{hour}:{minute:02d}"
+
+    result = None
+    correct_time = None
+    choices = []
+
+    # Track attempts in session
+    if 'time_attempts' not in request.session:
+        request.session['time_attempts'] = 0
+
+    if request.method == "POST":
+        user_choice = request.POST.get("user_choice", "")
+        clock_time = request.POST.get("clock_time", "")
+        try:
+            hour, minute = map(int, clock_time.split(":"))
+            correct_time = f"{hour}:{minute:02d}"
+            if user_choice == correct_time:
+                result = 'correct'
+                request.session['time_attempts'] = 0
+                if request.user.is_authenticated:
+                    UserStat.objects.create(
+                        user=request.user,
+                        game="time",
+                        score=1,
+                        correct=1,
+                        incorrect=0,
+                        time_spent=0.0
+                    )
+            else:
+                request.session['time_attempts'] += 1
+                if request.session['time_attempts'] == 1:
+                    result = 'incorrect'  # allow retry
+                    if request.user.is_authenticated:
+                        UserStat.objects.create(
+                            user=request.user,
+                            game="time",
+                            score=0,
+                            correct=0,
+                            incorrect=1,
+                            time_spent=0.0
+                        )
+                else:
+                    result = 'show_answer'  # show correct answer and reset
+                    request.session['time_attempts'] = 0
+                    if request.user.is_authenticated:
+                        UserStat.objects.create(
+                            user=request.user,
+                            game="time",
+                            score=0,
+                            correct=0,
+                            incorrect=1,
+                            time_spent=0.0
+                        )
+        except (ValueError, TypeError):
+            result = 'show_answer'
+            correct_time = clock_time
+            request.session['time_attempts'] = 0
+            if request.user.is_authenticated:
+                UserStat.objects.create(
+                    user=request.user,
+                    game="time",
+                    score=0,
+                    correct=0,
+                    incorrect=1,
+                    time_spent=0.0
+                )
+
+    # Generate 3 distractor choices
+    correct = f"{hour}:{minute:02d}"
+    distractors = set()
+    while len(distractors) < 3:
+        dhour = random.randint(1, 12)
+        dminute = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+        dstr = f"{dhour}:{dminute:02d}"
+        if dstr != correct:
+            distractors.add(dstr)
+    choices = list(distractors) + [correct]
+    random.shuffle(choices)
+
+    hour_str = str(hour)
+    minute_str = f"{minute:02d}"
+
+    return render(
+        request,
+        "quiz/what_time_is_it.html",
+        {
+            "hour": hour,
+            "minute": minute,
+            "hour_str": hour_str,
+            "minute_str": minute_str,
+            "clock_time": clock_time,
+            "result": result,
+            "correct_time": correct_time,
+            "user_name": request.session.get("user_name", "Player"),
+            "choices": choices,
+        },
+    )
+import logging
+logger = logging.getLogger(__name__)
 import os
 import random
 
@@ -35,13 +145,30 @@ animals = [
 ]
 
 def animals_game(request):
+    # Guest play limit logic
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
     animal_dict = {a[0]: a for a in animals}
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
     if request.method == "POST":
         correct_animal = request.session.get("current_animal_name")
         answer = request.POST.get("answer")
         result = (answer == correct_animal)
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="animals",
+                score=int(result),
+                correct=1 if result else 0,
+                incorrect=0 if result else 1,
+                time_spent=0.0
+            )
         if result:
-            # On correct, just show feedback - let JavaScript handle the transition
             animal_name = correct_animal
             animal = animal_dict[animal_name]
             animal_image_url = os.path.join("quiz/images/animals", animal[1])
@@ -55,9 +182,9 @@ def animals_game(request):
                 "animal_name": animal_name,
                 "user_answer": answer,
                 "correct_answer": correct_animal,
+                "user_name": user_name,
             })
         else:
-            # Show same animal and hint again
             animal_name = correct_animal
             animal = animal_dict[animal_name]
             animal_image_url = os.path.join("quiz/images/animals", animal[1])
@@ -78,6 +205,7 @@ def animals_game(request):
                 "animal_name": animal_name,
                 "user_answer": answer,
                 "correct_answer": correct_animal,
+                "user_name": user_name,
             })
     # GET: show new animal
     animal = random.choice(animals)
@@ -98,6 +226,7 @@ def animals_game(request):
         "result": None,
         "summary": summary,
         "animal_name": animal_name,
+        "user_name": user_name,
     })
 
  # Fruit name, image filename, and summary (3 sentences)
@@ -133,13 +262,30 @@ fruits = [
     ]
     
 def fruits_game(request):
+    # Guest play limit logic
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
     fruit_dict = {f[0]: f for f in fruits}
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
     if request.method == "POST":
         correct_fruit = request.session.get("current_fruit_name")
         answer = request.POST.get("answer")
         result = (answer == correct_fruit)
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="fruits",
+                score=int(result),
+                correct=1 if result else 0,
+                incorrect=0 if result else 1,
+                time_spent=0.0
+            )
         if result:
-            # On correct, just show feedback - let JavaScript handle the transition
             fruit_name = correct_fruit
             fruit = fruit_dict[fruit_name]
             fruit_image_url = os.path.join("quiz/images/fruits", fruit[1])
@@ -153,9 +299,9 @@ def fruits_game(request):
                 "fruit_name": fruit_name,
                 "user_answer": answer,
                 "correct_answer": correct_fruit,
+                "user_name": user_name,
             })
         else:
-            # Show same fruit and hint again
             fruit_name = correct_fruit
             fruit = fruit_dict[fruit_name]
             fruit_image_url = os.path.join("quiz/images/fruits", fruit[1])
@@ -176,6 +322,7 @@ def fruits_game(request):
                 "fruit_name": fruit_name,
                 "user_answer": answer,
                 "correct_answer": correct_fruit,
+                "user_name": user_name,
             })
     else:
         # GET: show new fruit
@@ -197,6 +344,7 @@ def fruits_game(request):
             "result": None,
             "summary": summary,
             "fruit_name": fruit_name,
+            "user_name": user_name,
         })
 from django.core.mail import send_mail
 from django.conf import settings
@@ -211,16 +359,30 @@ def contact(request):
     sent = False
     if request.method == "POST":
         email = request.POST.get("email")
+        reason = request.POST.get("reason")
         subject = request.POST.get("subject")
         message = request.POST.get("message")
-        full_message = f"From: {email}\nSubject: {subject}\nMessage:\n{message}"
+        full_message = f"From: {email}\nReason: {reason}\nSubject: {subject}\nMessage:\n{message}"
+        # Send to site admin
         send_mail(
-            f"Contact Form: {subject}",
+            f"Contact Form: {subject} [{reason}]",
             full_message,
             settings.DEFAULT_FROM_EMAIL,
             ["ntumngiar@gmail.com"],
             fail_silently=False,
         )
+        # Send confirmation to user
+        try:
+            send_mail(
+                subject="We received your message!",
+                message=f"Hi,\n\nThank you for contacting us. We have received your message and will get back to you soon.\n\nReason: {reason}\nYour message:\n{message}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            logger.info(f"Contact confirmation email sent to {email}.")
+        except Exception as e:
+            logger.error(f"Failed to send contact confirmation email to {email}: {e}")
         sent = True
     return render(request, "quiz/contact.html", {"sent": sent})
 
@@ -263,7 +425,8 @@ def signup(request):
         password1 = request.POST.get("password1", "")
         password2 = request.POST.get("password2", "")
         email = request.POST.get("email", "").strip()
-        name = request.POST.get("name", "").strip()
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
         age_raw = request.POST.get("age", "").strip()
         city = request.POST.get("city", "").strip()
         country = request.POST.get("country", "").strip()
@@ -277,24 +440,38 @@ def signup(request):
             except ValueError:
                 messages.error(request, "Age must be a number.")
                 return render(request, "quiz/signup.html")
-        if not (username and password1 and password2 and email and name):
-            messages.error(request, "Username, password, email, and name are required.")
+        import re
+        if not (username and password1 and password2 and email and first_name):
+            messages.error(request, "Username, password, email, and first name are required.")
         elif password1 != password2:
             messages.error(request, "Passwords do not match.")
-        elif len(password1) < 6:
-            messages.error(request, "Password must be at least 6 characters long.")
+        elif len(password1) < 8 or not re.search(r'[A-Za-z]', password1) or not re.search(r'\d', password1):
+            messages.error(request, "Password must be at least 8 characters long and contain both letters and numbers.")
         elif User.objects.filter(username__iexact=username).exists():
-            messages.error(request, "Username already taken.")
+            messages.error(request, "Username already taken. Please sign in or choose another.")
         elif User.objects.filter(email__iexact=email).exists():
-            messages.error(request, "Email already in use.")
+            messages.error(request, "Email already in use. Please sign in or use a different email.")
         else:
             user = User.objects.create_user(username=username, password=password1, email=email)
             user.is_active = False  # Require email verification
             user.save(update_fields=["is_active"])
             from .models import UserProfile
-            UserProfile.objects.create(user=user, name=name, age=age, city=city, country=country)
+            UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name, age=age, city=city, country=country)
             # Send verification email
-            _send_verification_email(request, user, name or username)
+            _send_verification_email(request, user, first_name or username)
+            # Send confirmation email with username
+            from django.core.mail import send_mail
+            try:
+                send_mail(
+                    subject="Welcome to Math Quiz Game!",
+                    message=f"Hi {first_name or username},\n\nYour account has been created. Your username is: {username}. Please verify your email to activate your account.",
+                    from_email=None,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                logger.info(f"Confirmation email sent to {email} for user {username}.")
+            except Exception as e:
+                logger.error(f"Failed to send confirmation email to {email}: {e}")
             messages.success(request, "Account created. Check your email to verify and activate your account.")
             return render(request, "quiz/verification_sent.html", {"email": email})
     return render(request, "quiz/signup.html")
@@ -313,6 +490,20 @@ def verify_email(request, token: str):
         return redirect("quiz:login")
     user.is_active = True
     user.save(update_fields=["is_active"])
+    # Send confirmation email after verification
+    from django.core.mail import send_mail
+    profile_name = getattr(getattr(user, 'profile', None), 'name', user.username)
+    try:
+        send_mail(
+            subject="Your account is now verified!",
+            message=f"Hi {profile_name},\n\nYour email has been verified and your account is now active. You can now log in and enjoy all features!",
+            from_email=None,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        logger.info(f"Confirmation email sent to {user.email} after verification.")
+    except Exception as e:
+        logger.error(f"Failed to send confirmation email after verification to {user.email}: {e}")
     messages.success(request, "Email verified. You can now log in.")
     return render(request, "quiz/verification_success.html")
 
@@ -328,9 +519,9 @@ def _send_verification_email(request, user: User, display_name: str):
     )
     try:
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
-    except Exception:
-        # Log silently; in production we'd log
-        pass
+        logger.info(f"Verification email sent to {user.email} for user {user.username}.")
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {user.email}: {e}")
 
 
 def resend_verification(request):
@@ -362,13 +553,118 @@ def logout(request):
     # For safety, redirect on GET too (no stateful action)
     return redirect("quiz:home")
 
+def profile(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    return render(request, "quiz/profile.html", {
+        "user": user,
+        "profile": profile,
+    })
+
+def update_account(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    message = None
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        age = request.POST.get("age", None)
+        city = request.POST.get("city", "").strip()
+        country = request.POST.get("country", "").strip()
+        password1 = request.POST.get("password1", "")
+        password2 = request.POST.get("password2", "")
+        profile_picture = request.FILES.get("profile_picture")
+
+        # Update user fields
+        if email and email != user.email:
+            user.email = email
+        if first_name:
+            profile.first_name = first_name
+        if last_name is not None:
+            profile.last_name = last_name
+        if age:
+            try:
+                profile.age = int(age)
+            except ValueError:
+                message = "Age must be a number."
+        if city is not None:
+            profile.city = city
+        if country is not None:
+            profile.country = country
+        if profile_picture:
+            profile.profile_picture = profile_picture
+        if password1 or password2:
+            if password1 != password2:
+                message = "Passwords do not match."
+            elif len(password1) < 8:
+                message = "Password must be at least 8 characters."
+            else:
+                user.set_password(password1)
+        if not message:
+            user.save()
+            profile.save()
+            message = "Account updated successfully."
+    return render(request, "quiz/update_account.html", {
+        "user": user,
+        "profile": profile,
+        "message": message,
+    })
+
+def settings_view(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    message = None
+    if request.method == "POST":
+        # Profile setup
+        first_name = request.POST.get("first_name", "").strip()
+        age_group = request.POST.get("age_group", "")
+        # Theme
+        theme = request.POST.get("theme", "light")
+        # Sound
+        sound_music = request.POST.get("sound_music") == "on"
+        sound_voice = request.POST.get("sound_voice") == "on"
+        # Language
+        language = request.POST.get("language", "en")
+
+        if first_name:
+            profile.first_name = first_name
+        if age_group:
+            profile.age_group = age_group
+        profile.theme = theme
+        profile.sound_music = sound_music
+        profile.sound_voice = sound_voice
+        profile.language = language
+        profile.save()
+        # Update session for immediate theme switch
+        request.session['theme'] = theme
+        message = "Preferences updated."
+
+    # Use theme from profile or session for immediate effect
+    theme = getattr(profile, 'theme', 'light')
+    if 'theme' in request.session:
+        theme = request.session['theme']
+    return render(request, "quiz/settings.html", {
+        "profile": profile,
+        "message": message,
+        "theme": theme,
+        "LANGUAGES": [
+            ("en", "English"), ("fr", "French"), ("es", "Spanish"), ("de", "German"),
+            ("it", "Italian"), ("pt", "Portuguese"), ("ru", "Russian"), ("zh-hans", "Chinese (Simplified)"),
+            ("ar", "Arabic"), ("sw", "Swahili"), ("yo", "Yoruba"), ("ig", "Igbo"), ("ha", "Hausa")
+        ],
+    })
+
 import random
 from django.shortcuts import redirect, render
 
 def colors_shapes(request):
-    return render(request, "quiz/colors_shapes.html")
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+    return render(request, "quiz/colors_shapes.html", {"user_name": user_name})
 
-from .models import QuizSession
+from .models import QuizSession, UserStat
 
 # Sample spelling words for the game
 SPELLING_WORDS = [
@@ -392,32 +688,40 @@ SPELLING_WORDS = [
 
 
 def spelling_game(request):
+    # Guest play limit logic
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
     if request.method == "POST":
         word = request.session.get("current_spelling_word", "").lower()
         user_spelling = request.POST.get("spelling", "").strip().lower()
         result = user_spelling == word
-        if result:
-            # On correct, just show feedback - let JavaScript handle the transition
-            return render(
-                request,
-                "quiz/spelling.html",
-                {"word": word, "result": result},
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="spelling",
+                score=int(result),
+                correct=1 if result else 0,
+                incorrect=0 if result else 1,
+                time_spent=0.0  # Could add timing logic if desired
             )
-        else:
-            # On incorrect, show same word again
-            return render(
-                request,
-                "quiz/spelling.html",
-                {"word": word, "result": result},
-            )
+        return render(
+            request,
+            "quiz/spelling.html",
+            {"word": word, "result": result, "user_name": user_name},
+        )
 
-    # Generate a new word for GET requests
     word = random.choice(SPELLING_WORDS)
     request.session["current_spelling_word"] = word
     return render(
         request,
         "quiz/spelling.html",
-        {"word": word},
+        {"word": word, "user_name": user_name},
     )
 
 
@@ -458,10 +762,19 @@ def start_quiz(request):
         return redirect("quiz:question")
 
     # GET: show the start form (do NOT reset session flags here to avoid wiping an in-progress game)
-    return render(request, "quiz/start.html")
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+    return render(request, "quiz/start.html", {"user_name": user_name})
 
 
 def question(request):
+    # Guest play limit logic
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
     session_id = request.session.get("quiz_session_id")
     if not session_id:
         return redirect("quiz:start")
@@ -472,7 +785,9 @@ def question(request):
         return redirect("quiz:start")
         
     mode = request.session.get("game_mode", "mixed")
-    user_name = request.session.get("user_name", "Player")
+    user_name = request.session.get("user_name", None)
+    if not user_name and request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
     difficulty = request.session.get("difficulty", "easy")
     # Set number range and time limit by difficulty
     if difficulty == "easy":
@@ -621,7 +936,16 @@ def submit_answer(request):
                 encouragement = "excellent_work.mp3"
             elif streak == 7:
                 encouragement = "almost_done.mp3"
-            # Correct answer - go to result page
+            # Stats tracking for math quiz
+            if request.user.is_authenticated:
+                UserStat.objects.create(
+                    user=request.user,
+                    game="math",
+                    score=1,
+                    correct=1,
+                    incorrect=0,
+                    time_spent=0.0
+                )
             return render(
                 request,
                 "quiz/result.html",
@@ -655,7 +979,16 @@ def submit_answer(request):
                 time_limit = 30
             else:  # hard
                 time_limit = 15
-            
+            # Stats tracking for math quiz (incorrect)
+            if request.user.is_authenticated:
+                UserStat.objects.create(
+                    user=request.user,
+                    game="math",
+                    score=0,
+                    correct=0,
+                    incorrect=1,
+                    time_spent=0.0
+                )
             # Get current question from session
             current_question = request.session.get("current_question", "")
             # Reset streak
@@ -670,19 +1003,8 @@ def submit_answer(request):
                     "time_limit": time_limit,
                     "wrong_answer": True,
                     "user_answer": user_answer if 'user_answer' in locals() else answer_str,
-                    "encouragement_audio": "try_again.mp3",
                 },
             )
-    return redirect("quiz:question")
-
-
-def what_time_is_it(request):
-    # Handle name submission first
-    if (
-        "user_name" not in request.session
-        and request.method == "POST"
-        and "name_submit" in request.POST
-    ):
         name = request.POST.get("name", "Player")
         request.session["user_name"] = name
         return redirect("quiz:what_time")
@@ -835,3 +1157,55 @@ def basic_questions(request):
             "user_name": request.session.get("user_name", "Player"),
         },
     )
+
+def general_knowledge_game(request):
+    from .general_knowledge_questions import GENERAL_KNOWLEDGE_QUESTIONS
+    import random, os
+    from .models import UserStat
+
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
+
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+
+    if request.method == "POST":
+        q_idx = int(request.POST.get("q_idx", 0))
+        answer = request.POST.get("answer")
+        question = GENERAL_KNOWLEDGE_QUESTIONS[q_idx]
+        correct = (answer == question["answer"])
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="general_knowledge",
+                score=int(correct),
+                correct=1 if correct else 0,
+                incorrect=0 if correct else 1,
+                time_spent=0.0
+            )
+        return render(request, "quiz/general_knowledge_game.html", {
+            "question": question["question"],
+            "options": question["options"],
+            "image": f"/static/quiz/images/general_knowledge/{question['image']}",
+            "result": correct,
+            "correct_answer": question["answer"],
+            "user_answer": answer,
+            "user_name": user_name,
+            "q_idx": q_idx,
+            "show_next": True
+        })
+    # GET: show random question
+    q_idx = random.randint(0, len(GENERAL_KNOWLEDGE_QUESTIONS)-1)
+    question = GENERAL_KNOWLEDGE_QUESTIONS[q_idx]
+    return render(request, "quiz/general_knowledge_game.html", {
+        "question": question["question"],
+        "options": question["options"],
+        "image": f"/static/quiz/images/general_knowledge/{question['image']}",
+        "result": None,
+        "user_name": user_name,
+        "q_idx": q_idx
+    })

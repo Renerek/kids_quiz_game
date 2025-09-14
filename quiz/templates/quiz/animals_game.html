@@ -2,8 +2,24 @@
 {% load static %}
 {% load i18n %}
 {% block title %}{% trans "Animals Game" %}{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/animals_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="text-align:center;">
+    {% if user.is_authenticated and user_name %}
+        <div style="font-size:1.2rem; font-weight:bold; color:#007bff; margin-bottom:10px;">Welcome, {{ user_name|title }}!</div>
+    {% endif %}
     <h1>{% trans "Animals Game" %}</h1>
     <audio id="animalsIntro" src="{% static 'quiz/audio/animals_intro.mp3' %}" preload="auto"></audio>
     {% if summary %}

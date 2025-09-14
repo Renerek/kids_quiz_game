@@ -57,6 +57,11 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("animals-game/", views.animals_game, name="animals_game"),
+    path("general-knowledge/", views.general_knowledge_game, name="general_knowledge_game"),
     path("fruits-game/", views.fruits_game, name="fruits_game"),
     path("mixed-game/", mixed_game, name="mixed_game"),
+    path("stats/", __import__('quiz.views_stats').views_stats.user_stats, name="user_stats"),
+    path("profile/", views.profile, name="profile"),
+    path("update-account/", views.update_account, name="update_account"),
+    path("settings/", views.settings_view, name="settings"),
 ]

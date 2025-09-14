@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Update Account{% endblock %}
+{% block content %}
+<div class="container" style="max-width:600px;margin:40px auto;">
+    <h1>Update Account</h1>
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" style="margin-top:24px;">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ profile.first_name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ profile.last_name }}">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age" name="age" value="{{ profile.age }}" min="0" max="120">
+        </div>
+        <div class="mb-3">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control" id="city" name="city" value="{{ profile.city }}">
+        </div>
+        <div class="mb-3">
+            <label for="country" class="form-label">Country</label>
+            <input type="text" class="form-control" id="country" name="country" value="{{ profile.country }}">
+        </div>
+        <div class="mb-3">
+            <label for="profile_picture" class="form-label">Profile Picture</label><br>
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin-bottom:8px;">
+            {% endif %}
+            <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+        </div>
+        <div class="mb-3">
+            <label for="password1" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="password1" name="password1" autocomplete="new-password">
+        </div>
+        <div class="mb-3">
+            <label for="password2" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="password2" name="password2" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-success">Update Account</button>
+        <a href="{% url 'quiz:profile' %}" class="btn btn-secondary" style="margin-left:10px;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

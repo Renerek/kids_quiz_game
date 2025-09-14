@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Spelling Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/spelling_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="margin: 40px auto; text-align: center;">
     <div style="margin-bottom: 20px;">
@@ -8,7 +21,9 @@
     </div>
     <h1 class="big-heading">Spelling Game</h1>
     <div class="header">
-        <h2>Welcome, {{ user_name }}!</h2>
+        {% if user.is_authenticated and user_name %}
+            <h2 style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}!</h2>
+        {% endif %}
         <p class="typing-effect">Let's improve your spelling skills!</p>
     </div>
     <div class="spelling-container" style="display: inline-block; text-align: center;">

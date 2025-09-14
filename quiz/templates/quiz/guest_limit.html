@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sign Up or Log In{% endblock %}
+{% block content %}
+<div class="container" style="max-width:480px;margin:40px auto;text-align:center;">
+    <h2 style="color:#e53935;margin-bottom:18px;">Sign Up or Log In Required</h2>
+    <p style="font-size:1.15rem;">You've reached the free play limit.<br>
+    <strong>Sign up or log in</strong> to continue enjoying all games and features!</p>
+    <div style="margin:30px 0;">
+        <a href="{% url 'quiz:signup' %}" class="game-button" style="margin:10px 18px;">Sign Up</a>
+        <a href="{% url 'quiz:login' %}" class="game-button" style="margin:10px 18px;background:#007bff;">Log In</a>
+    </div>
+    <p style="color:#888;font-size:0.98em;">Already have an account? Just log in to unlock full access.</p>
+</div>
+{% endblock %}

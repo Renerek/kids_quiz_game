@@ -2,6 +2,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Math Quiz Question{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/math_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="position:relative;">
     <a href="/quiz/start/" aria-label="Back to math start" class="back-arrow in-card" title="Back to start">↩</a>
@@ -11,7 +24,9 @@
     <h1 class="big-heading">Welcome to the Fun Quiz!</h1>
     <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/201/201818.png'">
     <div class="header">
-        <h2>Welcome, {{ user_name }}!</h2>
+        {% if user_name %}
+            <h2 style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}!</h2>
+        {% endif %}
         <p class="typing-effect">Let's test your math skills and have some fun!</p>
         <div style="margin-top:10px;font-weight:bold;">Difficulty: {{ difficulty|title }}</div>
     </div>

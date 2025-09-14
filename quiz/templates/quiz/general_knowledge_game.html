@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}General Knowledge Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/general_knowledge_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container" style="max-width:600px;margin:40px auto;">
+    <h1 class="big-heading">General Knowledge</h1>
+    {% if user_name %}<div class="mb-2">Hello, <b>{{ user_name }}</b>!</div>{% endif %}
+    <div style="text-align:center;margin-bottom:20px;">
+        <img src="{{ image }}" alt="Question Image" style="max-width:260px;max-height:260px;object-fit:contain;">
+    </div>
+    <form method="post" style="margin-bottom:20px;">
+        {% csrf_token %}
+        <input type="hidden" name="q_idx" value="{{ q_idx }}">
+        <div style="font-size:1.2em;margin-bottom:16px;">{{ question }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for opt in options %}
+            <button type="submit" name="answer" value="{{ opt }}" class="btn btn-outline-primary" style="width:60%;margin:0 auto;font-size:1em;padding:6px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ opt }}</button>
+            {% endfor %}
+        </div>
+    </form>
+    <audio id="audio-correct" src="{% static 'quiz/audio/correct.mp3' %}" preload="auto"></audio>
+    <audio id="audio-incorrect" src="{% static 'quiz/audio/incorrect.mp3' %}" preload="auto"></audio>
+    {% if result is not None %}
+        <input type="hidden" id="gk_result" value="{% if result %}1{% elif result is not none %}0{% endif %}">
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var isCorrect = document.getElementById('gk_result').value === '1';
+            if (isCorrect) {
+                document.getElementById('audio-correct').play();
+                setTimeout(function(){ window.location.href = "{% url 'quiz:general_knowledge_game' %}"; }, 1800);
+            } else if(document.getElementById('gk_result').value === '0') {
+                document.getElementById('audio-incorrect').play();
+            }
+        });
+        </script>
+        {% if result %}
+            <div class="alert alert-success">Correct! 🎉</div>
+        {% else %}
+            <div class="alert alert-danger">Incorrect. The correct answer is <b>{{ correct_answer }}</b>.</div>
+        {% endif %}
+        {# No manual next button, auto-advance after correct #}
+    {% endif %}
+</div>
+{% endblock %}

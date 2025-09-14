@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="container" style="max-width:600px;margin:40px auto;">
+    <h1>Your Profile</h1>
+    <div style="display:flex;align-items:center;gap:24px;">
+        <div>
+            {% if profile and profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:2px solid #007bff;">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&size=120&background=007bff&color=fff" alt="Default Avatar" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:2px solid #007bff;">
+            {% endif %}
+        </div>
+        <div>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Name:</strong> {{ profile.first_name }} {{ profile.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Age:</strong> {{ profile.age|default:'-' }}</p>
+            <p><strong>City:</strong> {{ profile.city|default:'-' }}</p>
+            <p><strong>Country:</strong> {{ profile.country|default:'-' }}</p>
+            <p><strong>Joined:</strong> {{ profile.created_at|date:"Y-m-d" }}</p>
+        </div>
+    </div>
+    <div style="margin-top:24px;">
+        <a href="{% url 'quiz:update_account' %}" class="btn btn-primary">Edit Account</a>
+    </div>
+</div>
+{% endblock %}

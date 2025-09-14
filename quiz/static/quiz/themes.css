@@ -1,0 +1,31 @@
+/* Light Theme (default) */
+body.theme-light {
+    background: #f8f9fa;
+    color: #222;
+}
+
+/* Dark Theme */
+body.theme-dark {
+    background: #181c24;
+    color: #f8f9fa;
+}
+
+/* Forest Theme */
+body.theme-forest {
+    background: #e6f4ea;
+    color: #234d20;
+}
+
+/* Ocean Theme */
+body.theme-ocean {
+    background: #e0f7fa;
+    color: #01579b;
+}
+
+/* Space Theme */
+body.theme-space {
+    background: #0b0c2a;
+    color: #e0e6f8;
+}
+
+/* Add more theme-specific rules as needed */

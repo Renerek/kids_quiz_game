@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Mixed Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/mixed_games_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="text-align:center;">
     <h1>Mixed Game</h1>

@@ -8,7 +8,9 @@
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
     <h1 class="big-heading">Basic Questions</h1>
-    <p>Welcome, {{ user_name }}! Let's get to know you better.</p>
+        {% if user_name %}
+            <p style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}! Let's get to know you better.</p>
+        {% endif %}
     <div class="question-container">
         <div class="question-number">Question {{ question_index|add:1 }} of {{ total_questions }}</div>
         <h2 class="typing-effect">{{ question }}</h2>

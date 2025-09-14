@@ -17,7 +17,9 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+
 from django.conf import settings
+from django.conf.urls.static import static
 from django.conf.urls.i18n import set_language
 from django.views.generic import RedirectView
 
@@ -27,3 +29,7 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/quiz/", permanent=False)),
     path('i18n/setlang/', set_language, name='set_language'),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
