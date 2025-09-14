@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Invalid Link{% endblock %}
+{% block content %}
+<div class="container" style="max-width:520px;margin-top:40px;">
+  <h2>Invalid or Expired Link</h2>
+  <p>The verification link is invalid or has expired.</p>
+  <p><a href="{% url 'quiz:signup' %}">Create a new account</a> or <a href="{% url 'quiz:login' %}">login</a>.</p>
+</div>
+{% endblock %}

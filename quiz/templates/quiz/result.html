@@ -3,7 +3,8 @@
 {% load static %}
 {% block title %}Math Quiz Result{% endblock %}
 {% block content %}
-<div class="container">
+<div class="container" style="position:relative;">
+    <a href="/quiz/start/" aria-label="Back to math start" class="back-arrow in-card" title="Back to start">↩</a>
     {% if result == 'timeout' %}
         <h2 class="feedback animate-wrong">Time's up! The correct answer was {{ correct_answer }}.</h2>
     {% elif result %}
@@ -15,6 +16,12 @@
 </div>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+{% if feedback_audio %}
+<audio id="feedbackVoice" src="{% static 'quiz/audio/' %}{{ feedback_audio }}" preload="auto"></audio>
+{% endif %}
+{% if encouragement_audio %}
+<audio id="encouragementVoice" src="{% static 'quiz/audio/' %}{{ encouragement_audio }}" preload="auto"></audio>
+{% endif %}
 <script>
     window.addEventListener('DOMContentLoaded', function() {
         const result = "{{ result }}";
@@ -24,6 +31,25 @@
             document.getElementById('correctSound').play().catch(()=>{});
         } else if (result === 'False' || result === 'false' || result === '0') {
             document.getElementById('incorrectSound').play().catch(()=>{});
+        }
+        // Play voice feedback after fx
+        const voice = document.getElementById('feedbackVoice');
+        if (voice) {
+            setTimeout(()=>voice.play().catch(()=>{}), 700);
+        }
+        const encouragement = document.getElementById('encouragementVoice');
+        if (encouragement) {
+            setTimeout(()=>encouragement.play().catch(()=>{}), 2500);
+        }
+        if(window.appSpeak){
+            const uname="{{ user_name|default:'Player' }}";
+            if(result === 'True' || result === 'true' || result === '1'){
+                setTimeout(()=>window.appSpeak('Awesome ' + uname + '! You got it right.'), 1800);
+            } else if(result === 'timeout') {
+                setTimeout(()=>window.appSpeak(uname + ', time is up. You can do it, try the next one!'), 1800);
+            } else if(result){ // incorrect
+                setTimeout(()=>window.appSpeak(uname + ", that's okay. Let's try the next one together."), 1800);
+            }
         }
     });
 </script>

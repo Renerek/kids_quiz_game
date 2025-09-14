@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Mixed Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/mixed_games_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="text-align:center;">
     <h1>Mixed Game</h1>
@@ -57,17 +70,16 @@
     {% if result is not None %}
         <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
             {% if result %}
-                <span style="color:green;">Correct!</span>
+                <span class="feedback-correct"><span class="icon-check">✔️</span> <span style='color:#1ca21c;font-weight:bold;'>Correct!</span></span>
                 <script>
                     document.getElementById('correct-sound').play();
                     setTimeout(function() {
                         document.getElementById('feedback').style.display = 'none';
-                        // Redirect to same page with GET request to get new question
                         window.location.href = window.location.pathname;
                     }, 5000);
                 </script>
             {% else %}
-                <span style="color:red;">Incorrect! Please try again.</span>
+                <span class="feedback-incorrect"><span class="icon-x">❌</span> <span style='color:#e53935;font-weight:bold;'>Incorrect!</span> Please try again.</span>
                 <script>
                     document.getElementById('incorrect-sound').play();
                     setTimeout(function() {

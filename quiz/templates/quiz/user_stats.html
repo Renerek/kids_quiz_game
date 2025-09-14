@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Your Statistics{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/statistics_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container" style="margin: 40px auto; max-width: 900px;">
+    <h1 class="big-heading">Your Game Statistics</h1>
+    <div class="collapsible-section" id="per-game-section">
+        <button class="collapsible" type="button">Per Game Summary</button>
+        <div class="collapsible-content">
+            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="hidden" name="per_game_page" value="1">
+                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
+                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+            </form>
+            <form method="post" id="reset-per-game-form" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="reset_per_game" value="1">
+                <button type="button" class="btn btn-danger btn-sm" onclick="confirmResetPerGame()">Reset Per Game Summary</button>
+            </form>
+            <table class="table table-striped sortable" style="width:100%;margin-bottom:10px;">
+                <thead>
+                    <tr>
+                        <th>Game</th>
+                        <th>Plays</th>
+                        <th>Total Score</th>
+                        <th>Best Score</th>
+                        <th>Correct</th>
+                        <th>Incorrect</th>
+                        <th>Total Time (s)</th>
+                        <th>Last Played</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in per_game %}
+                    <tr>
+                        <td>{% if row.game == 'general_knowledge' %}General Knowledge{% else %}{{ row.game|title }}{% endif %}</td>
+                        <td>{{ row.plays }}</td>
+                        <td>{{ row.total_score }}</td>
+                        <td>{{ row.best_score }}</td>
+                        <td>{{ row.total_correct }}</td>
+                        <td>{{ row.total_incorrect }}</td>
+                        <td>{{ row.total_time|floatformat:2 }}</td>
+                        <td>{{ row.last_played|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8">No stats yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if per_game.paginator.num_pages > 1 %}
+            <nav>
+                <ul class="pagination">
+                    {% for i in per_game.paginator.page_range %}
+                        <li class="page-item {% if per_game.number == i %}active{% endif %}">
+                            <a class="page-link" href="?per_game_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    <div class="collapsible-section" id="per-day-section">
+        <button class="collapsible" type="button">Last 7 Days</button>
+        <div class="collapsible-content">
+            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="hidden" name="per_day_page" value="1">
+                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
+                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+            </form>
+            <table class="table table-bordered sortable" style="width:100%;margin-bottom:10px;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Plays</th>
+                        <th>Score</th>
+                        <th>Correct</th>
+                        <th>Incorrect</th>
+                        <th>Time Spent (s)</th>
+                    </tr>
+                </thead>
+                <tbody id="days-table-body">
+                    {% for day in per_day %}
+                    <tr>
+                        <td>{{ day.date }}</td>
+                        <td>{{ day.plays }}</td>
+                        <td>{{ day.score }}</td>
+                        <td>{{ day.correct }}</td>
+                        <td>{{ day.incorrect }}</td>
+                        <td>{{ day.time_spent|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if per_day.paginator.num_pages > 1 %}
+            <nav>
+                <ul class="pagination">
+                    {% for i in per_day.paginator.page_range %}
+                        <li class="page-item {% if per_day.number == i %}active{% endif %}">
+                            <a class="page-link" href="?per_day_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    <div class="collapsible-section" id="sessions-section">
+        <button class="collapsible" type="button">All Game Sessions</button>
+        <div class="collapsible-content">
+            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="hidden" name="sessions_page" value="1">
+                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
+                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+            </form>
+            <table class="table table-hover sortable" style="width:100%;margin-bottom:10px;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Game</th>
+                        <th>Score</th>
+                        <th>Correct</th>
+                        <th>Incorrect</th>
+                        <th>Time Spent (s)</th>
+                    </tr>
+                </thead>
+                <tbody id="sessions-table-body">
+                    {% for stat in stats %}
+                    <tr>
+                        <td>{{ stat.played_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ stat.game|title }}</td>
+                        <td>{{ stat.score }}</td>
+                        <td>{{ stat.correct }}</td>
+                        <td>{{ stat.incorrect }}</td>
+                        <td>{{ stat.time_spent|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">No stats yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if stats.paginator.num_pages > 1 %}
+            <nav>
+                <ul class="pagination">
+                    {% for i in stats.paginator.page_range %}
+                        <li class="page-item {% if stats.number == i %}active{% endif %}">
+                            <a class="page-link" href="?sessions_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    <style>
+        .collapsible { background: #007bff; color: #fff; cursor: pointer; padding: 12px 18px; width: 100%; border: none; text-align: left; outline: none; font-size: 1.1rem; border-radius: 8px; margin-bottom: 6px; }
+        .collapsible.active, .collapsible:hover { background: #0056b3; }
+        .collapsible-content { display: none; padding: 0 18px 18px 18px; border: 1px solid #007bff; border-radius: 0 0 8px 8px; background: #f8f9fa; }
+        .collapsible-section { margin-bottom: 18px; }
+        .collapsible-content.show { display: block; }
+        th.sortable:hover { text-decoration: underline; cursor: pointer; }
+    </style>
+    <script>
+    // Collapsible logic with auto-expand on filter or reset
+    function expandSection(sectionId) {
+        var section = document.getElementById(sectionId);
+        if (section) {
+            var btn = section.querySelector('.collapsible');
+            var content = section.querySelector('.collapsible-content');
+            btn.classList.add('active');
+            content.style.display = 'block';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var coll = document.getElementsByClassName('collapsible');
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener('click', function() {
+                this.classList.toggle('active');
+                var content = this.nextElementSibling;
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+        }
+        // Expand section if filter or page param is present
+        var url = new URL(window.location.href);
+        if (url.searchParams.get('per_game_page') || url.searchParams.get('from_date') || url.searchParams.get('to_date')) {
+            expandSection('per-game-section');
+        } else if (url.searchParams.get('per_day_page')) {
+            expandSection('per-day-section');
+        } else if (url.searchParams.get('sessions_page')) {
+            expandSection('sessions-section');
+        } else {
+            // Default: expand first section
+            if (coll.length > 0) {
+                coll[0].classList.add('active');
+                coll[0].nextElementSibling.style.display = 'block';
+            }
+        }
+    });
+    // Reset confirmation popup for Per Game Summary
+    function confirmResetPerGame() {
+        if (confirm('Are you sure you want to reset Per Game Summary to 0? This cannot be undone.')) {
+            document.getElementById('reset-per-game-form').submit();
+        }
+    }
+    </script>
+</div>
+{% endblock %}

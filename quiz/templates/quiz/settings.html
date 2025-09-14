@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Settings{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/settings_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container" style="max-width:600px;margin:40px auto;">
+    <h1>Settings & Preferences</h1>
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    <form method="post" style="margin-top:24px;">
+        {% csrf_token %}
+        <fieldset style="margin-bottom:24px;">
+            <legend>Profile Setup</legend>
+            <div class="mb-3">
+                <label for="first_name" class="form-label">Child's Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ profile.first_name }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="age_group" class="form-label">Age Group</label>
+                <select class="form-select" id="age_group" name="age_group">
+                    <option value="" {% if not profile.age_group %}selected{% endif %}>Select...</option>
+                    <option value="3-5" {% if profile.age_group == '3-5' %}selected{% endif %}>3-5 years</option>
+                    <option value="6-8" {% if profile.age_group == '6-8' %}selected{% endif %}>6-8 years</option>
+                    <option value="9-12" {% if profile.age_group == '9-12' %}selected{% endif %}>9-12 years</option>
+                    <option value="other" {% if profile.age_group == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+        </fieldset>
+        <fieldset style="margin-bottom:24px;">
+            <legend>Difficulty Level</legend>
+            <div class="mb-3">
+                <select class="form-select" id="difficulty" name="difficulty">
+                    <option value="easy" {% if profile.theme == 'easy' %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if profile.theme == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard" {% if profile.theme == 'hard' %}selected{% endif %}>Hard</option>
+                </select>
+                <small class="form-text text-muted">Controls number of items, speed, etc.</small>
+            </div>
+        </fieldset>
+        <fieldset style="margin-bottom:24px;">
+            <legend>Theme</legend>
+            <div class="mb-3">
+                <select class="form-select" id="theme" name="theme">
+                    <option value="light" {% if profile.theme == 'light' %}selected{% endif %}>Light</option>
+                    <option value="dark" {% if profile.theme == 'dark' %}selected{% endif %}>Dark</option>
+                    <option value="forest" {% if profile.theme == 'forest' %}selected{% endif %}>Forest</option>
+                    <option value="ocean" {% if profile.theme == 'ocean' %}selected{% endif %}>Ocean</option>
+                    <option value="space" {% if profile.theme == 'space' %}selected{% endif %}>Space</option>
+                </select>
+            </div>
+        </fieldset>
+        <fieldset style="margin-bottom:24px;">
+            <legend>Sound Settings</legend>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="sound_music" name="sound_music" {% if profile.sound_music %}checked{% endif %}>
+                <label class="form-check-label" for="sound_music">Mute background music</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="sound_voice" name="sound_voice" {% if profile.sound_voice %}checked{% endif %}>
+                <label class="form-check-label" for="sound_voice">Voice on</label>
+            </div>
+        </fieldset>
+        <fieldset style="margin-bottom:24px;">
+            <legend>Language</legend>
+            <div class="mb-3">
+                <select class="form-select" id="language" name="language">
+                    {% for code, name in LANGUAGES %}
+                        <option value="{{ code }}" {% if profile.language == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </fieldset>
+        <button type="submit" class="btn btn-success">Save Preferences</button>
+    </form>
+</div>
+{% endblock %}

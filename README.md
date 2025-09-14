@@ -1,6 +1,26 @@
 # math_quiz_game
 
-A small Django-based math quiz web app used for local development and testing.
+An educational Django web app with multiple kid‑friendly learning mini‑games and a lightweight authentication + email verification system.
+
+## Key Features
+
+- Math Quiz (addition, subtraction, multiplication, division, mixed mode) with difficulty levels (easy/medium/hard)
+- Spelling Game
+- "What Time Is It" clock reading game
+- Basic Q&A (personal information questions flow)
+- Fruits & Animals recognition games (image + multiple choice + summaries)
+- Mixed Game mode combining activities
+- Dynamic audio feedback (intros, correct/incorrect, encouragement streaks)
+- Optional personalized spoken encouragement (Web Speech API client side)
+- Video mascot on home page (muted autoplay with explicit unmute/restart)
+- User accounts (signup, login, logout)
+- Email verification (inactive until verified)
+- Resend verification email endpoint
+- Password reset flow (request → email link → set new password)
+- Contact form (emails sent via configured backend)
+- Internationalization scaffolding (language switching endpoint)
+
+---
 
 ## Prerequisites
 
@@ -20,9 +40,12 @@ cd math_quiz_game
 ## Create and activate a virtual environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-# On Windows (PowerShell): .\\venv\\Scripts\\Activate.ps1
+# Choose a name: either venv or .venv (project tooling supports both)
+python -m venv .venv
+source .venv/bin/activate
+# Or (if you created 'venv')
+# source venv/bin/activate
+# On Windows (PowerShell): .\.venv\Scripts\Activate.ps1
 ```
 
 ## Install dependencies
@@ -53,9 +76,10 @@ To start the development server:
 
 ```bash
 cd math_quiz_game  # if not already in this folder
-source venv/bin/activate  # activate your virtual environment
+source .venv/bin/activate  # or: source venv/bin/activate
+python manage.py migrate   # ensure DB up to date
 python manage.py runserver
-# Visit http://127.0.0.1:8000/ in your browser
+# Visit http://127.0.0.1:8000/ (root redirects to /quiz/)
 ```
 
 For deployment (e.g. on Render), ensure your `requirements.txt` is up to date and your `ALLOWED_HOSTS` setting in `mathquiz/settings.py` includes your deployed domain (e.g. `math-quiz-game.onrender.com`).
@@ -71,7 +95,7 @@ gunicorn mathquiz.wsgi
 To run all automated tests for the project, use:
 
 ```bash
-python manage.py test
+python manage.py test  # runs all 70 tests (models, games, auth, email flows)
 ```
 
 ### Run Specific Test Categories
@@ -89,9 +113,114 @@ python manage.py test quiz.tests.FruitGameTests quiz.tests.AnimalGameTests quiz.
 python run_tests.py
 ```
 
+## Authentication & Accounts
+
+### Signup & Email Verification
+
+1. User signs up at `/quiz/signup/` with username, email, name, (optional) age, city, country.
+2. Account is created inactive and a signed, time‑limited (48h) verification link is emailed.
+3. User clicks link (`/quiz/verify/<token>/`) to activate the account.
+
+### Resend Verification
+
+If the email is lost/expired: `/quiz/resend-verification/` → enter email → new link sent (still 48h validity from new token).
+
+### Login / Logout
+
+- Login: `/quiz/login/`
+- Logout POST (or GET redirect) at `/quiz/logout/`
+- Inactive (unverified) users are prevented from logging in and see a hint to resend the verification email.
+
+### Password Reset
+
+1. Request: `/quiz/password-reset/` (enter email; non‑enumerating response)
+2. Email delivers link to: `/quiz/reset/<uidb64>/<token>/`
+3. Set new password form → redirects to `/quiz/reset/done/`
+
+### Contact Form
+
+`/quiz/contact/` sends an email to the configured recipient (currently hardcoded address in `quiz/views.py`). Adjust as needed.
+
+## Email Configuration
+
+By default emails use the console backend (printed to terminal). Provide environment variables to enable SMTP or file backend.
+
+Supported environment variables (set before running `runserver`):
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `EMAIL_BACKEND` | Override backend directly | `django.core.mail.backends.console.EmailBackend` |
+| `EMAIL_HOST` | SMTP host; if set and `EMAIL_BACKEND` unset, switches to SMTP backend | (empty) |
+| `EMAIL_PORT` | SMTP port | 587 |
+| `EMAIL_USE_TLS` | Use TLS (true/false) | true |
+| `EMAIL_HOST_USER` | SMTP username | (empty) |
+| `EMAIL_HOST_PASSWORD` | SMTP password | (empty) |
+| `DEFAULT_FROM_EMAIL` | From header | `ntumngiar@gmail.com` |
+| `EMAIL_FILE_PATH` | Directory for file backend if chosen | `./sent_emails` |
+
+Example (Unix shell):
+```bash
+export EMAIL_HOST="smtp.gmail.com"
+export EMAIL_HOST_USER="your@gmail.com"
+export EMAIL_HOST_PASSWORD="app_password_here"
+export EMAIL_USE_TLS=true
+python manage.py runserver
+```
+
+To use the file backend:
+```bash
+export EMAIL_BACKEND=django.core.mail.backends.filebased.EmailBackend
+export EMAIL_FILE_PATH=$(pwd)/sent_emails
+python manage.py runserver
+```
+
+## Audio Generation (Optional)
+
+The project includes an advanced audio generation system for creating kid-friendly voice audio files. This is optional for development but creates consistent, high-quality audio for the game.
+
+### Setup Audio Generation
+
+```bash
+# Install audio generation dependencies (optional)
+pip install -r audio_requirements.txt
+
+# On Ubuntu/Debian, you may also need system dependencies:
+sudo apt-get install ffmpeg
+
+# On macOS with Homebrew:
+brew install ffmpeg
+```
+
+### Generate Audio Files
+
+```bash
+# Generate all audio files with default kid-friendly settings
+python make_intro.py
+
+# Custom pitch and speed
+python make_intro.py --pitch 1.4 --speed 0.8
+
+# Generate single custom audio file
+python make_intro.py --text "Hello, welcome to our game!"
+
+# List all audio files that will be generated
+python make_intro.py --list
+
+# Legacy format (still supported)
+python make_intro.py 1.3 0.9 "Custom text"
+```
+
+The audio generation system creates:
+- Welcome messages and game introductions
+- Feedback sounds (correct/incorrect responses)
+- Encouragement messages
+- Game-specific audio for each activity
+
+All audio uses consistent kid-friendly pitch (higher) and speed (slightly slower for clarity).
+
 ## Notes
 
-- The repository may include a pre-built `venv/` directory. If present you can activate it with `source venv/bin/activate`.
+- The repository may include a pre-built virtual environment directory (either `venv/` or `.venv/`). Activate accordingly.
 - Static files are served automatically by Django's development server. For production, run `python manage.py collectstatic` and use a proper WSGI/ASGI server.
 - The project ships with `db.sqlite3` for quick local testing. Do not use this DB file for production.
 
@@ -143,3 +272,5 @@ Notes:
 - `requirements.txt` at the project root enables `pip install -r requirements.txt` (a minimal one is included for local testing).
 - Static images live under `quiz/static/quiz/images/` (e.g. `boy-girl-are-reading-books.jpg`). If an image doesn't appear in the browser, check the file exists and that the template uses the `{% static %}` tag.
 - If CI fails on pre-commit or linters, run `pre-commit run --all-files` and fix the reported issues locally before pushing.
+- Email verification & password reset rely on correctly configured `DEFAULT_FROM_EMAIL` and chosen backend.
+- If password reset emails 500 with reverse errors, ensure the `quiz` URLs are included and that you are using the provided namespaced patterns (already configured in `quiz/urls.py`).

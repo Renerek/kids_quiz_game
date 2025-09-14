@@ -2,9 +2,26 @@
 {% load static %}
 {% load i18n %}
 {% block title %}{% trans "Animals Game" %}{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/animals_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="text-align:center;">
+    {% if user.is_authenticated and user_name %}
+        <div style="font-size:1.2rem; font-weight:bold; color:#007bff; margin-bottom:10px;">Welcome, {{ user_name|title }}!</div>
+    {% endif %}
     <h1>{% trans "Animals Game" %}</h1>
+    <audio id="animalsIntro" src="{% static 'quiz/audio/animals_intro.mp3' %}" preload="auto"></audio>
     {% if summary %}
     <div style="margin: 0 auto 18px auto; max-width: 600px; font-size: 1.15rem; color: #333; background: #f8f8f8; padding: 14px 20px; border-radius: 10px;">
         {{ summary }}
@@ -24,7 +41,7 @@
     {% if result is not None %}
         <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
             {% if result %}
-                <span style="color:green;">{% blocktrans with answer=correct_answer %}Great Job! {{ answer }} is the correct answer!{% endblocktrans %}</span>
+                <span class="feedback-correct"><span class="icon-check">✔️</span> {% blocktrans with answer=correct_answer %}Great Job! {{ answer }} is the correct answer!{% endblocktrans %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
                 <script>
                     setTimeout(function() {
@@ -33,7 +50,7 @@
                     }, 5000);
                 </script>
             {% else %}
-                <span style="color:red;">{% blocktrans with answer=user_answer %}{{ answer }} is incorrect, please try again!{% endblocktrans %}</span>
+                <span class="feedback-incorrect"><span class="icon-x">❌</span> {% blocktrans with answer=user_answer %}{{ answer }} is incorrect, please try again!{% endblocktrans %}</span>
                 <audio autoplay src="{% static 'quiz/sounds/incorrect.mp3' %}"></audio>
                 <script>
                     setTimeout(function() {
@@ -44,4 +61,15 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const intro = document.getElementById('animalsIntro');
+    if (intro && !sessionStorage.getItem('playedAnimalsIntro')) {
+        intro.play().catch(()=>{});
+        sessionStorage.setItem('playedAnimalsIntro','1');
+    }
+});
+</script>
 {% endblock %}

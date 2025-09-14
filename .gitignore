@@ -60,3 +60,4 @@ secrets.yml
 
 # Audio generation script (keep local for development)
 make_intro.py
+audio_requirements.txt

@@ -2,15 +2,31 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Math Quiz Question{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/math_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
-<div class="container">
+<div class="container" style="position:relative;">
+    <a href="/quiz/start/" aria-label="Back to math start" class="back-arrow in-card" title="Back to start">↩</a>
     <div style="text-align: center; margin-bottom: 20px;">
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
     <h1 class="big-heading">Welcome to the Fun Quiz!</h1>
     <img src="{% static 'quiz/images/math_icon.png' %}" alt="Math Icon" class="quiz-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/201/201818.png'">
     <div class="header">
-        <h2>Welcome, {{ user_name }}!</h2>
+        {% if user_name %}
+            <h2 style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}!</h2>
+        {% endif %}
         <p class="typing-effect">Let's test your math skills and have some fun!</p>
         <div style="margin-top:10px;font-weight:bold;">Difficulty: {{ difficulty|title }}</div>
     </div>
@@ -26,8 +42,8 @@
     <div class="score" id="score"></div>
     
     {% if wrong_answer %}
-        <div id="wrong-feedback" style="margin-top:20px;font-size:1.3rem;color:red;font-weight:bold;">
-            Incorrect! Your answer: {{ user_answer }}. Try again!
+        <div id="wrong-feedback" class="feedback-incorrect" style="margin-top:20px;font-size:1.3rem;">
+            <span class="icon-x">❌</span> <span style="color:#e53935;font-weight:bold;">Incorrect!</span> Your answer: <span style="color:#e53935;font-weight:bold;">{{ user_answer }}</span>. Try again!
         </div>
     {% endif %}
     
@@ -40,8 +56,16 @@
 {% block scripts %}
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+{% if intro_audios %}
+    {% for a in intro_audios %}
+    <audio class="intro-audio" data-filename="{{ a }}" src="{% static 'quiz/audio/' %}{{ a }}" preload="auto"></audio>
+    {% endfor %}
+{% endif %}
+{% if encouragement_audio %}
+<audio id="encouragementAudio" src="{% static 'quiz/audio/' %}{{ encouragement_audio }}" preload="auto"></audio>
+{% endif %}
 <script>
-    let timeLeft = {{ time_limit }};
+    let timeLeft = parseInt("{{ time_limit }}");
     let timer = setInterval(function() {
         timeLeft--;
         document.getElementById('timer').textContent = timeLeft;
@@ -52,24 +76,61 @@
         }
     }, 1000);
 
-    // Play sound feedback based on result
+    // Play sound feedback based on result, prevent overlap
+    function stopAllAudio() {
+        document.querySelectorAll('audio').forEach(function(audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
     const result = "{{ result|default:'' }}";
     if (result === "correct") {
+        stopAllAudio();
         const correctSound = document.getElementById('correctSound');
         correctSound.play().catch(error => console.error('Error playing correct sound:', error));
     } else if (result === "incorrect") {
+        stopAllAudio();
         const incorrectSound = document.getElementById('incorrectSound');
         incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
     }
-    
     // Hide wrong answer feedback after 5 seconds
     const wrongFeedback = document.getElementById('wrong-feedback');
     if (wrongFeedback) {
-        const incorrectSound = document.getElementById('incorrectSound');
-        incorrectSound.play().catch(error => console.error('Error playing incorrect sound:', error));
         setTimeout(function() {
             wrongFeedback.style.display = 'none';
         }, 5000);
     }
+
+    // Play one-time intro audios sequentially
+    const introEls = Array.from(document.querySelectorAll('.intro-audio'));
+    function playSequential(list, idx=0) {
+        if (idx >= list.length) return;
+        const el = list[idx];
+        el.currentTime = 0;
+        el.play().catch(()=>{});
+        el.onended = function(){ playSequential(list, idx+1); };
+    }
+    if (introEls.length) {
+        // Delay slightly to avoid overlap with immediate feedback
+        setTimeout(()=>playSequential(introEls), 600);
+    }
+    // Encouragement audio (e.g., after wrong answer or streak milestone)
+    const encouragement = document.getElementById('encouragementAudio');
+    if (encouragement) {
+        setTimeout(()=>{
+            encouragement.play().catch(()=>{});
+        }, 800);
+    }
+    (function(){
+        if(!window.appSpeak) return;
+        const wrong = !!document.getElementById('wrong-feedback');
+        const name = "{{ user_name|default:'Player' }}";
+        if(wrong){
+            setTimeout(()=>window.appSpeak(name + ', nice try. Give it another go!'), 1200);
+        } else if(result === 'correct') {
+            setTimeout(()=>window.appSpeak('Awesome ' + name + '! You got it right.'), 1200);
+        }
+    })();
 </script>
 {% endblock %}

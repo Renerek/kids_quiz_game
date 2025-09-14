@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Spelling Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/spelling_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container" style="margin: 40px auto; text-align: center;">
     <div style="margin-bottom: 20px;">
@@ -8,7 +21,9 @@
     </div>
     <h1 class="big-heading">Spelling Game</h1>
     <div class="header">
-        <h2>Welcome, {{ user_name }}!</h2>
+        {% if user.is_authenticated and user_name %}
+            <h2 style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}!</h2>
+        {% endif %}
         <p class="typing-effect">Let's improve your spelling skills!</p>
     </div>
     <div class="spelling-container" style="display: inline-block; text-align: center;">
@@ -17,9 +32,9 @@
         <button id="speakWord">🔊 Speak Word</button>
         <form method="post">
             {% csrf_token %}
-            <div class="word-container">
-                <h3 id="word" class="word-display" style="display: none;">{{ word }}</h3>
-                <button type="button" id="toggleWord">👁️ Show/Hide Word</button>
+            <div class="word-container" style="position:relative;display:flex;align-items:center;gap:12px;justify-content:center;">
+                <h3 id="word" class="word-display" style="display: none; margin:0;">{{ word }}</h3>
+                <span id="toggleWord" role="button" aria-label="Show word" title="Show word" style="cursor:pointer;font-size:1.9rem;line-height:1;user-select:none;">👁️</span>
             </div>
             <input type="text" name="spelling" required autofocus />
             <button type="submit">Submit Answer</button>
@@ -27,7 +42,7 @@
         {% if result is not None %}
             <div id="feedback" class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
                 {% if result %}
-                    <h3>Correct! 🎉</h3>
+                    <h3 class="feedback-correct"><span class="icon-check">✔️</span> Correct!</h3>
                     <p>Great job spelling "{{ word }}"!</p>
                     <script>
                         setTimeout(function() {
@@ -36,7 +51,7 @@
                         }, 5000);
                     </script>
                 {% else %}
-                    <h3>Incorrect</h3>
+                    <h3 class="feedback-incorrect"><span class="icon-x">❌</span> Incorrect</h3>
                     <p>The correct spelling is <strong>{{ word }}</strong>.</p>
                     <script>
                         setTimeout(function() {
@@ -55,6 +70,10 @@
 {% endblock %}
 {% block scripts %}
 <audio id="spellIntro" src="{% static 'quiz/audio/spell_word_intro.mp3' %}" preload="auto"></audio>
+<audio id="spellingGameIntro" src="{% static 'quiz/audio/spelling_intro.mp3' %}" preload="auto"></audio>
+<audio id="encouragementKeepGoing" src="{% static 'quiz/audio/keep_going.mp3' %}" preload="auto"></audio>
+<audio id="encouragementExcellent" src="{% static 'quiz/audio/excellent_work.mp3' %}" preload="auto"></audio>
+<audio id="encouragementTryAgain" src="{% static 'quiz/audio/try_again.mp3' %}" preload="auto"></audio>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 <script>
@@ -121,7 +140,15 @@
     }
 
     function speakWordOnLoad() {
-        playSpellIntroAndWord(document.getElementById('word').textContent);
+        // Play overall game intro first time only per session using localStorage flag
+        const gameIntro = document.getElementById('spellingGameIntro');
+        if (!localStorage.getItem('playedSpellingIntro')) {
+            gameIntro.play().catch(()=>{});
+            localStorage.setItem('playedSpellingIntro', '1');
+            gameIntro.onended = function(){ playSpellIntroAndWord(document.getElementById('word').textContent); };
+        } else {
+            playSpellIntroAndWord(document.getElementById('word').textContent);
+        }
     }
     window.addEventListener('load', function() {
         setTimeout(function() {
@@ -138,22 +165,32 @@
                     playSpellIntroAndWord(nextWord);
                 };
                 document.getElementById('correctSound').play().catch(()=>{});
+                // Light encouragement every correct cycle (alternating)
+                if (Math.random() < 0.5) {
+                    setTimeout(()=>document.getElementById('encouragementKeepGoing').play().catch(()=>{}), 2200);
+                }
             }
         } else if (result === "False" || result === "false" || result === "0") {
             stopAllAudio();
             document.getElementById('incorrectSound').play().catch(()=>{});
+            setTimeout(()=>document.getElementById('encouragementTryAgain').play().catch(()=>{}), 1500);
         }
     });
     document.getElementById('speakWord').addEventListener('click', speakWord);
     // Toggle word visibility
-    document.getElementById('toggleWord').addEventListener('click', function() {
+    document.getElementById('toggleWord').addEventListener('click', function(){
         const wordElement = document.getElementById('word');
-        if (wordElement.style.display === 'none') {
-            wordElement.style.display = 'block';
-            this.textContent = '🙈 Hide Word';
+        const showing = wordElement.style.display !== 'none';
+        if(showing){
+            wordElement.style.display='none';
+            this.textContent='�️';
+            this.setAttribute('aria-label','Show word');
+            this.title='Show word';
         } else {
-            wordElement.style.display = 'none';
-            this.textContent = '👁️ Show Word';
+            wordElement.style.display='block';
+            this.textContent='�';
+            this.setAttribute('aria-label','Hide word');
+            this.title='Hide word';
         }
     });
 </script>
