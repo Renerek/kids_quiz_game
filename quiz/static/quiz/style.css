@@ -97,6 +97,52 @@ img, .quiz-icon, .shape-svg {
     }
 }
 /* Responsive design for all screens */
+@media (max-width: 900px) {
+    body {
+        font-size: 1.05em;
+        padding: 0;
+    }
+    .container {
+        max-width: 98vw;
+        margin: 10px auto;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+    h1, h2 {
+        font-size: 1.4em;
+        margin-bottom: 8px;
+    }
+    .progress-bar {
+        height: 16px;
+    }
+    input[type="number"], input[type="text"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        max-width: 98vw;
+        border-radius: 8px;
+    }
+    button {
+        font-size: 1.05em;
+        padding: 12px 20px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+    .feedback {
+        font-size: 1.2em;
+        min-height: 28px;
+    }
+    .score, .timer {
+        font-size: 1.05em;
+    }
+    .side-image {
+        display: none !important;
+    }
+    .bottom-banner {
+        font-size: 1rem;
+        padding: 10px 0;
+    }
+}
 @media (max-width: 700px) {
     body {
         font-size: 1.05em;
