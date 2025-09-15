@@ -3,10 +3,20 @@
 {% load static %}
 {% block title %}Colors & Shapes Learning Game{% endblock %}
 {% block content %}
-<h1 class="big-heading">Colors & Shapes Learning Game</h1>
-{% if user.is_authenticated and user_name %}
-    <p style="font-size:1.2rem; font-weight:bold; color:#007bff;">Welcome, {{ user_name|title }}! Let's learn colors and shapes!</p>
-{% endif %}
+<div class="container" style="position:relative;">
+    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px;margin-top:8px;">
+        <h1 class="big-heading" style="margin:0;">Colors & Shapes Learning Game</h1>
+        {% if user.is_authenticated and user_name %}
+            <span style="font-size:1.2rem;font-weight:bold;color:#1976d2;">Hello, {{ user_name|title }}!</span>
+        {% endif %}
+    </div>
 <audio id="colorsShapesIntro" src="{% static 'quiz/audio/colors_shapes_intro.mp3' %}" preload="auto"></audio>
 <div class="container">
     <h1>Learn Colors and Shapes!</h1>

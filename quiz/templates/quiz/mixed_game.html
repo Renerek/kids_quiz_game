@@ -15,12 +15,21 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 {% endblock %}
 {% block content %}
-<div class="container" style="text-align:center;">
-    <h1>Mixed Game</h1>
+<div class="container" style="text-align:center;position:relative;">
+    {% if game_type != "spelling" %}
+    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+    {% endif %}
+    <h1 style="margin-top:0.5em;">Mixed Game</h1>
     {% if game_type == "math" %}
         <h2>{{ question }}</h2>
         <form method="post">{% csrf_token %}
-            <input type="number" name="answer" required autofocus>
+            <input type="number" name="answer" required autofocus style="width:100%;max-width:350px;padding:12px;font-size:1.15rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;" />
             <button type="submit">Submit</button>
         </form>
     {% elif game_type == "animal" %}
@@ -44,12 +53,21 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endfor %}
         </form>
     {% elif game_type == "spelling" %}
-        <h2>Spell the word you hear:</h2>
-        <button type="button" class="game-button" onclick="speakWord('{{ spelling_word|escapejs }}')">🔊 Play Word</button>
-        <form method="post">{% csrf_token %}
-            <input type="text" name="spelling" required autofocus>
-            <button type="submit">Submit</button>
-        </form>
+        <div style="max-width:420px;margin:32px auto 0 auto;padding:24px 18px 18px 18px;background:#f8faff;border-radius:18px;box-shadow:0 5px 18px rgba(25,118,210,0.08);position:relative;">
+            <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:14px;left:14px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
+                <svg width="32" height="32" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h2 style="margin-top:0;">Spell the word you hear:</h2>
+            <button type="button" class="game-button" onclick="speakWord('{{ spelling_word|escapejs }}')">🔊 Play Word</button>
+            <form method="post" style="margin-top:18px;">{% csrf_token %}
+                <input type="text" name="spelling" required autofocus style="width:100%;max-width:350px;padding:12px;font-size:1.15rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;" />
+                <button type="submit">Submit</button>
+            </form>
+        </div>
     {% elif game_type == "time" %}
         <h2>What time is shown?</h2>
         <div style="font-size:2.2rem;margin:18px 0;">🕒 {{ clock_time }}</div>
@@ -61,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     {% elif game_type == "basic" %}
         <h2>{{ basic_question }}</h2>
         <form method="post">{% csrf_token %}
-            <input type="text" name="answer" required autofocus>
+            <input type="text" name="answer" required autofocus style="width:100%;max-width:350px;padding:12px;font-size:1.15rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;" />
             <button type="submit">Next</button>
         </form>
     {% endif %}

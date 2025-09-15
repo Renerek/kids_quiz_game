@@ -27,8 +27,7 @@
     <!-- Web Speech API used for Mode announcements -->
         <form method="post" action="">
             {% csrf_token %}
-            <label for="name">{% trans "Enter your name:" %}</label>
-            <input type="text" id="name" name="name" placeholder="{% trans 'Your Name' %}" required>
+
             
             <div style="display: flex; gap: 20px; align-items: end; margin-top: 20px; justify-content: center;">
                 <div style="flex: 0 0 auto;">
@@ -72,10 +71,6 @@ document.addEventListener('DOMContentLoaded', function(){
         const id=map[v];
         if(id){
             const el=document.getElementById(id); el.currentTime=0; el.play().catch(()=>{});
-            // if(window.appSpeak){
-            //     const name = document.getElementById('name').value.trim();
-            //     window.appSpeak((name? name + ', ':'') + 'Difficulty set to ' + v + '.');
-            // }
         }
     });
     const modeSel=document.getElementById('mode');
@@ -85,8 +80,7 @@ document.addEventListener('DOMContentLoaded', function(){
             if(!val) return;
             const phrases={mixed:'Mixed operations mode', add:'Addition', sub:'Subtraction', mul:'Multiplication', div:'Division'};
             const base=phrases[val]||'Mode selected';
-            const name=document.getElementById('name').value.trim();
-            window.appSpeak((name? name + ', ':'') + base + '.');
+            window.appSpeak(base + '.');
         }
     });
 });

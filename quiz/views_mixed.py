@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from .views import animals_game, animals, fruits, SPELLING_WORDS
 import random
+from .models import UserStat
+
 def mixed_game(request):
     # List of game types
     game_types = ["math", "animal", "fruit", "spelling", "time", "basic"]
@@ -141,5 +143,16 @@ def mixed_game(request):
             # Accept any answer, just move to next
             context["result"] = True
             request.session["mixed_correct"] = True
+
+        # Record stat for mixed game if authenticated and answer submitted
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="mixed",
+                score=1 if context.get("result") else 0,
+                correct=1 if context.get("result") else 0,
+                incorrect=0 if context.get("result") else 1,
+                time_spent=0.0
+            )
 
     return render(request, "quiz/mixed_game.html", context)

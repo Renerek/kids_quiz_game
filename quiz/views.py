@@ -2,9 +2,7 @@ def what_time_is_it(request):
     # Stats tracking for authenticated users
     from .models import UserStat
 
-    # If no name yet, show name entry form
-    if "user_name" not in request.session:
-        return render(request, "quiz/time_name_entry.html")
+    # Always use user's profile name or username
 
     # Generate random hour and minute for the clock
     hour = random.randint(1, 12)
@@ -91,6 +89,10 @@ def what_time_is_it(request):
     hour_str = str(hour)
     minute_str = f"{minute:02d}"
 
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+    else:
+        user_name = "Player"
     return render(
         request,
         "quiz/what_time_is_it.html",
@@ -102,7 +104,7 @@ def what_time_is_it(request):
             "clock_time": clock_time,
             "result": result,
             "correct_time": correct_time,
-            "user_name": request.session.get("user_name", "Player"),
+            "user_name": user_name,
             "choices": choices,
         },
     )
@@ -374,8 +376,16 @@ def contact(request):
         # Send confirmation to user
         try:
             send_mail(
-                subject="We received your message!",
-                message=f"Hi,\n\nThank you for contacting us. We have received your message and will get back to you soon.\n\nReason: {reason}\nYour message:\n{message}",
+                subject="Thank you for contacting Math Quiz Game!",
+                message=(
+                    "Hi,\n\n"
+                    "Thank you for reaching out to us at Math Quiz Game. We have received your message and one of our team members will get back to you soon at this email address.\n\n"
+                    f"Reason: {reason}\n"
+                    f"Your message: {message}\n\n"
+                    "In the meantime, please continue enjoying our learning games and features!\n\n"
+                    "If you have any more questions or need help, just reply to this email or use the Contact Us page again.\n\n"
+                    "Best wishes,\nThe Math Quiz Game Team"
+                ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=False,
@@ -472,6 +482,21 @@ def signup(request):
                 logger.info(f"Confirmation email sent to {email} for user {username}.")
             except Exception as e:
                 logger.error(f"Failed to send confirmation email to {email}: {e}")
+            # Send admin notification
+            try:
+                from django.conf import settings
+                admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+                if admin_email:
+                    send_mail(
+                        subject="New User Signup Notification",
+                        message=f"A new user has signed up.\n\nUsername: {username}\nName: {first_name} {last_name}\nEmail: {email}",
+                        from_email=None,
+                        recipient_list=[admin_email],
+                        fail_silently=False,
+                    )
+                    logger.info(f"Admin notified of new signup: {username} ({email})")
+            except Exception as e:
+                logger.error(f"Failed to send admin signup notification: {e}")
             messages.success(request, "Account created. Check your email to verify and activate your account.")
             return render(request, "quiz/verification_sent.html", {"email": email})
     return render(request, "quiz/signup.html")
@@ -511,11 +536,15 @@ def verify_email(request, token: str):
 def _send_verification_email(request, user: User, display_name: str):
     token = _build_verification_token(user)
     verify_url = request.build_absolute_uri(reverse("quiz:verify_email", args=[token]))
-    subject = "Verify your account"
+    subject = "Welcome to Math Quiz Game! Confirm your signup"
     body = (
-        f"Hello {display_name},\n\n"
-        f"Please verify your account by clicking the link below (valid for 48 hours):\n{verify_url}\n\n"
-        "If you did not sign up, you can ignore this email."
+        f"Welcome {display_name}!\n\n"
+        "Thank you for signing up for Math Quiz Game. To complete your signup and unlock the full learning experience, please confirm your email address.\n\n"
+        "Click the link below to confirm your signup (valid for 48 hours):\n{verify_url}\n\n"
+        "If the link does not work, copy and paste it into your browser.\n\n"
+        "After confirming, you'll be able to access all our fun and educational games, track your progress, and more!\n\n"
+        "If you did not sign up, you can ignore this email.\n\n"
+        f"Need help? Contact us here: {request.build_absolute_uri(reverse('quiz:contact'))}"
     )
     try:
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
@@ -662,6 +691,16 @@ def colors_shapes(request):
     user_name = None
     if request.user.is_authenticated:
         user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+        # Always record stats when user visits this page (GET or POST)
+        if not UserStat.objects.filter(user=request.user, game="colors_shapes").exists():
+            UserStat.objects.create(
+                user=request.user,
+                game="colors_shapes",
+                score=1,
+                correct=1,
+                incorrect=0,
+                time_spent=0.0
+            )
     return render(request, "quiz/colors_shapes.html", {"user_name": user_name})
 
 from .models import QuizSession, UserStat
@@ -734,34 +773,21 @@ def home(request):
 
 def start_quiz(request):
     if request.method == "POST":
-        name = request.POST.get("name", "").strip()
         mode = request.POST.get("mode", "mixed")
         difficulty = request.POST.get("difficulty", "easy")
-
-        # Validate form data and escape HTML to prevent XSS
-        if not name or not mode or not difficulty:
+        if not mode or not difficulty:
             return render(request, "quiz/start.html", {"error": "Please fill out all fields"})
-
-        import html  # Escape HTML characters to prevent XSS attacks
-        name = html.escape(name)
-
-        # Create a new quiz session only on POST (starting a new game)
-        request.session["user_name"] = name
         session = QuizSession.objects.create(
             user=request.user if request.user.is_authenticated else None
         )
         request.session["quiz_session_id"] = session.id
         request.session["game_mode"] = mode
         request.session["difficulty"] = difficulty
-
-        # Initialize audio / gameplay helper flags once per new game start
         request.session["played_math_intro"] = False
         request.session["played_mixed_intro"] = False
         request.session["played_difficulty_audio"] = False
         request.session["correct_streak"] = 0
         return redirect("quiz:question")
-
-    # GET: show the start form (do NOT reset session flags here to avoid wiping an in-progress game)
     user_name = None
     if request.user.is_authenticated:
         user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
@@ -785,9 +811,10 @@ def question(request):
         return redirect("quiz:start")
         
     mode = request.session.get("game_mode", "mixed")
-    user_name = request.session.get("user_name", None)
-    if not user_name and request.user.is_authenticated:
+    if request.user.is_authenticated:
         user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+    else:
+        user_name = "Player"
     difficulty = request.session.get("difficulty", "easy")
     # Set number range and time limit by difficulty
     if difficulty == "easy":
@@ -936,11 +963,13 @@ def submit_answer(request):
                 encouragement = "excellent_work.mp3"
             elif streak == 7:
                 encouragement = "almost_done.mp3"
-            # Stats tracking for math quiz
+            # Stats tracking for math/mixed quiz
             if request.user.is_authenticated:
+                game_mode = request.session.get("game_mode", "math")
+                stat_game = "mixed" if game_mode == "mixed" else "math"
                 UserStat.objects.create(
                     user=request.user,
-                    game="math",
+                    game=stat_game,
                     score=1,
                     correct=1,
                     incorrect=0,
@@ -979,11 +1008,13 @@ def submit_answer(request):
                 time_limit = 30
             else:  # hard
                 time_limit = 15
-            # Stats tracking for math quiz (incorrect)
+            # Stats tracking for math/mixed quiz (incorrect)
             if request.user.is_authenticated:
+                game_mode = request.session.get("game_mode", "math")
+                stat_game = "mixed" if game_mode == "mixed" else "math"
                 UserStat.objects.create(
                     user=request.user,
-                    game="math",
+                    game=stat_game,
                     score=0,
                     correct=0,
                     incorrect=1,
@@ -1005,13 +1036,8 @@ def submit_answer(request):
                     "user_answer": user_answer if 'user_answer' in locals() else answer_str,
                 },
             )
-        name = request.POST.get("name", "Player")
-        request.session["user_name"] = name
+        # No longer request name; always use profile or username
         return redirect("quiz:what_time")
-
-    # If no name yet, show name entry form
-    if "user_name" not in request.session:
-        return render(request, "quiz/time_name_entry.html")
 
     # Generate random hour and minute for the clock
     hour = random.randint(1, 12)
@@ -1095,16 +1121,10 @@ def basic_questions(request):
         and request.method == "POST"
         and "name_submit" in request.POST
     ):
-        name = request.POST.get("name", "Player")
-        request.session["user_name"] = name
-        return redirect("quiz:basic_questions")
-
-    # If no name yet, show name entry form
-    if "user_name" not in request.session:
-        return render(request, "quiz/basic_questions_name_entry.html")
+        # Handle name submission logic here if needed
+        pass
 
     questions = [
-        "How old are you?",
         "What is your father's name?",
         "What is your mother's name?",
         "How many brothers do you have?",
@@ -1129,6 +1149,15 @@ def basic_questions(request):
     question_index = int(request.GET.get("q", 0))
     if question_index >= len(questions):
         # All questions answered, show results
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="basic_questions",
+                score=1,
+                correct=1,
+                incorrect=0,
+                time_spent=0.0
+            )
         return render(
             request,
             "quiz/basic_questions_result.html",
