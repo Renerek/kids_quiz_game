@@ -2,6 +2,11 @@
 {% load static %}
 {% block title %}Learning Quiz Game for Kids{% endblock %}
 {% block content %}
+	<!-- Side images for corners -->
+	<img src="{% static 'quiz/images/micky_mouse.png' %}" class="side-img side-img-left-top" alt="Micky Mouse" data-fun-speak="Learning is awesome!" />
+	<img src="{% static 'quiz/images/micky_mouse_1.png' %}" class="side-img side-img-right-top" alt="Bear Mascot" data-fun-speak="That tickles! You're making me laugh!" />
+	<img src="{% static 'quiz/images/playing_on_math.png' %}" class="side-img side-img-left-bottom" alt="Mouse 3D" data-fun-speak="Hi friend! Let's learn together!" />
+	<img src="{% static 'quiz/images/reading_3D_dulls.png' %}" class="side-img side-img-right-bottom" alt="Reading 3D" data-fun-speak="We love reading. Books are adventures!" />
 <div class="container">
 	{# Removed separate welcome audio; video will provide audio on first interaction #}
 	<div style="text-align: center; margin-bottom: 20px;">
@@ -76,6 +81,32 @@
 </div>
 {% endblock %}
 {% block scripts %}
+	<style>
+	.side-img {
+		position: absolute;
+		z-index: 1;
+		width: 180px;
+		height: auto;
+		transition: all 0.3s;
+		pointer-events: none;
+	}
+	.side-img-left-top { top: 30px; left: 0; }
+	.side-img-right-top { top: 30px; right: 0; }
+	.side-img-left-bottom { bottom: 30px; left: 0; }
+	.side-img-right-bottom { bottom: 30px; right: 0; }
+	@media (max-width: 1200px) {
+		.side-img { width: 120px; }
+	}
+	@media (max-width: 900px) {
+		.side-img { width: 80px; }
+	}
+	@media (max-width: 700px) {
+		.side-img { display: none; }
+	}
+	</style>
+	<style>
+	/* Removed unused .responsive-side-img and .responsive-img-wrapper CSS classes */
+	</style>
 	<script>
 		function playMixedAndGo(){
 			const a=document.getElementById('mixedGameIntro');

@@ -37,50 +37,70 @@ git clone <repo-url> math_quiz_game
 cd math_quiz_game
 ```
 
-## Create and activate a virtual environment
+
+## Quickstart with Makefile
+
+This project provides a Makefile for essential commands. You do NOT need to manually activate the virtual environment or run manage.py directly for common tasks.
+
+### Setup and Install
 
 ```bash
-# Choose a name: either venv or .venv (project tooling supports both)
-python -m venv .venv
-source .venv/bin/activate
-# Or (if you created 'venv')
-# source venv/bin/activate
-# On Windows (PowerShell): .\.venv\Scripts\Activate.ps1
+make setup         # Creates .venv and installs dependencies
 ```
 
-## Install dependencies
-
-If this project provides a `requirements.txt`, install it. Otherwise at minimum install Django:
+### Database Migrations
 
 ```bash
-pip install -r requirements.txt  # if present
-# or
-pip install Django==5.2.5
+make migrate       # Apply migrations
+make makemigrations # Create new migrations
 ```
 
-## Database migrations
-
-The project uses SQLite by default. Apply migrations and (optionally) create a superuser:
+### Run the App
 
 ```bash
-python manage.py migrate
-python manage.py createsuperuser  # optional
+make run           # Start the development server
+# Visit http://127.0.0.1:8000/
 ```
 
-
-## Running the App
-
-Make sure you are in the project root directory (`math_quiz_game`) where `manage.py` is located before running any Django commands.
-
-To start the development server:
+### Create Superuser
 
 ```bash
-cd math_quiz_game  # if not already in this folder
-source .venv/bin/activate  # or: source venv/bin/activate
-python manage.py migrate   # ensure DB up to date
-python manage.py runserver
-# Visit http://127.0.0.1:8000/ (root redirects to /quiz/)
+make superuser     # Create a Django superuser
 ```
+
+### Run Tests
+
+```bash
+make pytest        # Run pytest tests
+make test          # Run Django tests
+```
+
+### Run Coverage
+
+```bash
+make coverage      # Run coverage for tests
+```
+
+### Collect Static Files
+
+```bash
+make collectstatic # Collect static files
+```
+
+### Pre-commit Checks
+
+```bash
+make precommit     # Run pre-commit checks
+```
+
+### Reset Database and Media
+
+```bash
+make resetdb       # Remove DB, media, run migrations, create superuser
+make reset         # Full reset (setup + resetdb)
+```
+
+---
 
 For deployment (e.g. on Render), ensure your `requirements.txt` is up to date and your `ALLOWED_HOSTS` setting in `mathquiz/settings.py` includes your deployed domain (e.g. `math-quiz-game.onrender.com`).
 
