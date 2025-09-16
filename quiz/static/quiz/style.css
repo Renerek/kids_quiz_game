@@ -19,12 +19,6 @@
     margin: 0 !important;
 }
 /* Side images fixed positioning */
-.side-img {
-    position: fixed;
-    z-index: 9999;
-    pointer-events: auto;
-    cursor: pointer;
-}
 .side-img-left-top { top: 30px; left: 0; }
 .side-img-right-top { top: 30px; right: 0; }
 .side-img-left-bottom { bottom: 30px; left: 0; }
