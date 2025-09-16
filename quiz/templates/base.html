@@ -226,30 +226,30 @@
     <!-- ...existing code... -->
     <style>
     @media (max-width: 800px) {
-        .side-img {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
+        body .side-img {
+            display: none;
+            visibility: hidden;
+            opacity: 0;
         }
     }
     </style>
     <style>
-    .side-img {
-        position: fixed !important;
-        z-index: 900 !important;
-        pointer-events: auto !important;
-        cursor: pointer !important;
-        display: block !important;
-        margin: 0 !important;
-        width: 18vw !important;
-        max-width: 320px !important;
-        min-width: 120px !important;
-        height: auto !important;
+    body .side-img {
+        position: fixed;
+        z-index: 900;
+        pointer-events: auto;
+        cursor: pointer;
+        display: block;
+        margin: 0;
+        width: 18vw;
+        max-width: 320px;
+        min-width: 120px;
+        height: auto;
     }
-    .side-img-left-top { top: 70px !important; left: 54px !important; }
-    .side-img-right-top { top: 70px !important; right: 24px !important; }
-    .side-img-left-bottom { bottom: 70px !important; left: 4px !important; }
-    .side-img-right-bottom { bottom: 70px !important; right: 24px !important; }
+    body .side-img-left-top { top: 70px; left: 54px; }
+    body .side-img-right-top { top: 70px; right: 24px; }
+    body .side-img-left-bottom { bottom: 70px; left: 4px; }
+    body .side-img-right-bottom { bottom: 70px; right: 24px; }
     </style>
     <!-- Side images placed directly in body for fixed positioning -->
     <img src="{% static 'quiz/images/micky_mouse.png' %}" class="side-img side-img-left-top" alt="Micky Mouse" data-fun-speak="Learning is awesome!" />
