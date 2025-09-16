@@ -161,8 +161,11 @@ body {
         width: 90vw !important;
         max-width: 320px !important;
     }
-    .side-image {
+    .side-image.right {
         display: none !important;
+    }
+    .side-image.left {
+        display: flex !important;
     }
 }
 @media (max-width: 700px) {
