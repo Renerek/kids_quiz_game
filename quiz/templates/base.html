@@ -107,7 +107,7 @@
         }
         .bottom-banner {
             width: 100vw;
-            position: fixed;
+            position: relative;
             left: 0;
             bottom: 0;
             background: #007bff;
@@ -158,7 +158,7 @@
     {% block head %}{% endblock %}
     <style>
         .top-nav {
-            position: fixed;
+            position: absolute;
             top: 0;
             right: 0;
             width: auto;
@@ -223,6 +223,100 @@
 {% block bgmusic %}{% endblock %}
 </head>
 <body class="theme-{{ active_theme|default:'light' }}">
+    <!-- Website Banner with animal image overlapping -->
+    <style>
+        .site-banner {
+            width: 100vw;
+            min-width: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            left: 0;
+            top: 0;
+            z-index: 1200;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: stretch;
+        }
+        .banner-img, .banner-img-side {
+            width: 50vw;
+            min-width: 0;
+            height: auto;
+            display: block;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: cover;
+            filter: none !important;
+        }
+        @media (max-width: 900px) {
+            .site-banner {
+                flex-direction: column;
+            }
+            .banner-img, .banner-img-side {
+                width: 100vw;
+                max-width: 100vw;
+            }
+        }
+    </style>
+    <div class="site-banner" style="position:relative;">
+        <img src="{% static 'quiz/images/Header.png' %}" alt="Website Banner" class="banner-img">
+        <img src="{% static 'quiz/images/Header1.png' %}" alt="Side Banner" class="banner-img-side">
+    </div>
+    <style>
+        .banner-heading-ribbon {
+            display: inline-block;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #2196f3 80%, #64b5f6 100%);
+            color: #fff;
+            font-size: 2.2rem;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, 'Segoe UI', Arial, sans-serif;
+            font-weight: bold;
+            letter-spacing: 0.04em;
+            margin: 0 0 0 0;
+            padding: 18px 48px;
+            border-radius: 32px;
+            box-shadow: 0 4px 18px rgba(33,150,243,0.13);
+            z-index: 1300;
+            text-align: center;
+        }
+        .banner-heading-ribbon .ribbon-tail {
+            content: '';
+            position: absolute;
+            bottom: -22px;
+            width: 36px;
+            height: 22px;
+            background: #1976d2;
+            left: 32px;
+            border-bottom-left-radius: 18px 18px;
+            transform: skew(-18deg, 0deg);
+            z-index: -1;
+        }
+        .banner-heading-ribbon .ribbon-tail.right {
+            left: auto;
+            right: 32px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 18px 18px;
+            transform: skew(18deg, 0deg);
+        }
+    </style>
+    <div class="banner-heading-ribbon">
+        <span class="ribbon-tail"></span>
+        <span class="ribbon-tail right"></span>
+        Reading
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Math
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Science
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Art &amp; Colors
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Music
+    </div>
     <!-- ...existing code... -->
     <style>
     @media (max-width: 800px) {
@@ -251,11 +345,66 @@
     .side-img-left-bottom { bottom: 70px !important; left: 4px !important; }
     .side-img-right-bottom { bottom: 70px !important; right: 24px !important; }
     </style>
-    <!-- Side images placed directly in body for fixed positioning -->
-    <img src="{% static 'quiz/images/micky_mouse.png' %}" class="side-img side-img-left-top" alt="Micky Mouse" data-fun-speak="Learning is awesome!" />
-    <img src="{% static 'quiz/images/micky_mouse_1.png' %}" class="side-img side-img-right-top" alt="Bear Mascot" data-fun-speak="That tickles! You're making me laugh!" />
-    <img src="{% static 'quiz/images/playing_on_math.png' %}" class="side-img side-img-left-bottom" alt="Mouse 3D" data-fun-speak="Hi friend! Let's learn together!" />
-    <img src="{% static 'quiz/images/reading_3D_dulls.png' %}" class="side-img side-img-right-bottom" alt="Reading 3D" data-fun-speak="We love reading. Books are adventures!" />
+    <!-- Decorative side images, equally spaced, absolute positioning -->
+    <style>
+        .decorative-side-col {
+            position: absolute;
+            top: 220px; /* moved further down */
+            bottom: 80px;
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            pointer-events: none;
+            z-index: 800;
+        }
+        .decorative-side-col.left { left: 32px; } /* away from left margin */
+    .decorative-side-col.right { right: 90px; } /* moved further from right margin towards center */
+        .decorative-side-img {
+            width: 140px; /* x2 original */
+            height: auto;
+            margin-top: 96px; /* x4 original (was 24px if any) */
+            margin-bottom: 0;
+            pointer-events: auto;
+            user-select: none;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
+        }
+        .decorative-side-img:first-child {
+            margin-top: 0;
+        }
+        @media (max-width: 900px) {
+            .decorative-side-col { display: none; }
+        }
+    </style>
+    <div class="decorative-side-col left">
+        <img src="{% static 'quiz/images/bird-boy.png' %}" class="decorative-side-img" alt="Bird Boy" />
+        <img src="{% static 'quiz/images/blue-cat.png' %}" class="decorative-side-img" alt="Blue Cat" />
+        <img src="{% static 'quiz/images/blue-cat-boy.png' %}" class="decorative-side-img" alt="Blue Cat Boy" />
+        <img src="{% static 'quiz/images/crazy-boy.png' %}" class="decorative-side-img" alt="Crazy Boy" />
+        <img src="{% static 'quiz/images/happy-boy.png' %}" class="decorative-side-img" alt="Happy Boy" />
+        <img src="{% static 'quiz/images/Side Images/ant.png' %}" class="decorative-side-img" alt="Ant" />
+        <img src="{% static 'quiz/images/Side Images/baby-giraff.png' %}" class="decorative-side-img" alt="Baby Giraffe" />
+        <img src="{% static 'quiz/images/Side Images/baby-lion.png' %}" class="decorative-side-img" alt="Baby Lion" />
+        <img src="{% static 'quiz/images/Side Images/banana-elephant.png' %}" class="decorative-side-img" alt="Banana Elephant" />
+        <img src="{% static 'quiz/images/Side Images/bobby.png' %}" class="decorative-side-img" alt="Bobby" />
+        
+    </div>
+    <div class="decorative-side-col right">
+        <img src="{% static 'quiz/images/pencile-baby.png' %}" class="decorative-side-img" alt="Pencile Baby" />
+        <img src="{% static 'quiz/images/rabbit-friends.png' %}" class="decorative-side-img" alt="Rabbit Friends" />
+        <img src="{% static 'quiz/images/read-cat-boy.png' %}" class="decorative-side-img" alt="Read Cat Boy" />
+        <img src="{% static 'quiz/images/tablet-boy.png' %}" class="decorative-side-img" alt="Tablet Boy" />
+        <img src="{% static 'quiz/images/rabbit-dressed.png' %}" class="decorative-side-img" alt="Rabbit Dressed" />
+        <img src="{% static 'quiz/images/Side Images/cat-book.png' %}" class="decorative-side-img" alt="Cat Book" />
+        <img src="{% static 'quiz/images/Side Images/cutty.png' %}" class="decorative-side-img" alt="Cutty" />
+        <img src="{% static 'quiz/images/Side Images/donkey-lion.png' %}" class="decorative-side-img" alt="Donkey Lion" />
+        
+        <img src="{% static 'quiz/images/Side Images/man-elephant.png' %}" class="decorative-side-img" alt="Man Elephant" />
+        <img src="{% static 'quiz/images/Side Images/piggy-book.png' %}" class="decorative-side-img" alt="Piggy Book" />
+        <img src="{% static 'quiz/images/Side Images/rat-elephant.png' %}" class="decorative-side-img" alt="Rat Elephant" />
+        
+    </div>
     <div class="top-nav">
         <a href="/">Home</a>
         {% if user.is_authenticated %}
