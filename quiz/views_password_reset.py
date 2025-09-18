@@ -2,12 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
-from django.core.mail import send_mail
+from django.core.mail import send_mail, get_connection
+import smtplib
+import logging
 from django.conf import settings
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from .forms import CustomPasswordResetRequestForm, CustomSetPasswordForm
 import datetime
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 # In-memory store for tokens (for demo; use a model in production)
 PASSWORD_RESET_TOKENS = {}
@@ -21,8 +25,9 @@ def password_reset_request(request):
             try:
                 user = User.objects.get(email__iexact=email)
             except User.DoesNotExist:
+                # Do not embed HTML in messages; let the template show a signup link.
                 messages.error(request, "No account found with that email.")
-                return render(request, "quiz/password_reset_request.html", {"form": form})
+                return render(request, "quiz/password_reset_request.html", {"form": form, "show_signup_link": True})
             # Generate token
             token = get_random_string(32)
             PASSWORD_RESET_TOKENS[token] = {
@@ -31,29 +36,56 @@ def password_reset_request(request):
             }
             reset_url = request.build_absolute_uri(reverse("quiz:password_reset_confirm", args=[token]))
             contact_url = request.build_absolute_uri(reverse('quiz:contact'))
-            html_message = (
-                f"Hi {user.username},<br><br>"
-                "We received a request to reset your password for Kids Quiz Game.<br><br>"
-                f"To reset your password, please click <a href=\"{reset_url}\">this link</a> (valid for {TOKEN_EXPIRY_MINUTES} minutes).<br><br>"
-                "If you did not request this, you can ignore this email.<br><br>"
-                f"Need help or have questions? <a href=\"{contact_url}\">Contact us</a>.<br><br>"
-                "Best wishes,<br>The Kids Quiz Game Team"
-            )
-            send_mail(
-                subject="Reset your Kids Quiz Game password",
-                message=(
-                    f"Hi {user.username},\n\n"
-                    "We received a request to reset your password for Kids Quiz Game.\n\n"
-                    f"To reset your password, please use this link (valid for {TOKEN_EXPIRY_MINUTES} minutes): {reset_url}\n\n"
-                    "If you did not request this, you can ignore this email.\n\n"
-                    f"Need help or have questions? Contact us: {contact_url}\n\n"
-                    "Best wishes,\nThe Kids Quiz Game Team"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-                html_message=html_message,
-            )
+            context = {
+                "username": user.username,
+                "reset_url": reset_url,
+                "expiry_minutes": TOKEN_EXPIRY_MINUTES,
+                "contact_url": contact_url,
+            }
+            text_body = render_to_string("quiz/emails/password_reset.txt", context)
+            html_body = render_to_string("quiz/emails/password_reset.html", context)
+            try:
+                msg = EmailMultiAlternatives("Reset your Kids Quiz Game password", text_body, settings.DEFAULT_FROM_EMAIL, [user.email])
+                msg.attach_alternative(html_body, "text/html")
+                msg.send(fail_silently=False)
+            except smtplib.SMTPAuthenticationError as auth_err:
+                # SMTP auth failed (bad credentials). Log and attempt to write the email using
+                # the file-based backend so the email is preserved for inspection.
+                logging.exception("SMTP authentication failed when sending password reset email")
+                try:
+                    file_conn = get_connection('django.core.mail.backends.filebased.EmailBackend', file_path=settings.EMAIL_FILE_PATH)
+                    # send_messages accepts email.message.EmailMessage / EmailMultiAlternatives
+                    file_conn.send_messages([msg])
+                    messages.error(request, "Email delivery failed (SMTP authentication). A copy was written to disk for inspection.")
+                except Exception:
+                    logging.exception("Failed to write email to file backend after SMTP auth failure")
+                    messages.error(request, "Email delivery failed and could not be saved. Please contact the site administrator.")
+                    return render(request, "quiz/password_reset_request.html", {"form": form})
+            except Exception:
+                # Fall back to send_mail if EmailMultiAlternatives fails for some other reason
+                try:
+                    send_mail(
+                        subject="Reset your Kids Quiz Game password",
+                        message=text_body,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                        html_message=html_body,
+                    )
+                except Exception:
+                    logging.exception("Failed to send password reset email using fallback send_mail")
+                    # Try to persist the email to disk as a last resort
+                    try:
+                        file_conn = get_connection('django.core.mail.backends.filebased.EmailBackend', file_path=settings.EMAIL_FILE_PATH)
+                        # Build a simple EmailMultiAlternatives to save
+                        saved_msg = EmailMultiAlternatives("Reset your Kids Quiz Game password", text_body, settings.DEFAULT_FROM_EMAIL, [user.email])
+                        saved_msg.attach_alternative(html_body, "text/html")
+                        file_conn.send_messages([saved_msg])
+                        messages.error(request, "Email delivery failed; a copy was written to disk for inspection.")
+                    except Exception:
+                        logging.exception("Failed to save password reset email to disk")
+                        messages.error(request, "Email delivery failed and could not be saved. Please contact the site administrator.")
+                        return render(request, "quiz/password_reset_request.html", {"form": form})
             messages.success(request, "Password reset email sent! Please check your inbox and follow the instructions. Go to your email, click the reset link, and set a new password. If you need help, use the Contact Us page.")
             return redirect("quiz:password_reset_request")
     else:

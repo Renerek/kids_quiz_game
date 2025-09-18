@@ -89,10 +89,19 @@ def what_time_is_it(request):
     hour_str = str(hour)
     minute_str = f"{minute:02d}"
 
+    # If anonymous and no user_name in session, show name entry form
+    if not request.user.is_authenticated and not request.session.get('user_name'):
+        # If POST with a name, store the escaped name and reload
+        if request.method == 'POST' and request.POST.get('name'):
+            request.session['user_name'] = escape(request.POST.get('name').strip())
+            return redirect('quiz:what_time')
+        return render(request, 'quiz/time_name_entry.html')
+
     if request.user.is_authenticated:
         user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
     else:
-        user_name = "Player"
+        user_name = request.session.get('user_name', 'Player')
+
     return render(
         request,
         "quiz/what_time_is_it.html",
@@ -348,13 +357,15 @@ def fruits_game(request):
             "fruit_name": fruit_name,
             "user_name": user_name,
         })
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
+from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core import signing
 from django.utils import timezone
+from django.utils.html import escape
 from django.urls import reverse
 
 def contact(request):
@@ -376,15 +387,15 @@ def contact(request):
         # Send confirmation to user
         try:
             send_mail(
-                subject="Thank you for contacting Math Quiz Game!",
+                subject="Thank you for contacting Kids Quiz Game!",
                 message=(
                     "Hi,\n\n"
-                    "Thank you for reaching out to us at Math Quiz Game. We have received your message and one of our team members will get back to you soon at this email address.\n\n"
+                    "Thank you for reaching out to us at Kids Quiz Game. We have received your message and one of our team members will get back to you soon at this email address.\n\n"
                     f"Reason: {reason}\n"
                     f"Your message: {message}\n\n"
                     "In the meantime, please continue enjoying our learning games and features!\n\n"
                     "If you have any more questions or need help, just reply to this email or use the Contact Us page again.\n\n"
-                    "Best wishes,\nThe Math Quiz Game Team"
+                    "Best wishes,\nThe Kids Quiz Game Team"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
@@ -467,18 +478,18 @@ def signup(request):
             user.save(update_fields=["is_active"])
             from .models import UserProfile
             UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name, age=age, city=city, country=country)
-            # Send verification email
-            _send_verification_email(request, user, first_name or username)
+            # Send verification email (returns verify_url)
+            verify_url = _send_verification_email(request, user, first_name or username)
             # Send confirmation email with username
             from django.core.mail import send_mail
             try:
-                send_mail(
-                    subject="Welcome to Math Quiz Game!",
-                    message=f"Hi {first_name or username},\n\nYour account has been created. Your username is: {username}. Please verify your email to activate your account.",
-                    from_email=None,
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
+                contact_url = request.build_absolute_uri(reverse("quiz:contact"))
+                context = {"display_name": (first_name or username), "username": username, "contact_url": contact_url, "verify_url": verify_url}
+                text_body = render_to_string("quiz/emails/welcome_email.txt", context)
+                html_body = render_to_string("quiz/emails/welcome_email.html", context)
+                msg = EmailMultiAlternatives("Welcome to Kids Quiz Game!", text_body, settings.DEFAULT_FROM_EMAIL, [email])
+                msg.attach_alternative(html_body, "text/html")
+                msg.send(fail_silently=False)
                 logger.info(f"Confirmation email sent to {email} for user {username}.")
             except Exception as e:
                 logger.error(f"Failed to send confirmation email to {email}: {e}")
@@ -519,13 +530,14 @@ def verify_email(request, token: str):
     from django.core.mail import send_mail
     profile_name = getattr(getattr(user, 'profile', None), 'name', user.username)
     try:
-        send_mail(
-            subject="Your account is now verified!",
-            message=f"Hi {profile_name},\n\nYour email has been verified and your account is now active. You can now log in and enjoy all features!",
-            from_email=None,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        # re-use welcome templates but with a verified message
+        subject = "Your account is now verified!"
+        context = {"display_name": profile_name, "username": user.username, "contact_url": request.build_absolute_uri(reverse('quiz:contact'))}
+        text_body = f"Hi {profile_name},\n\nYour email has been verified and your account is now active. You can now log in and enjoy all features!"
+        html_body = render_to_string("quiz/emails/welcome_email.html", context)
+        msg = EmailMultiAlternatives(subject, text_body, settings.DEFAULT_FROM_EMAIL, [user.email])
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
         logger.info(f"Confirmation email sent to {user.email} after verification.")
     except Exception as e:
         logger.error(f"Failed to send confirmation email after verification to {user.email}: {e}")
@@ -536,21 +548,23 @@ def verify_email(request, token: str):
 def _send_verification_email(request, user: User, display_name: str):
     token = _build_verification_token(user)
     verify_url = request.build_absolute_uri(reverse("quiz:verify_email", args=[token]))
-    subject = "Welcome to Math Quiz Game! Confirm your signup"
-    body = (
-        f"Welcome {display_name}!\n\n"
-        "Thank you for signing up for Math Quiz Game. To complete your signup and unlock the full learning experience, please confirm your email address.\n\n"
-        "Click the link below to confirm your signup (valid for 48 hours):\n{verify_url}\n\n"
-        "If the link does not work, copy and paste it into your browser.\n\n"
-        "After confirming, you'll be able to access all our fun and educational games, track your progress, and more!\n\n"
-        "If you did not sign up, you can ignore this email.\n\n"
-        f"Need help? Contact us here: {request.build_absolute_uri(reverse('quiz:contact'))}"
-    )
+    subject = "Welcome to Kids Quiz Game! Confirm your signup"
+    contact_url = request.build_absolute_uri(reverse("quiz:contact"))
+    context = {
+        "display_name": display_name,
+        "verify_url": verify_url,
+        "contact_url": contact_url,
+    }
+    text_body = render_to_string("quiz/emails/verification_email.txt", context)
+    html_body = render_to_string("quiz/emails/verification_email.html", context)
     try:
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+        msg = EmailMultiAlternatives(subject, text_body, settings.DEFAULT_FROM_EMAIL, [user.email])
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
         logger.info(f"Verification email sent to {user.email} for user {user.username}.")
     except Exception as e:
         logger.error(f"Failed to send verification email to {user.email}: {e}")
+    return verify_url
 
 
 def resend_verification(request):
@@ -562,8 +576,9 @@ def resend_verification(request):
         try:
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
+            # Avoid HTML in messages; let template append a signup link when requested.
             messages.error(request, "No account found with that email.")
-            return render(request, "quiz/resend_verification.html")
+            return render(request, "quiz/resend_verification.html", {"show_signup_link": True})
         if user.is_active:
             messages.info(request, "Account already verified. You can log in.")
             return redirect("quiz:login")
@@ -773,8 +788,12 @@ def home(request):
 
 def start_quiz(request):
     if request.method == "POST":
+        name = request.POST.get("name", "").strip()
         mode = request.POST.get("mode", "mixed")
         difficulty = request.POST.get("difficulty", "easy")
+        # For guest users require a name
+        if not request.user.is_authenticated and not name:
+            return render(request, "quiz/start.html", {"error": "Please fill out all fields"})
         if not mode or not difficulty:
             return render(request, "quiz/start.html", {"error": "Please fill out all fields"})
         session = QuizSession.objects.create(
@@ -787,6 +806,9 @@ def start_quiz(request):
         request.session["played_mixed_intro"] = False
         request.session["played_difficulty_audio"] = False
         request.session["correct_streak"] = 0
+        # Store the provided name in session for guest flows and tests
+        if name:
+            request.session['user_name'] = name
         return redirect("quiz:question")
     user_name = None
     if request.user.is_authenticated:

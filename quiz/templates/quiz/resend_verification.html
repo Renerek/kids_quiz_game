@@ -7,7 +7,13 @@
   {% if messages %}
     <ul style="list-style:none;padding-left:0;">
       {% for m in messages %}
-        <li class="msg-{{ m.tags }}" style="font-weight:600;">{{ m }}</li>
+        {% if m.tags == 'error' %}
+          <li style="color:#c00;font-weight:600;">{{ m|safe }}</li>
+        {% elif m.tags == 'success' %}
+          <li style="color:#060;font-weight:600;">{{ m|safe }}</li>
+        {% else %}
+          <li style="color:#444;font-weight:600;">{{ m|safe }}</li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% endif %}
@@ -15,6 +21,9 @@
     <input type="email" name="email" placeholder="Email" required style="width:100%;max-width:350px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:10px;text-align:center;">
     <button type="submit" style="padding:12px 16px;border:none;border-radius:8px;background:#2d73ff;color:#fff;font-weight:600;cursor:pointer;width:100%;max-width:350px;">Resend Email</button>
   </form>
+  {% if show_signup_link %}
+    <p style="margin-top:12px;text-align:center;">Don't have an account? <a href="{% url 'quiz:signup' %}">Sign up</a></p>
+  {% endif %}
   <p style="margin-top:16px;"><a href="{% url 'quiz:login' %}">Back to Login</a></p>
 </div>
 {% endblock %}

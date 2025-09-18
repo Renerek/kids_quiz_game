@@ -25,8 +25,12 @@ urlpatterns = [
     path("resend-verification/", views.resend_verification, name="resend_verification"),
     # Custom password reset flow
     path("password-reset/", __import__('quiz.views_password_reset').views_password_reset.password_reset_request, name="password_reset_request"),
+    # Backwards-compatible alias used by tests and older code
+    path("password-reset/", __import__('quiz.views_password_reset').views_password_reset.password_reset_request, name="password_reset"),
     path("password-reset/confirm/<str:token>/", __import__('quiz.views_password_reset').views_password_reset.password_reset_confirm, name="password_reset_confirm"),
     path("password-reset/complete/", __import__('quiz.views_password_reset').views_password_reset.password_reset_complete, name="password_reset_complete"),
+    # Backwards-compatible names for password reset flow
+    path("password-reset/done/", __import__('quiz.views_password_reset').views_password_reset.password_reset_complete, name="password_reset_done"),
     path("animals-game/", views.animals_game, name="animals_game"),
     path("general-knowledge/", views.general_knowledge_game, name="general_knowledge_game"),
     path("fruits-game/", views.fruits_game, name="fruits_game"),

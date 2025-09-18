@@ -1,0 +1,15 @@
+Welcome {{ display_name }}!
+
+Click to verify: {{ verify_url }}
+
+If the link does not work, copy and paste this URL into your browser:
+{{ verify_url }}
+
+After confirming, you'll be able to access all our fun and educational games, track your progress, and more!
+
+If you did not sign up, you can ignore this email.
+
+Need help? Contact us here: {{ contact_url }}
+
+Best wishes,
+The Kids Quiz Game Team
