@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Learning Quiz Game for Kids{% endblock %}
+{% block side_image_mode %}full{% endblock %}
 {% block content %}
 	<!-- Side images for corners -->
 <div class="container">
@@ -32,6 +33,16 @@
 			<img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling" class="quiz-icon" />
 			<div class="mode-title">Spelling (English)</div>
 			<p class="mode-description">Listen to words and practice your spelling skills!</p>
+		</div>
+		<div class="mode-card" onclick="window.location.href='/quiz/correct-spelling/'">
+			<img src="https://cdn-icons-png.flaticon.com/512/4727/4727470.png" alt="Correct Spelling" class="quiz-icon" />
+			<div class="mode-title">Correct Spelling</div>
+			<p class="mode-description">Spot the misspelled word and fix it using the helpful hint!</p>
+		</div>
+		<div class="mode-card" onclick="window.location.href='/quiz/rearrange-spelling/'">
+			<img src="https://cdn-icons-png.flaticon.com/512/3523/3523063.png" alt="Rearrange Spelling" class="quiz-icon" />
+			<div class="mode-title">Rearrange Spelling</div>
+			<p class="mode-description">Unscramble the letters and discover the hidden word!</p>
 		</div>
 		<div class="mode-card" onclick="window.location.href='/quiz/what-time/'">
 			<img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Clock" class="quiz-icon" />

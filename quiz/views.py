@@ -740,6 +740,32 @@ SPELLING_WORDS = [
     "playground",
 ]
 
+MISSPELLED_WORDS = [
+    {"incorrect": "becuase", "correct": "because", "hint": "We use it to explain a reason."},
+    {"incorrect": "frend", "correct": "friend", "hint": "Someone you like to play with."},
+    {"incorrect": "famaly", "correct": "family", "hint": "People who live with you."},
+    {"incorrect": "sckool", "correct": "school", "hint": "A place where you learn."},
+    {"incorrect": "yello", "correct": "yellow", "hint": "A bright color like the sun."},
+    {"incorrect": "animel", "correct": "animal", "hint": "A living creature like a dog or cat."},
+    {"incorrect": "happie", "correct": "happy", "hint": "The way you feel when you smile."},
+    {"incorrect": "brekfast", "correct": "breakfast", "hint": "The meal you eat in the morning."},
+    {"incorrect": "tomorow", "correct": "tomorrow", "hint": "The day after today."},
+    {"incorrect": "writting", "correct": "writing", "hint": "What you do with a pencil when making letters."},
+]
+
+REARRANGE_WORDS = [
+    {"word": "pencil", "hint": "You use it to write."},
+    {"word": "garden", "hint": "A place where flowers grow."},
+    {"word": "planet", "hint": "Earth is one of these."},
+    {"word": "turtle", "hint": "A slow animal with a shell."},
+    {"word": "rocket", "hint": "It blasts off into space."},
+    {"word": "bucket", "hint": "You can carry water with it."},
+    {"word": "forest", "hint": "Many trees standing together."},
+    {"word": "puzzle", "hint": "Pieces you fit together for fun."},
+    {"word": "castle", "hint": "A big home for a king or queen."},
+    {"word": "circus", "hint": "A fun show with clowns and acrobats."},
+]
+
 
 def spelling_game(request):
     # Guest play limit logic
@@ -779,6 +805,149 @@ def spelling_game(request):
     )
 
 
+def _choose_new_correct_spelling_entry(exclude_word=None):
+    choices = [w for w in MISSPELLED_WORDS if w["incorrect"] != exclude_word]
+    if not choices:
+        choices = MISSPELLED_WORDS
+    return dict(random.choice(choices))
+
+
+def correct_spelling_game(request):
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
+
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+
+    stored_entry = request.session.get("correct_spelling_entry")
+    if stored_entry:
+        current_entry = dict(stored_entry)
+    else:
+        current_entry = _choose_new_correct_spelling_entry()
+
+    feedback = None
+    if request.method == "POST":
+        user_answer = request.POST.get("correct_spelling", "").strip()
+        expected = current_entry["correct"]
+        result = user_answer.lower() == expected.lower()
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="correct_spelling",
+                score=int(result),
+                correct=1 if result else 0,
+                incorrect=0 if result else 1,
+                time_spent=0.0,
+            )
+        feedback = {
+            "result": result,
+            "attempt_word": current_entry["incorrect"],
+            "correct_word": expected,
+            "user_answer": user_answer,
+        }
+        if result:
+            current_entry = _choose_new_correct_spelling_entry(current_entry["incorrect"])
+            request.session["correct_spelling_entry"] = current_entry
+        else:
+            feedback["show_correct"] = True
+            request.session["correct_spelling_entry"] = current_entry
+    else:
+        request.session["correct_spelling_entry"] = current_entry
+
+    return render(
+        request,
+        "quiz/correct_spelling.html",
+        {
+            "incorrect_word": current_entry["incorrect"],
+            "hint": current_entry.get("hint"),
+            "feedback": feedback,
+            "result": feedback["result"] if feedback else None,
+            "user_name": user_name,
+        },
+    )
+
+
+def _build_rearrange_entry(exclude_word=None):
+    choices = [w for w in REARRANGE_WORDS if w["word"] != exclude_word]
+    if not choices:
+        choices = REARRANGE_WORDS
+    base = dict(random.choice(choices))
+    word = base["word"]
+    if len(word) > 1:
+        scrambled = ''.join(random.sample(word, len(word)))
+        while scrambled.lower() == word.lower():
+            scrambled = ''.join(random.sample(word, len(word)))
+    else:
+        scrambled = word
+    base["scrambled"] = scrambled
+    return base
+
+
+def rearrange_spelling_game(request):
+    if not request.user.is_authenticated:
+        guest_plays = request.session.get('guest_plays', 0)
+        if guest_plays >= 3:
+            return render(request, "quiz/guest_limit.html")
+        request.session['guest_plays'] = guest_plays + 1
+
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+
+    stored_entry = request.session.get("rearrange_spelling_entry")
+    if stored_entry:
+        current_entry = dict(stored_entry)
+        if "scrambled" not in current_entry:
+            current_entry = _build_rearrange_entry(current_entry["word"])
+    else:
+        current_entry = _build_rearrange_entry()
+
+    feedback = None
+    if request.method == "POST":
+        user_answer = request.POST.get("rearranged_word", "").strip()
+        expected = current_entry["word"]
+        result = user_answer.lower() == expected.lower()
+        if request.user.is_authenticated:
+            UserStat.objects.create(
+                user=request.user,
+                game="rearrange_spelling",
+                score=int(result),
+                correct=1 if result else 0,
+                incorrect=0 if result else 1,
+                time_spent=0.0,
+            )
+        feedback = {
+            "result": result,
+            "scrambled": current_entry["scrambled"],
+            "correct_word": expected,
+            "user_answer": user_answer,
+        }
+        if result:
+            current_entry = _build_rearrange_entry(current_entry["word"])
+            request.session["rearrange_spelling_entry"] = current_entry
+        else:
+            feedback["show_correct"] = True
+            request.session["rearrange_spelling_entry"] = current_entry
+    else:
+        request.session["rearrange_spelling_entry"] = current_entry
+
+    return render(
+        request,
+        "quiz/rearrange_spelling.html",
+        {
+            "scrambled_word": current_entry["scrambled"],
+            "hint": current_entry.get("hint"),
+            "feedback": feedback,
+            "result": feedback["result"] if feedback else None,
+            "user_name": user_name,
+        },
+    )
+
+
 def home(request):
     return render(
         request,
@@ -807,8 +976,9 @@ def start_quiz(request):
         request.session["played_difficulty_audio"] = False
         request.session["correct_streak"] = 0
         # Store the provided name in session for guest flows and tests
+        # Escape the name to prevent XSS when rendering from session later
         if name:
-            request.session['user_name'] = name
+            request.session['user_name'] = escape(name)
         return redirect("quiz:question")
     user_name = None
     if request.user.is_authenticated:

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Rearrange Spelling Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/mixed_games_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container" style="margin: 40px auto; max-width: 760px; text-align: center;">
+    <div style="margin-bottom: 20px;">
+        <img src="{% static 'quiz/images/logo.png' %}" alt="Kids Quiz Game" style="max-width: 160px;">
+    </div>
+    <h1 class="big-heading">Rearrange Spelling for Words</h1>
+    {% if user.is_authenticated and user_name %}
+        <p style="font-size:1.1rem;font-weight:bold;color:#007bff;">Welcome back, {{ user_name|title }}! Ready for a puzzle?</p>
+    {% endif %}
+    <p class="typing-effect" style="margin-bottom:24px;">Unscramble the letters to reveal the hidden word.</p>
+
+    <div style="background:#fff3e0;border-radius:18px;padding:26px 18px;box-shadow:0 4px 18px rgba(255,152,0,0.2);margin-bottom:22px;">
+        <p style="margin:0;font-size:1rem;color:#e65100;">Mix-up:</p>
+        <div class="scrambled-container" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0 12px 0;">
+            {% for letter in scrambled_word %}
+                <span class="scrambled-letter" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:700;color:#ff6f00;background:#fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,0.12);text-transform:uppercase;">{{ letter }}</span>
+            {% endfor %}
+        </div>
+        {% if hint %}
+            <p style="margin:0;font-size:1rem;color:#4e342e;">Hint: {{ hint }}</p>
+        {% endif %}
+    </div>
+
+    <form method="post" style="margin-bottom:24px;">
+        {% csrf_token %}
+        <input type="text" name="rearranged_word" placeholder="Type the word" required autofocus
+               style="width:100%;max-width:360px;padding:12px;font-size:1.15rem;border-radius:10px;border:1.5px solid #ff9800;margin-bottom:12px;text-transform:lowercase;" />
+        <button type="submit" class="game-button" style="padding:12px 28px;font-size:1.05rem;background:linear-gradient(135deg,#ff9800,#ffb74d);border:none;">Submit</button>
+    </form>
+
+    {% if feedback %}
+        <div id="feedback" class="feedback {% if feedback.result %}animate-correct{% else %}animate-wrong{% endif %}" style="max-width:520px;margin:0 auto 24px auto;padding:18px;border-radius:14px;background:{% if feedback.result %}#e8f5e9{% else %}#ffebee{% endif %};color:{% if feedback.result %}#1b5e20{% else %}#b71c1c{% endif %};box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+            {% if feedback.result %}
+                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">🎉 Awesome!</h3>
+                <p style="margin:0;font-size:1.05rem;">You unscrambled <strong>{{ feedback.correct_word }}</strong> correctly! A fresh scramble is waiting above.</p>
+            {% else %}
+                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">❌ Keep going</h3>
+                <p style="margin:0;font-size:1.05rem;">The word was <strong>{{ feedback.correct_word }}</strong>. Try again with the same letters!</p>
+                {% if feedback.user_answer %}
+                    <p style="margin:8px 0 0 0;font-size:0.95rem;">You entered: <em>{{ feedback.user_answer }}</em>.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div style="margin: 20px auto 10px auto; max-width: 420px;">
+        <img src="{% static 'quiz/images/school_bus.png' %}" alt="School bus" style="width:100%;border-radius:16px;box-shadow:0 5px 18px rgba(0,0,0,0.18);">
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+    const feedback = document.getElementById('feedback');
+    if (feedback) {
+        setTimeout(function(){ feedback.style.display = 'none'; }, 6000);
+    }
+})();
+</script>
+{% endblock %}

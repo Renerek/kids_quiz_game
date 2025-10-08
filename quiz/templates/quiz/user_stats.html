@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tbody>
                     {% for row in per_game %}
                     <tr>
-                        <td>{% if row.game == 'general_knowledge' %}General Knowledge{% else %}{{ row.game|title }}{% endif %}</td>
+                        <td>{% include "quiz/includes/game_name.html" with game=row.game only %}</td>
                         <td>{{ row.plays }}</td>
                         <td>{{ row.total_score }}</td>
                         <td>{{ row.best_score }}</td>
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% regroup stats by game as game_sessions %}
                     {% for group in game_sessions %}
                         <tr style="background:#e3f2fd;font-weight:bold;">
-                            <td colspan="6">{{ group.grouper|title }} Sessions</td>
+                            <td colspan="6">{% include "quiz/includes/game_name.html" with game=group.grouper only %} Sessions</td>
                         </tr>
                         {% for stat in group.list %}
                         <tr>

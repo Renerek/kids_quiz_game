@@ -87,7 +87,8 @@ def password_reset_request(request):
                         messages.error(request, "Email delivery failed and could not be saved. Please contact the site administrator.")
                         return render(request, "quiz/password_reset_request.html", {"form": form})
             messages.success(request, "Password reset email sent! Please check your inbox and follow the instructions. Go to your email, click the reset link, and set a new password. If you need help, use the Contact Us page.")
-            return redirect("quiz:password_reset_request")
+            # After successful submission redirect to the "done" page (backwards-compatible name used by tests)
+            return redirect("quiz:password_reset_done")
     else:
         form = CustomPasswordResetRequestForm()
     return render(request, "quiz/password_reset_request.html", {"form": form})

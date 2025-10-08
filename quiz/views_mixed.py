@@ -1,11 +1,11 @@
 from django.shortcuts import render
-from .views import animals_game, animals, fruits, SPELLING_WORDS
+from .views import animals_game, animals, fruits, SPELLING_WORDS, MISSPELLED_WORDS, REARRANGE_WORDS
 import random
 from .models import UserStat
 
 def mixed_game(request):
     # List of game types
-    game_types = ["math", "animal", "fruit", "spelling", "time", "basic"]
+    game_types = ["math", "animal", "fruit", "spelling", "time", "basic", "correct_spelling", "rearrange_spelling"]
     # Only pick a new question if GET or last answer was correct (or first load)
     pick_new = request.method == "GET" or request.session.get("mixed_correct", True)
     if pick_new:
@@ -85,6 +85,29 @@ def mixed_game(request):
             ]
             q = random.choice(questions)
             question_context = {"basic_question": q, "game_type": "basic"}
+        elif game_type == "correct_spelling":
+            entry = random.choice(MISSPELLED_WORDS)
+            request.session["mixed_correct_spelling_entry"] = entry
+            question_context = {
+                "incorrect_word": entry["incorrect"],
+                "hint": entry.get("hint"),
+                "game_type": "correct_spelling",
+            }
+        elif game_type == "rearrange_spelling":
+            entry = random.choice(REARRANGE_WORDS)
+            word = entry["word"]
+            if word:
+                scrambled = ''.join(random.sample(word, len(word)))
+                while scrambled.lower() == word.lower() and len(word) > 1:
+                    scrambled = ''.join(random.sample(word, len(word)))
+            else:
+                scrambled = word
+            request.session["mixed_rearrange_entry"] = {"word": word, "hint": entry.get("hint"), "scrambled": scrambled}
+            question_context = {
+                "scrambled_word": scrambled,
+                "hint": entry.get("hint"),
+                "game_type": "rearrange_spelling",
+            }
         request.session["mixed_question_context"] = question_context
     else:
         game_type = request.session.get("mixed_type", "math")
@@ -143,6 +166,23 @@ def mixed_game(request):
             # Accept any answer, just move to next
             context["result"] = True
             request.session["mixed_correct"] = True
+        elif game_type == "correct_spelling":
+            entry = request.session.get("mixed_correct_spelling_entry", {})
+            expected = entry.get("correct", "")
+            user = request.POST.get("correct_spelling", "").strip()
+            context["result"] = (user.lower() == expected.lower()) if expected else False
+            context["correct_word"] = expected
+            context["attempt_word"] = entry.get("incorrect")
+            context["user_answer"] = user
+            request.session["mixed_correct"] = bool(context["result"])
+        elif game_type == "rearrange_spelling":
+            entry = request.session.get("mixed_rearrange_entry", {})
+            expected = entry.get("word", "")
+            user = request.POST.get("rearranged_word", "").strip()
+            context["result"] = (user.lower() == expected.lower()) if expected else False
+            context["correct_word"] = expected
+            context["user_answer"] = user
+            request.session["mixed_correct"] = bool(context["result"])
 
         # Record stat for mixed game if authenticated and answer submitted
         if request.user.is_authenticated:

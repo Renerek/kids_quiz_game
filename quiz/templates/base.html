@@ -16,7 +16,7 @@
             height: 100vh;
             width: 60px;
             background: linear-gradient(180deg, #007bff 80%, #6ec6ff 100%);
-            z-index: 1000;
+            z-index: 2500;
             transition: width 0.3s cubic-bezier(.4,0,.2,1);
             overflow-x: hidden;
         }
@@ -222,9 +222,14 @@
     </style>
 {% block bgmusic %}{% endblock %}
 </head>
-<body class="theme-{{ active_theme|default:'light' }}">
+<body class="theme-{{ active_theme|default:'light' }}" data-side-image-mode="{% block side_image_mode %}dynamic{% endblock %}">
     <!-- Website Banner with animal image overlapping -->
     <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
         .site-banner {
             width: 100vw;
             min-width: 100%;
@@ -233,7 +238,7 @@
             position: relative;
             left: 0;
             top: 0;
-            z-index: 1200;
+            z-index: 900;
             overflow: hidden;
             display: flex;
             flex-direction: row;
@@ -261,7 +266,7 @@
             }
         }
     </style>
-    <div class="site-banner" style="position:relative;">
+    <div class="site-banner" style="position:relative; z-index:900;">
         <img src="{% static 'quiz/images/Header.png' %}" alt="Website Banner" class="banner-img">
         <img src="{% static 'quiz/images/Header1.png' %}" alt="Side Banner" class="banner-img-side">
     </div>
@@ -351,7 +356,7 @@
             position: absolute;
             top: 220px; /* moved further down */
             bottom: 80px;
-            width: 120px;
+            width: 140px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -359,8 +364,8 @@
             pointer-events: none;
             z-index: 800;
         }
-        .decorative-side-col.left { left: 32px; } /* away from left margin */
-    .decorative-side-col.right { right: 90px; } /* moved further from right margin towards center */
+        .decorative-side-col.left { left: 32px; }
+        .decorative-side-col.right { right: 90px; }
         .decorative-side-img {
             width: 140px; /* x2 original */
             height: auto;
@@ -388,7 +393,6 @@
         <img src="{% static 'quiz/images/Side Images/baby-lion.png' %}" class="decorative-side-img" alt="Baby Lion" />
         <img src="{% static 'quiz/images/Side Images/banana-elephant.png' %}" class="decorative-side-img" alt="Banana Elephant" />
         <img src="{% static 'quiz/images/Side Images/bobby.png' %}" class="decorative-side-img" alt="Bobby" />
-        
     </div>
     <div class="decorative-side-col right">
         <img src="{% static 'quiz/images/pencile-baby.png' %}" class="decorative-side-img" alt="Pencile Baby" />
@@ -399,11 +403,9 @@
         <img src="{% static 'quiz/images/Side Images/cat-book.png' %}" class="decorative-side-img" alt="Cat Book" />
         <img src="{% static 'quiz/images/Side Images/cutty.png' %}" class="decorative-side-img" alt="Cutty" />
         <img src="{% static 'quiz/images/Side Images/donkey-lion.png' %}" class="decorative-side-img" alt="Donkey Lion" />
-        
         <img src="{% static 'quiz/images/Side Images/man-elephant.png' %}" class="decorative-side-img" alt="Man Elephant" />
         <img src="{% static 'quiz/images/Side Images/piggy-book.png' %}" class="decorative-side-img" alt="Piggy Book" />
         <img src="{% static 'quiz/images/Side Images/rat-elephant.png' %}" class="decorative-side-img" alt="Rat Elephant" />
-        
     </div>
     <div class="top-nav">
         <a href="/">Home</a>
@@ -468,6 +470,8 @@
             <a href="/quiz/start/?mode=mixed" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" class="menu-icon" alt="Maths Quiz">Maths Quiz</a>
             <!-- Login removed from sidebar -->
             <a href="/quiz/spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" class="menu-icon" alt="Spelling">Spelling</a>
+            <a href="/quiz/correct-spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/4727/4727470.png" class="menu-icon" alt="Correct Spelling">Correct Spelling</a>
+            <a href="/quiz/rearrange-spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/3523/3523063.png" class="menu-icon" alt="Rearrange Letters">Rearrange Spelling</a>
             <a href="/quiz/what-time/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" class="menu-icon" alt="Clock">What Time Is It?</a>
             <a href="/quiz/basic-questions/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" class="menu-icon" alt="Questions">Basic Questions</a>
             <a href="/quiz/colors-shapes/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" class="menu-icon" alt="Colors & Shapes">Colors & Shapes</a>
@@ -499,9 +503,57 @@
     <div class="main-content">
         {% block content %}{% endblock %}
     </div>
-    <div class="bottom-banner">
+    <div class="bottom-banner" style="margin-top:auto;">
         Rene & Sons © 2007-2025 Rene Rek, Inc. All rights reserved.
     </div>
+    <script>
+    (function(){
+        const body = document.body;
+        if(!body) { return; }
+        const mode = body.getAttribute('data-side-image-mode') || 'dynamic';
+        if(mode === 'full') { return; }
+
+        function computeShowCount(images){
+            if(images.length === 0) { return 0; }
+            const main = document.querySelector('.main-content');
+            const contentHeight = main ? main.scrollHeight : document.body.scrollHeight;
+            const viewportHeight = window.innerHeight || 0;
+            const extra = Math.max(0, contentHeight - viewportHeight);
+            let base = 4;
+            if(extra > 0){
+                base += Math.floor(extra / 280);
+            }
+            let target = Math.min(base, images.length, 10);
+            const minimum = images.length < 4 ? images.length : 4;
+            target = Math.max(target, minimum);
+            return target;
+        }
+
+        function applyLimit(){
+            document.querySelectorAll('.decorative-side-col').forEach(col => {
+                const images = Array.from(col.querySelectorAll('.decorative-side-img'));
+                images.forEach(img => { img.style.display = ''; });
+                const showCount = computeShowCount(images);
+                images.forEach((img, idx) => {
+                    img.style.display = idx < showCount ? '' : 'none';
+                });
+            });
+        }
+
+        let resizeTimeout;
+        function schedule(){
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(applyLimit, 120);
+        }
+
+        window.addEventListener('load', function(){
+            applyLimit();
+            schedule();
+        });
+        window.addEventListener('resize', schedule);
+        window.addEventListener('orientationchange', schedule);
+    })();
+    </script>
     <script>
     (function(){
         function speak(text){

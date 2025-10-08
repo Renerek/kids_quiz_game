@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Correct Spelling Game{% endblock %}
+{% block bgmusic %}
+{% if user.is_authenticated and user.profile.sound_music %}
+<audio id="bgMusic" src="{% static 'quiz/audio/bg/spelling_piano.mp3' %}" loop autoplay></audio>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bg = document.getElementById('bgMusic');
+    if (bg) {
+        bg.volume = 0.25;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container" style="margin: 40px auto; max-width: 720px; text-align: center;">
+    <div style="margin-bottom: 20px;">
+        <img src="{% static 'quiz/images/logo.png' %}" alt="Kids Quiz Game" style="max-width: 160px;">
+    </div>
+    <h1 class="big-heading">Correct Spelling of Words</h1>
+    {% if user.is_authenticated and user_name %}
+        <p style="font-size:1.1rem;font-weight:bold;color:#007bff;">Great to see you, {{ user_name|title }}!</p>
+    {% endif %}
+    <p class="typing-effect" style="margin-bottom:24px;">Fix the spelling mistake and become a word wizard!</p>
+
+    <div style="background:#f1f8ff;border-radius:18px;padding:24px 18px;box-shadow:0 4px 18px rgba(0,123,255,0.12);margin-bottom:22px;">
+        <p style="margin:0;font-size:1rem;color:#0d47a1;">Wrong spelling shown below. Type the correct spelling:</p>
+        <div style="font-size:2.2rem;font-weight:700;letter-spacing:0.1em;color:#ef5350;margin:18px 0 10px 0;">{{ incorrect_word|upper }}</div>
+        {% if hint %}
+            <p style="margin:0;font-size:1rem;color:#004d40;">Hint: {{ hint }}</p>
+        {% endif %}
+    </div>
+
+    <form method="post" style="margin-bottom:24px;">
+        {% csrf_token %}
+        <input type="text" name="correct_spelling" placeholder="Type the correct spelling" required autofocus
+               style="width:100%;max-width:360px;padding:12px;font-size:1.15rem;border-radius:10px;border:1.5px solid #007bff;margin-bottom:12px;" />
+        <button type="submit" class="game-button" style="padding:12px 28px;font-size:1.05rem;">Submit</button>
+    </form>
+
+    {% if feedback %}
+        <div id="feedback" class="feedback {% if feedback.result %}animate-correct{% else %}animate-wrong{% endif %}" style="max-width:520px;margin:0 auto 24px auto;padding:18px;border-radius:14px;background:{% if feedback.result %}#e8f5e9{% else %}#ffebee{% endif %};color:{% if feedback.result %}#1b5e20{% else %}#b71c1c{% endif %};box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+            {% if feedback.result %}
+                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">✔️ Fantastic!</h3>
+                <p style="margin:0;font-size:1.05rem;">You fixed <strong>{{ feedback.attempt_word }}</strong>! The correct spelling is <strong>{{ feedback.correct_word }}</strong>.</p>
+                <p style="margin:10px 0 0 0;font-size:0.95rem;color:#1a237e;">A new word is ready for you below. Keep going!</p>
+            {% else %}
+                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">❌ Not quite yet</h3>
+                <p style="margin:0;font-size:1.05rem;">The correct spelling of <strong>{{ feedback.attempt_word }}</strong> is <strong>{{ feedback.correct_word }}</strong>.</p>
+                {% if feedback.user_answer %}
+                    <p style="margin:8px 0 0 0;font-size:0.95rem;">You typed: <em>{{ feedback.user_answer }}</em>. Give it another try!</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div style="margin: 20px auto 10px auto; max-width: 420px;">
+        <img src="{% static 'quiz/images/boy-girl-are-reading-books.jpg' %}" alt="Kids writing" style="width:100%;border-radius:16px;box-shadow:0 5px 18px rgba(0,0,0,0.18);">
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+    const feedback = document.getElementById('feedback');
+    if (feedback) {
+        setTimeout(function(){ feedback.style.display = 'none'; }, 6000);
+    }
+})();
+</script>
+{% endblock %}
