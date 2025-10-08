@@ -30,10 +30,10 @@ An educational Django web app with multiple kid‑friendly learning mini‑games
 
 ## Clone
 
-Replace <repo-url> with your repository URL and run:
+Replace YOUR_REPO_URL with your repository URL and run:
 
 ```bash
-git clone <repo-url> math_quiz_game
+git clone YOUR_REPO_URL math_quiz_game
 cd math_quiz_game
 ```
 
@@ -69,6 +69,13 @@ make pytest
 ```
 
 Notes:
+
+- Always activate the appropriate virtualenv before running `manage.py` (avoids ModuleNotFoundError for Django).
+- `requirements.txt` at the project root enables `pip install -r requirements.txt` (a minimal one is included for local testing).
+- Static images live under `quiz/static/quiz/images/` (e.g. `boy-girl-are-reading-books.jpg`). If an image doesn't appear in the browser, check the file exists and that the template uses the `{% static %}` tag.
+- If CI fails on pre-commit or linters, run `pre-commit run --all-files` and fix the reported issues locally before pushing.
+- Email verification & password reset rely on correctly configured `DEFAULT_FROM_EMAIL` and chosen backend.
+- If password reset emails 500 with reverse errors, ensure the `quiz` URLs are included and that you are using the provided namespaced patterns (already configured in `quiz/urls.py`).
 - The Makefile creates/uses `.venv` by default. If you prefer a different name, you can still use the virtualenv manually, but `make` targets expect `.venv` unless you edit the Makefile.
 - If you need developer tools (pytest, pre-commit, debug toolbar) installed into your venv, run `pip install -r requirements-dev.txt` inside the venv or use `make setup` and then manually install dev deps.
 
@@ -83,6 +90,8 @@ gunicorn mathquiz.wsgi
 ```
 
 ## Running Tests
+
+See `docs/testing.md` for deeper guidance on the suite structure and category runner script. For the quick version:
 
 To run all automated tests for the project, use:
 
@@ -151,6 +160,7 @@ Supported environment variables (set before running `runserver`):
 | `EMAIL_FILE_PATH` | Directory for file backend if chosen | `./sent_emails` |
 
 Example (Unix shell):
+
 ```bash
 export EMAIL_HOST="smtp.gmail.com"
 export EMAIL_HOST_USER="your@gmail.com"
@@ -160,6 +170,7 @@ python manage.py runserver
 ```
 
 To use the file backend:
+
 ```bash
 export EMAIL_BACKEND=django.core.mail.backends.filebased.EmailBackend
 export EMAIL_FILE_PATH=$(pwd)/sent_emails
@@ -174,7 +185,7 @@ The project includes an advanced audio generation system for creating kid-friend
 
 ```bash
 # Install audio generation dependencies (optional)
-pip install -r audio_requirements.txt
+pip install -r docs/audio_requirements.txt
 
 # On Ubuntu/Debian, you may also need system dependencies:
 sudo apt-get install ffmpeg
@@ -203,6 +214,7 @@ python make_intro.py 1.3 0.9 "Custom text"
 ```
 
 The audio generation system creates:
+
 - Welcome messages and game introductions
 - Feedback sounds (correct/incorrect responses)
 - Encouragement messages
@@ -243,26 +255,22 @@ python manage.py runserver
 To run code quality checks before pushing:
 
 1. Install pre-commit (already done):
-	```bash
-	pip install pre-commit
-	```
+
+   ```bash
+   pip install pre-commit
+   ```
+
 2. Add the pre-commit config (already included in this repo).
 3. Install the git hook:
-	```bash
-	pre-commit install
-	```
-4. Run all checks manually:
-	```bash
-	pre-commit run --all-files
-	```
 
-This will check formatting (black), linting (flake8), and import sorting (isort) before you push code.
+   ```bash
+   pre-commit install
+   ```
+
+4. Run all checks manually:
+
+   ```bash
+   pre-commit run --all-files
+   ```
 
 Notes:
-
-- Always activate the appropriate virtualenv before running `manage.py` (avoids ModuleNotFoundError for Django).
-- `requirements.txt` at the project root enables `pip install -r requirements.txt` (a minimal one is included for local testing).
-- Static images live under `quiz/static/quiz/images/` (e.g. `boy-girl-are-reading-books.jpg`). If an image doesn't appear in the browser, check the file exists and that the template uses the `{% static %}` tag.
-- If CI fails on pre-commit or linters, run `pre-commit run --all-files` and fix the reported issues locally before pushing.
-- Email verification & password reset rely on correctly configured `DEFAULT_FROM_EMAIL` and chosen backend.
-- If password reset emails 500 with reverse errors, ensure the `quiz` URLs are included and that you are using the provided namespaced patterns (already configured in `quiz/urls.py`).

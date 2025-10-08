@@ -1,0 +1,16 @@
+# Audio generation dependencies for make_intro.py
+# Install with: pip install -r docs/audio_requirements.txt
+
+# Text-to-speech generation
+gtts==2.5.4
+
+# Audio processing and manipulation
+pydub==0.25.1
+
+# Required for pydub audio processing
+# Note: May also need system dependencies:
+# - ffmpeg (for audio format conversion)
+# - simpleaudio (for audio playback testing)
+
+# Optional: for audio playback testing
+simpleaudio==1.0.4
