@@ -7,6 +7,7 @@ Runs different categories of tests to help identify and focus on specific areas.
 import os
 import sys
 import subprocess
+from pathlib import Path
 
 def run_test_category(category_name, test_classes):
     """Run a specific category of tests"""
@@ -29,7 +30,8 @@ def run_test_category(category_name, test_classes):
 
 def main():
     # Change to project directory
-    os.chdir('/home/admin1/projects/math_quiz_game')
+    project_root = Path(__file__).resolve().parent
+    os.chdir(project_root)
     
     test_categories = {
         "Core Functionality": [

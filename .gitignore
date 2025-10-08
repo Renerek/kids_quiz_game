@@ -19,7 +19,12 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
-# staticfiles/ - commented out for deployment compatibility
+staticfiles/*
+!staticfiles/.gitkeep
+sent_emails/*
+!sent_emails/.gitkeep
+runserver.log
+*.pid
 
 # Testing / reporting
 .pytest_cache/
@@ -58,6 +63,4 @@ npm-debug.log*
 *.key
 secrets.yml
 
-# Audio generation script (keep local for development)
-make_intro.py
-audio_requirements.txt
+
