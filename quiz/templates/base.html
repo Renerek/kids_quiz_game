@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Math Quiz Game{% endblock %}</title>
+    <title>{% block title %}Kids Quiz Game{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'quiz/style.css' %}">
     <link rel="stylesheet" href="{% static 'quiz/extra.css' %}">
     <link rel="stylesheet" href="{% static 'quiz/themes.css' %}">
@@ -16,7 +16,7 @@
             height: 100vh;
             width: 60px;
             background: linear-gradient(180deg, #007bff 80%, #6ec6ff 100%);
-            z-index: 1000;
+            z-index: 2500;
             transition: width 0.3s cubic-bezier(.4,0,.2,1);
             overflow-x: hidden;
         }
@@ -57,31 +57,39 @@
             margin-right: 14px;
             flex-shrink: 0;
         }
-        /* Always expand sidebar and show menu on touch devices/small screens */
-        @media (hover: none), (max-width: 900px) {
+        @media (max-width: 900px) {
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .side-image {
+                display: none;
+            }
             .sidebar {
-                width: 260px !important;
-                box-shadow: 2px 0 12px rgba(0,0,0,0.12);
+                width: 44px;
             }
-            .sidebar .menu-title,
+            .sidebar:hover {
+                width: 180px;
+            }
+            .sidebar .menu-title {
+                font-size: 1rem;
+            }
             .sidebar .menu-link {
-                opacity: 1 !important;
+                font-size: 0.95rem;
             }
-        }
-        .sidebar:hover {
-            width: 260px;
-            box-shadow: 2px 0 12px rgba(0,0,0,0.12);
-        }
-        .sidebar:hover .menu-title,
-        .sidebar:hover .menu-link {
-            opacity: 1;
+            .sidebar .menu-icon {
+                width: 24px;
+                height: 24px;
+                margin-right: 8px;
+            }
         }
         .side-image {
             position: fixed;
             left: 80px;
-            z-index: 10;
+            z-index: 9999;
             margin-top: 80px;
             padding: 24px 0;
+            pointer-events: auto;
         }
         .side-image.right {
             left: auto;
@@ -93,10 +101,13 @@
             border-radius: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             margin-bottom: 48px;
+            pointer-events: auto;
+            cursor: pointer;
+            z-index: 9999;
         }
         .bottom-banner {
             width: 100vw;
-            position: fixed;
+            position: relative;
             left: 0;
             bottom: 0;
             background: #007bff;
@@ -112,6 +123,7 @@
             margin-left: 70px;
             margin-right: 220px;
             transition: margin-left 0.3s cubic-bezier(.4,0,.2,1);
+            z-index: 1;
         }
         .sidebar:hover ~ .main-content {
             margin-left: 270px;
@@ -146,7 +158,7 @@
     {% block head %}{% endblock %}
     <style>
         .top-nav {
-            position: fixed;
+            position: absolute;
             top: 0;
             right: 0;
             width: auto;
@@ -210,7 +222,191 @@
     </style>
 {% block bgmusic %}{% endblock %}
 </head>
-<body class="theme-{{ active_theme|default:'light' }}">
+<body class="theme-{{ active_theme|default:'light' }}" data-side-image-mode="{% block side_image_mode %}dynamic{% endblock %}">
+    <!-- Website Banner with animal image overlapping -->
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .site-banner {
+            width: 100vw;
+            min-width: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            left: 0;
+            top: 0;
+            z-index: 900;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: stretch;
+        }
+        .banner-img, .banner-img-side {
+            width: 50vw;
+            min-width: 0;
+            height: auto;
+            display: block;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: cover;
+            filter: none !important;
+        }
+        @media (max-width: 900px) {
+            .site-banner {
+                flex-direction: column;
+            }
+            .banner-img, .banner-img-side {
+                width: 100vw;
+                max-width: 100vw;
+            }
+        }
+    </style>
+    <div class="site-banner" style="position:relative; z-index:900;">
+        <img src="{% static 'quiz/images/Header.png' %}" alt="Website Banner" class="banner-img">
+        <img src="{% static 'quiz/images/Header1.png' %}" alt="Side Banner" class="banner-img-side">
+    </div>
+    <style>
+        .banner-heading-ribbon {
+            display: inline-block;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #2196f3 80%, #64b5f6 100%);
+            color: #fff;
+            font-size: 2.2rem;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, 'Segoe UI', Arial, sans-serif;
+            font-weight: bold;
+            letter-spacing: 0.04em;
+            margin: 0 0 0 0;
+            padding: 18px 48px;
+            border-radius: 32px;
+            box-shadow: 0 4px 18px rgba(33,150,243,0.13);
+            z-index: 1300;
+            text-align: center;
+        }
+        .banner-heading-ribbon .ribbon-tail {
+            content: '';
+            position: absolute;
+            bottom: -22px;
+            width: 36px;
+            height: 22px;
+            background: #1976d2;
+            left: 32px;
+            border-bottom-left-radius: 18px 18px;
+            transform: skew(-18deg, 0deg);
+            z-index: -1;
+        }
+        .banner-heading-ribbon .ribbon-tail.right {
+            left: auto;
+            right: 32px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 18px 18px;
+            transform: skew(18deg, 0deg);
+        }
+    </style>
+    <div class="banner-heading-ribbon">
+        <span class="ribbon-tail"></span>
+        <span class="ribbon-tail right"></span>
+        Reading
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Math
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Science
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Art &amp; Colors
+        <span style="color:#ffeb3b; font-size:2.5rem; vertical-align:middle;">&bull;</span>
+        Music
+    </div>
+    <!-- ...existing code... -->
+    <style>
+    @media (max-width: 800px) {
+        .side-img {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+    }
+    </style>
+    <style>
+    .side-img {
+        position: fixed !important;
+        z-index: 900 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        display: block !important;
+        margin: 0 !important;
+        width: 18vw !important;
+        max-width: 320px !important;
+        min-width: 120px !important;
+        height: auto !important;
+    }
+    .side-img-left-top { top: 70px !important; left: 54px !important; }
+    .side-img-right-top { top: 70px !important; right: 24px !important; }
+    .side-img-left-bottom { bottom: 70px !important; left: 4px !important; }
+    .side-img-right-bottom { bottom: 70px !important; right: 24px !important; }
+    </style>
+    <!-- Decorative side images, equally spaced, absolute positioning -->
+    <style>
+        .decorative-side-col {
+            position: absolute;
+            top: 220px; /* moved further down */
+            bottom: 80px;
+            width: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            pointer-events: none;
+            z-index: 800;
+        }
+        .decorative-side-col.left { left: 32px; }
+        .decorative-side-col.right { right: 90px; }
+        .decorative-side-img {
+            width: 140px; /* x2 original */
+            height: auto;
+            margin-top: 96px; /* x4 original (was 24px if any) */
+            margin-bottom: 0;
+            pointer-events: auto;
+            user-select: none;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
+        }
+        .decorative-side-img:first-child {
+            margin-top: 0;
+        }
+        @media (max-width: 900px) {
+            .decorative-side-col { display: none; }
+        }
+    </style>
+    <div class="decorative-side-col left">
+        <img src="{% static 'quiz/images/bird-boy.png' %}" class="decorative-side-img" alt="Bird Boy" />
+        <img src="{% static 'quiz/images/blue-cat.png' %}" class="decorative-side-img" alt="Blue Cat" />
+        <img src="{% static 'quiz/images/blue-cat-boy.png' %}" class="decorative-side-img" alt="Blue Cat Boy" />
+        <img src="{% static 'quiz/images/crazy-boy.png' %}" class="decorative-side-img" alt="Crazy Boy" />
+        <img src="{% static 'quiz/images/happy-boy.png' %}" class="decorative-side-img" alt="Happy Boy" />
+        <img src="{% static 'quiz/images/Side Images/ant.png' %}" class="decorative-side-img" alt="Ant" />
+        <img src="{% static 'quiz/images/Side Images/baby-giraff.png' %}" class="decorative-side-img" alt="Baby Giraffe" />
+        <img src="{% static 'quiz/images/Side Images/baby-lion.png' %}" class="decorative-side-img" alt="Baby Lion" />
+        <img src="{% static 'quiz/images/Side Images/banana-elephant.png' %}" class="decorative-side-img" alt="Banana Elephant" />
+        <img src="{% static 'quiz/images/Side Images/bobby.png' %}" class="decorative-side-img" alt="Bobby" />
+    </div>
+    <div class="decorative-side-col right">
+        <img src="{% static 'quiz/images/pencile-baby.png' %}" class="decorative-side-img" alt="Pencile Baby" />
+        <img src="{% static 'quiz/images/rabbit-friends.png' %}" class="decorative-side-img" alt="Rabbit Friends" />
+        <img src="{% static 'quiz/images/read-cat-boy.png' %}" class="decorative-side-img" alt="Read Cat Boy" />
+        <img src="{% static 'quiz/images/tablet-boy.png' %}" class="decorative-side-img" alt="Tablet Boy" />
+        <img src="{% static 'quiz/images/rabbit-dressed.png' %}" class="decorative-side-img" alt="Rabbit Dressed" />
+        <img src="{% static 'quiz/images/Side Images/cat-book.png' %}" class="decorative-side-img" alt="Cat Book" />
+        <img src="{% static 'quiz/images/Side Images/cutty.png' %}" class="decorative-side-img" alt="Cutty" />
+        <img src="{% static 'quiz/images/Side Images/donkey-lion.png' %}" class="decorative-side-img" alt="Donkey Lion" />
+        <img src="{% static 'quiz/images/Side Images/man-elephant.png' %}" class="decorative-side-img" alt="Man Elephant" />
+        <img src="{% static 'quiz/images/Side Images/piggy-book.png' %}" class="decorative-side-img" alt="Piggy Book" />
+        <img src="{% static 'quiz/images/Side Images/rat-elephant.png' %}" class="decorative-side-img" alt="Rat Elephant" />
+    </div>
     <div class="top-nav">
         <a href="/">Home</a>
         {% if user.is_authenticated %}
@@ -229,6 +425,7 @@
                 </div>
             </div>
             <script>
+    // ...existing code...
             document.addEventListener('DOMContentLoaded', function() {
                 var toggle = document.querySelector('.dropdown-toggle');
                 var menu = document.querySelector('.dropdown-menu');
@@ -273,6 +470,8 @@
             <a href="/quiz/start/?mode=mixed" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/992/992699.png" class="menu-icon" alt="Maths Quiz">Maths Quiz</a>
             <!-- Login removed from sidebar -->
             <a href="/quiz/spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" class="menu-icon" alt="Spelling">Spelling</a>
+            <a href="/quiz/correct-spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/4727/4727470.png" class="menu-icon" alt="Correct Spelling">Correct Spelling</a>
+            <a href="/quiz/rearrange-spelling/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/3523/3523063.png" class="menu-icon" alt="Rearrange Letters">Rearrange Spelling</a>
             <a href="/quiz/what-time/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" class="menu-icon" alt="Clock">What Time Is It?</a>
             <a href="/quiz/basic-questions/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" class="menu-icon" alt="Questions">Basic Questions</a>
             <a href="/quiz/colors-shapes/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" class="menu-icon" alt="Colors & Shapes">Colors & Shapes</a>
@@ -282,14 +481,6 @@
 
             <a href="/quiz/mixed-game/" class="menu-link"><img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" class="menu-icon" alt="Mixed Game">Mixed Game</a>
         </div>
-    </div>
-    <div class="side-image left">
-    <img src="{% static 'quiz/images/micky_mouse_1.png' %}" alt="Bear Mascot" data-fun-speak="That tickles! You're making me laugh!" />
-    <img src="{% static 'quiz/images/playing_on_math.png' %}" alt="Mouse 3D" data-fun-speak="Hi friend! Let's learn together!" />
-    </div>
-    <div class="side-image right">
-    <img src="{% static 'quiz/images/micky_mouse.png' %}" alt="Learning Path" data-fun-speak="Learning is awesome!" />
-    <img src="{% static 'quiz/images/reading_3D_dulls.png' %}" alt="Reading 3D" data-fun-speak="We love reading. Books are adventures!" />
     </div>
     <style>
     @media (max-width: 900px) {
@@ -312,9 +503,57 @@
     <div class="main-content">
         {% block content %}{% endblock %}
     </div>
-    <div class="bottom-banner">
+    <div class="bottom-banner" style="margin-top:auto;">
         Rene & Sons © 2007-2025 Rene Rek, Inc. All rights reserved.
     </div>
+    <script>
+    (function(){
+        const body = document.body;
+        if(!body) { return; }
+        const mode = body.getAttribute('data-side-image-mode') || 'dynamic';
+        if(mode === 'full') { return; }
+
+        function computeShowCount(images){
+            if(images.length === 0) { return 0; }
+            const main = document.querySelector('.main-content');
+            const contentHeight = main ? main.scrollHeight : document.body.scrollHeight;
+            const viewportHeight = window.innerHeight || 0;
+            const extra = Math.max(0, contentHeight - viewportHeight);
+            let base = 4;
+            if(extra > 0){
+                base += Math.floor(extra / 280);
+            }
+            let target = Math.min(base, images.length, 10);
+            const minimum = images.length < 4 ? images.length : 4;
+            target = Math.max(target, minimum);
+            return target;
+        }
+
+        function applyLimit(){
+            document.querySelectorAll('.decorative-side-col').forEach(col => {
+                const images = Array.from(col.querySelectorAll('.decorative-side-img'));
+                images.forEach(img => { img.style.display = ''; });
+                const showCount = computeShowCount(images);
+                images.forEach((img, idx) => {
+                    img.style.display = idx < showCount ? '' : 'none';
+                });
+            });
+        }
+
+        let resizeTimeout;
+        function schedule(){
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(applyLimit, 120);
+        }
+
+        window.addEventListener('load', function(){
+            applyLimit();
+            schedule();
+        });
+        window.addEventListener('resize', schedule);
+        window.addEventListener('orientationchange', schedule);
+    })();
+    </script>
     <script>
     (function(){
         function speak(text){

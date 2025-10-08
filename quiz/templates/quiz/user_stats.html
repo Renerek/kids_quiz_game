@@ -20,17 +20,19 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="collapsible-section" id="per-game-section">
         <button class="collapsible" type="button">Per Game Summary</button>
         <div class="collapsible-content">
-            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="hidden" name="per_game_page" value="1">
-                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
-                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
-                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-            </form>
-            <form method="post" id="reset-per-game-form" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="reset_per_game" value="1">
-                <button type="button" class="btn btn-danger btn-sm" onclick="confirmResetPerGame()">Reset Per Game Summary</button>
-            </form>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+                <form method="get" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:0;">
+                    <input type="hidden" name="per_game_page" value="1">
+                    <label style="margin-bottom:0;">From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:4px;"></label>
+                    <label style="margin-bottom:0;">To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:4px;"></label>
+                    <button type="submit" class="btn btn-xs btn-primary" style="font-size:0.92rem;padding:3px 10px;">Filter</button>
+                </form>
+                <form method="post" id="reset-per-game-form" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="reset_per_game" value="1">
+                    <button type="button" class="btn btn-danger btn-xs" style="font-size:0.92rem;padding:3px 10px;margin-left:4px;" onclick="confirmResetPerGame()">Reset</button>
+                </form>
+            </div>
             <table class="table table-striped sortable" style="width:100%;margin-bottom:10px;">
                 <thead>
                     <tr>
@@ -47,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tbody>
                     {% for row in per_game %}
                     <tr>
-                        <td>{% if row.game == 'general_knowledge' %}General Knowledge{% else %}{{ row.game|title }}{% endif %}</td>
+                        <td>{% include "quiz/includes/game_name.html" with game=row.game only %}</td>
                         <td>{{ row.plays }}</td>
                         <td>{{ row.total_score }}</td>
                         <td>{{ row.best_score }}</td>
@@ -62,26 +64,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tbody>
             </table>
             {% if per_game.paginator.num_pages > 1 %}
-            <nav>
-                <ul class="pagination">
-                    {% for i in per_game.paginator.page_range %}
-                        <li class="page-item {% if per_game.number == i %}active{% endif %}">
-                            <a class="page-link" href="?per_game_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </nav>
+            <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin:10px 0;">
+                {% if per_game.has_previous %}
+                    <a href="?per_game_page={{ per_game.previous_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        &#8592; Prev
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">&#8592; Prev</span>
+                {% endif %}
+                <span style="font-size:1.08rem;font-weight:bold;">Page {{ per_game.number }} of {{ per_game.paginator.num_pages }}</span>
+                {% if per_game.has_next %}
+                    <a href="?per_game_page={{ per_game.next_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        Next &#8594;
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">Next &#8594;</span>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>
     <div class="collapsible-section" id="per-day-section">
         <button class="collapsible" type="button">Last 7 Days</button>
         <div class="collapsible-content">
-            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <form method="get" style="margin-bottom:10px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                 <input type="hidden" name="per_day_page" value="1">
-                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
-                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
-                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                <label style="margin-bottom:0;">From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:4px;"></label>
+                <label style="margin-bottom:0;">To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:4px;"></label>
+                <button type="submit" class="btn btn-xs btn-primary" style="font-size:0.92rem;padding:3px 10px;">Filter</button>
             </form>
             <table class="table table-bordered sortable" style="width:100%;margin-bottom:10px;">
                 <thead>
@@ -108,26 +118,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tbody>
             </table>
             {% if per_day.paginator.num_pages > 1 %}
-            <nav>
-                <ul class="pagination">
-                    {% for i in per_day.paginator.page_range %}
-                        <li class="page-item {% if per_day.number == i %}active{% endif %}">
-                            <a class="page-link" href="?per_day_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </nav>
+            <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin:10px 0;">
+                {% if per_day.has_previous %}
+                    <a href="?per_day_page={{ per_day.previous_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        &#8592; Prev
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">&#8592; Prev</span>
+                {% endif %}
+                <span style="font-size:1.08rem;font-weight:bold;">Page {{ per_day.number }} of {{ per_day.paginator.num_pages }}</span>
+                {% if per_day.has_next %}
+                    <a href="?per_day_page={{ per_day.next_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        Next &#8594;
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">Next &#8594;</span>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>
     <div class="collapsible-section" id="sessions-section">
         <button class="collapsible" type="button">All Game Sessions</button>
         <div class="collapsible-content">
-            <form method="get" style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <form method="get" style="margin-bottom:10px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                 <input type="hidden" name="sessions_page" value="1">
-                <label>From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:8px;"></label>
-                <label>To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:8px;"></label>
-                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                <label style="margin-bottom:0;">From: <input type="date" name="from_date" value="{{ from_date }}" style="margin-right:4px;"></label>
+                <label style="margin-bottom:0;">To: <input type="date" name="to_date" value="{{ to_date }}" style="margin-right:4px;"></label>
+                <button type="submit" class="btn btn-xs btn-primary" style="font-size:0.92rem;padding:3px 10px;">Filter</button>
             </form>
             <table class="table table-hover sortable" style="width:100%;margin-bottom:10px;">
                 <thead>
@@ -141,30 +159,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     </tr>
                 </thead>
                 <tbody id="sessions-table-body">
-                    {% for stat in stats %}
-                    <tr>
-                        <td>{{ stat.played_at|date:"Y-m-d H:i" }}</td>
-                        <td>{{ stat.game|title }}</td>
-                        <td>{{ stat.score }}</td>
-                        <td>{{ stat.correct }}</td>
-                        <td>{{ stat.incorrect }}</td>
-                        <td>{{ stat.time_spent|floatformat:2 }}</td>
-                    </tr>
+                    {% regroup stats by game as game_sessions %}
+                    {% for group in game_sessions %}
+                        <tr style="background:#e3f2fd;font-weight:bold;">
+                            <td colspan="6">{% include "quiz/includes/game_name.html" with game=group.grouper only %} Sessions</td>
+                        </tr>
+                        {% for stat in group.list %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ stat.played_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ stat.score }}</td>
+                            <td>{{ stat.correct }}</td>
+                            <td>{{ stat.incorrect }}</td>
+                            <td>{{ stat.time_spent|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
                     {% empty %}
-                    <tr><td colspan="6">No stats yet.</td></tr>
+                        <tr><td colspan="6">No stats yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% if stats.paginator.num_pages > 1 %}
-            <nav>
-                <ul class="pagination">
-                    {% for i in stats.paginator.page_range %}
-                        <li class="page-item {% if stats.number == i %}active{% endif %}">
-                            <a class="page-link" href="?sessions_page={{ i }}&from_date={{ from_date }}&to_date={{ to_date }}">{{ i }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </nav>
+            <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin:10px 0;">
+                {% if stats.has_previous %}
+                    <a href="?sessions_page={{ stats.previous_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        &#8592; Prev
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">&#8592; Prev</span>
+                {% endif %}
+                <span style="font-size:1.08rem;font-weight:bold;">Page {{ stats.number }} of {{ stats.paginator.num_pages }}</span>
+                {% if stats.has_next %}
+                    <a href="?sessions_page={{ stats.next_page_number }}&from_date={{ from_date }}&to_date={{ to_date }}" class="btn btn-xs btn-primary" style="font-size:1.1rem;padding:2px 10px;">
+                        Next &#8594;
+                    </a>
+                {% else %}
+                    <span class="btn btn-xs btn-secondary disabled" style="font-size:1.1rem;padding:2px 10px;opacity:0.5;">Next &#8594;</span>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>

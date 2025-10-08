@@ -1,3 +1,83 @@
+/* Banner animal image, fixed at bottom left of banner and overlapping main content */
+.banner-animal-img {
+    position: absolute;
+    left: 0;
+    bottom: -40px;
+    width: 180px;
+    max-width: 30vw;
+    z-index: 10;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.18));
+    transition: width 0.3s;
+}
+@media (max-width: 900px) {
+    .banner-animal-img {
+        width: 100px;
+        bottom: -20px;
+    }
+}
+@media (max-width: 600px) {
+    .banner-animal-img {
+        width: 70px;
+        bottom: -10px;
+    }
+}
+/* Website Banner Styles */
+.site-banner {
+    width: 100%;
+    background: #f5f9ff;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 0;
+    margin: 0;
+    border-bottom: 2px solid #e3e3e3;
+    position: relative;
+    min-height: 120px;
+}
+.banner-img {
+    z-index: 1;
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    filter: blur(5px);
+}
+/* Sidebar expand on hover for desktop and mobile */
+.sidebar {
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar:hover {
+    width: 260px !important;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.12);
+}
+.sidebar:hover .menu-title,
+.sidebar:hover .menu-link {
+    opacity: 1 !important;
+}
+.side-img {
+    position: fixed !important;
+    z-index: 9999 !important;
+    pointer-events: auto;
+    cursor: pointer;
+    display: inline !important;
+    margin: 0 !important;
+}
+/* Side images fixed positioning */
+.side-img {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: auto;
+    cursor: pointer;
+}
+.side-img-left-top { top: 30px; left: 0; }
+.side-img-right-top { top: 30px; right: 0; }
+.side-img-left-bottom { bottom: 30px; left: 0; }
+.side-img-right-bottom { bottom: 30px; right: 0; }
 /* Feedback correct/incorrect styles for all quizzes */
 .feedback-correct {
     color: #1ca21c;

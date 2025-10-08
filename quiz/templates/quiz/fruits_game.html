@@ -3,7 +3,14 @@
 {% load i18n %}
 {% block title %}Fruits Game{% endblock %}
 {% block content %}
-<div class="container" style="text-align:center;">
+<div class="container" style="text-align:center;position:relative;">
+    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
     {% if user.is_authenticated and user_name %}
         <div style="font-size:1.2rem; font-weight:bold; color:#007bff; margin-bottom:10px;">Welcome, {{ user_name|title }}!</div>
     {% endif %}

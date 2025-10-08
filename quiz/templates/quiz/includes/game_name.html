@@ -1,0 +1,26 @@
+{% comment %}Maps internal game codes to friendly labels.{% endcomment %}
+{% if game == 'general_knowledge' %}
+General Knowledge
+{% elif game == 'colors_shapes' %}
+Colors &amp; Shapes
+{% elif game == 'basic_questions' %}
+Basic Questions
+{% elif game == 'animals' %}
+Animals Game
+{% elif game == 'fruits' %}
+Fruits Game
+{% elif game == 'time' %}
+What Time Is It?
+{% elif game == 'math' %}
+Maths Quiz
+{% elif game == 'mixed' %}
+Mixed Game
+{% elif game == 'spelling' %}
+Spelling
+{% elif game == 'correct_spelling' %}
+Correct Spelling
+{% elif game == 'rearrange_spelling' %}
+Rearrange Spelling
+{% else %}
+{{ game|title }}
+{% endif %}

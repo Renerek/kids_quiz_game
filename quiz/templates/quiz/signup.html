@@ -17,19 +17,20 @@
       {% endfor %}
     </ul>
   {% endif %}
-  <form method="post" style="display:flex;flex-direction:column;gap:14px;">{% csrf_token %}
-    <input type="text" name="username" placeholder="Username" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <input type="email" name="email" placeholder="Email" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <div style="display:flex;gap:10px;">
-      <input type="text" name="first_name" placeholder="First Name" required style="flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;">
-      <input type="text" name="last_name" placeholder="Last Name" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;">
+  <form method="post" style="display:flex;flex-direction:column;gap:14px;align-items:center;">{% csrf_token %}
+    <input type="text" name="username" placeholder="Username" required style="width:100%;max-width:350px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:10px;text-align:center;">
+    <input type="email" name="email" placeholder="Email" required style="width:100%;max-width:350px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:10px;text-align:center;">
+    <div style="display:flex;gap:10px;width:100%;max-width:350px;">
+      <input type="text" name="first_name" placeholder="First Name" required style="flex:1;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
+      <input type="text" name="last_name" placeholder="Last Name" style="flex:1;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
     </div>
-    <input type="number" name="age" placeholder="Age (optional)" min="0" max="120" style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <input type="text" name="city" placeholder="City (optional)" style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <input type="text" name="country" placeholder="Country (optional)" style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <input type="password" name="password1" placeholder="Password" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <input type="password" name="password2" placeholder="Confirm Password" required style="padding:10px;border-radius:8px;border:1px solid #ccc;">
-    <button type="submit" style="padding:12px 16px;border:none;border-radius:8px;background:#28a745;color:#fff;font-weight:600;cursor:pointer;">Sign Up</button>
+  <input type="number" name="age" placeholder="Age" min="0" max="120" required style="width:100%;max-width:350px;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
+  <input type="text" name="city" placeholder="City" required style="width:100%;max-width:350px;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
+  <input type="text" name="state" placeholder="State" required style="width:100%;max-width:350px;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
+  <input type="text" name="country" placeholder="Country" required style="width:100%;max-width:350px;padding:10px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;text-align:center;">
+    <input type="password" name="password1" placeholder="Password" required style="width:100%;max-width:350px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:10px;text-align:center;">
+    <input type="password" name="password2" placeholder="Confirm Password" required style="width:100%;max-width:350px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:10px;text-align:center;">
+    <button type="submit" style="padding:12px 16px;border:none;border-radius:8px;background:#28a745;color:#fff;font-weight:600;cursor:pointer;width:100%;max-width:350px;">Sign Up</button>
   </form>
   <p style="margin-top:16px;">Already have an account? <a href="{% url 'quiz:login' %}">Login</a></p>
   <p style="margin-top:6px;font-size:0.9rem;">Didn't get a verification email? <a href="{% url 'quiz:resend_verification' %}">Resend</a></p>

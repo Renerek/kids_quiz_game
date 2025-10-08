@@ -37,50 +37,42 @@ git clone <repo-url> math_quiz_game
 cd math_quiz_game
 ```
 
-## Create and activate a virtual environment
+## Quickstart with Makefile (recommended)
+
+This repository includes a `Makefile` with convenient targets that wrap virtualenv activation and common Django tasks. Run the commands from the project root (where `manage.py` lives).
+
+Common targets:
+
+- `make setup` — create a `.venv` and install `requirements.txt` into it
+- `make migrate` — run database migrations
+- `make makemigrations` — create new migrations
+- `make run` — start the development server (runs via the `.venv` created by `make setup`)
+- `make superuser` — create a Django superuser
+- `make pytest` — run tests with pytest (uses `python -m pytest`)
+- `make test` — run Django's test runner
+- `make collectstatic` — collect static files
+- `make precommit` — run pre-commit hooks
+- `make reset` — convenience target: `setup` + `resetdb` (removes local DB/media, migrates, creates superuser)
+
+Examples (copy/paste):
 
 ```bash
-# Choose a name: either venv or .venv (project tooling supports both)
-python -m venv .venv
-source .venv/bin/activate
-# Or (if you created 'venv')
-# source venv/bin/activate
-# On Windows (PowerShell): .\.venv\Scripts\Activate.ps1
+# create venv and install runtime deps
+make setup
+
+# run migrations and start the server
+make migrate
+make run
+
+# run the test suite
+make pytest
 ```
 
-## Install dependencies
+Notes:
+- The Makefile creates/uses `.venv` by default. If you prefer a different name, you can still use the virtualenv manually, but `make` targets expect `.venv` unless you edit the Makefile.
+- If you need developer tools (pytest, pre-commit, debug toolbar) installed into your venv, run `pip install -r requirements-dev.txt` inside the venv or use `make setup` and then manually install dev deps.
 
-If this project provides a `requirements.txt`, install it. Otherwise at minimum install Django:
-
-```bash
-pip install -r requirements.txt  # if present
-# or
-pip install Django==5.2.5
-```
-
-## Database migrations
-
-The project uses SQLite by default. Apply migrations and (optionally) create a superuser:
-
-```bash
-python manage.py migrate
-python manage.py createsuperuser  # optional
-```
-
-
-## Running the App
-
-Make sure you are in the project root directory (`math_quiz_game`) where `manage.py` is located before running any Django commands.
-
-To start the development server:
-
-```bash
-cd math_quiz_game  # if not already in this folder
-source .venv/bin/activate  # or: source venv/bin/activate
-python manage.py migrate   # ensure DB up to date
-python manage.py runserver
-# Visit http://127.0.0.1:8000/ (root redirects to /quiz/)
-```
+If you prefer not to use the Makefile, the manual commands previously shown (creating a venv, pip installing requirements, running `python manage.py migrate` and `python manage.py runserver`) will still work.
 
 For deployment (e.g. on Render), ensure your `requirements.txt` is up to date and your `ALLOWED_HOSTS` setting in `mathquiz/settings.py` includes your deployed domain (e.g. `math-quiz-game.onrender.com`).
 

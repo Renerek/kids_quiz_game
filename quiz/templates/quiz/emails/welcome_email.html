@@ -1,0 +1,12 @@
+<html>
+  <body>
+    <p>Hi {{ display_name }},</p>
+    <p>Your account has been created. Your username is: <strong>{{ username }}</strong>.</p>
+  <p>Please verify your email to activate your account.</p>
+  <p><strong><a href="{{ verify_url }}">Click to activate</a></strong></p>
+  <p>If the link does not work, copy and paste this URL into your browser:<br/> {{ verify_url }}</p>
+  <p>If you have a verification link, click it to activate; otherwise visit the site and request verification.</p>
+    <p>If you need help, <a href="{{ contact_url }}">contact us</a>.</p>
+    <p>Best wishes,<br/>The Kids Quiz Game Team</p>
+  </body>
+</html>

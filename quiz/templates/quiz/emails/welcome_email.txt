@@ -1,0 +1,16 @@
+Hi {{ display_name }},
+
+Your account has been created. Your username is: {{ username }}.
+Please verify your email to activate your account.
+
+Click to verify: {{ verify_url }}
+
+If the link does not work, copy and paste this URL into your browser:
+{{ verify_url }}
+
+If you have a verification link, click it to activate; otherwise visit the site and request verification.
+
+If you need help, contact us: {{ contact_url }}
+
+Best wishes,
+The Kids Quiz Game Team
