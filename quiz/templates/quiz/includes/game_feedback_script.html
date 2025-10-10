@@ -1,0 +1,60 @@
+{% comment %}
+Reusable feedback handler. Expects an element with id="game-feedback" and optional
+attributes:
+- data-result: "correct" or "incorrect"
+- data-message: text to announce via appSpeak
+- data-redirect-url: URL to load after correct answer (defaults to current path)
+- data-correct-delay: milliseconds to wait before redirecting (defaults 2600)
+- data-incorrect-delay: milliseconds before showing the board again (defaults 1800)
+- data-reset-on-fade: if "true", hides feedback after fade-out
+{% endcomment %}
+{% if result is not None %}
+<script>
+(function(){
+    const ready = function (fn) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fn);
+        } else {
+            fn();
+        }
+    };
+    ready(function(){
+        const feedbackEl = document.getElementById('game-feedback');
+        if (!feedbackEl) { return; }
+        const board = document.getElementById('game-board');
+        const result = (feedbackEl.dataset.result || '').toLowerCase();
+        const message = feedbackEl.dataset.message || '';
+        const redirectUrl = feedbackEl.dataset.redirectUrl || window.location.pathname;
+        const correctDelay = parseInt(feedbackEl.dataset.correctDelay || '2600', 10);
+        const incorrectDelay = parseInt(feedbackEl.dataset.incorrectDelay || '1800', 10);
+        const resetOnFade = feedbackEl.dataset.resetOnFade === 'true';
+
+        feedbackEl.classList.add('is-visible');
+        if (board) {
+            board.classList.add('is-hidden-during-feedback');
+            board.setAttribute('aria-hidden', 'true');
+        }
+
+        if (message && result !== 'correct' && window.appSpeak) {
+            setTimeout(function(){ window.appSpeak(message); }, 160);
+        }
+
+        if (result === 'correct') {
+            setTimeout(function(){ window.location.href = redirectUrl; }, Math.max(correctDelay, 1200));
+        } else if (result === 'incorrect') {
+            setTimeout(function(){
+                if (feedbackEl.classList.contains('fade-out')) { return; }
+                feedbackEl.classList.add('fade-out');
+                if (board) {
+                    board.classList.remove('is-hidden-during-feedback');
+                    board.removeAttribute('aria-hidden');
+                }
+                if (resetOnFade) {
+                    setTimeout(function(){ feedbackEl.classList.remove('is-visible'); }, 350);
+                }
+            }, Math.max(incorrectDelay, 900));
+        }
+    });
+})();
+</script>
+{% endif %}

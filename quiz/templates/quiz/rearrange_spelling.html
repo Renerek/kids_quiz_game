@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Rearrange Spelling Game{% endblock %}
 {% block bgmusic %}
 {% if user.is_authenticated and user.profile.sound_music %}
@@ -14,63 +15,357 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endif %}
 {% endblock %}
+{% block head %}
+    {{ block.super }}
+    <style>
+        #dropZone.drop-slots {
+            display: flex !important;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        #dropZone.drop-slots .drop-slot {
+            flex: 0 0 auto;
+            min-width: 60px;
+        }
+    </style>
+{% endblock %}
 {% block content %}
-<div class="container" style="margin: 40px auto; max-width: 760px; text-align: center;">
-    <div style="margin-bottom: 20px;">
+<div class="container game-page" style="margin: 40px auto; max-width: 760px; text-align: center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
+    {% comment %} <div style="margin-bottom: 20px;">
         <img src="{% static 'quiz/images/logo.png' %}" alt="Kids Quiz Game" style="max-width: 160px;">
-    </div>
+    </div> {% endcomment %}
     <h1 class="big-heading">Rearrange Spelling for Words</h1>
     {% if user.is_authenticated and user_name %}
-        <p style="font-size:1.1rem;font-weight:bold;color:#007bff;">Welcome back, {{ user_name|title }}! Ready for a puzzle?</p>
+        <p style="font-size:1.1rem;font-weight:bold;color:#007bff;">Hello {{ user_name|title }}! Ready for a puzzle?</p>
     {% endif %}
     <p class="typing-effect" style="margin-bottom:24px;">Unscramble the letters to reveal the hidden word.</p>
 
-    <div style="background:#fff3e0;border-radius:18px;padding:26px 18px;box-shadow:0 4px 18px rgba(255,152,0,0.2);margin-bottom:22px;">
-        <p style="margin:0;font-size:1rem;color:#e65100;">Mix-up:</p>
-        <div class="scrambled-container" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0 12px 0;">
-            {% for letter in scrambled_word %}
-                <span class="scrambled-letter" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:700;color:#ff6f00;background:#fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,0.12);text-transform:uppercase;">{{ letter }}</span>
-            {% endfor %}
-        </div>
-        {% if hint %}
-            <p style="margin:0;font-size:1rem;color:#4e342e;">Hint: {{ hint }}</p>
-        {% endif %}
-    </div>
-
-    <form method="post" style="margin-bottom:24px;">
-        {% csrf_token %}
-        <input type="text" name="rearranged_word" placeholder="Type the word" required autofocus
-               style="width:100%;max-width:360px;padding:12px;font-size:1.15rem;border-radius:10px;border:1.5px solid #ff9800;margin-bottom:12px;text-transform:lowercase;" />
-        <button type="submit" class="game-button" style="padding:12px 28px;font-size:1.05rem;background:linear-gradient(135deg,#ff9800,#ffb74d);border:none;">Submit</button>
-    </form>
-
-    {% if feedback %}
-        <div id="feedback" class="feedback {% if feedback.result %}animate-correct{% else %}animate-wrong{% endif %}" style="max-width:520px;margin:0 auto 24px auto;padding:18px;border-radius:14px;background:{% if feedback.result %}#e8f5e9{% else %}#ffebee{% endif %};color:{% if feedback.result %}#1b5e20{% else %}#b71c1c{% endif %};box-shadow:0 4px 16px rgba(0,0,0,0.12);">
-            {% if feedback.result %}
-                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">🎉 Awesome!</h3>
-                <p style="margin:0;font-size:1.05rem;">You unscrambled <strong>{{ feedback.correct_word }}</strong> correctly! A fresh scramble is waiting above.</p>
-            {% else %}
-                <h3 style="margin:0 0 8px 0;font-size:1.4rem;">❌ Keep going</h3>
-                <p style="margin:0;font-size:1.05rem;">The word was <strong>{{ feedback.correct_word }}</strong>. Try again with the same letters!</p>
-                {% if feedback.user_answer %}
-                    <p style="margin:8px 0 0 0;font-size:0.95rem;">You entered: <em>{{ feedback.user_answer }}</em>.</p>
-                {% endif %}
+    {% if feedback_overlay %}
+        {% with overlay=feedback_overlay %}
+            <div id="game-feedback"
+                 class="game-feedback-wrapper"
+                 data-result="{{ overlay.result }}"
+                 data-message="{{ overlay.voice_message|default:''|escapejs }}"
+                 data-redirect-url="{{ request.path }}"
+                 {% if overlay.correct_delay %}data-correct-delay="{{ overlay.correct_delay }}"{% endif %}
+                 {% if overlay.incorrect_delay %}data-incorrect-delay="{{ overlay.incorrect_delay }}"{% endif %}
+                 {% if overlay.reset_on_fade %}data-reset-on-fade="true"{% endif %}>
+                <div class="game-feedback-card{% if overlay.result != 'correct' %} incorrect{% endif %}">
+                    <div class="heading">{{ overlay.heading }}</div>
+                    <div class="subtitle">{{ overlay.subtitle }}</div>
+                    {% if overlay.body %}
+                        <div class="body-text">{{ overlay.body }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if overlay.result == 'correct' %}
+                <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
             {% endif %}
-        </div>
+        {% endwith %}
     {% endif %}
 
-    <div style="margin: 20px auto 10px auto; max-width: 420px;">
-        <img src="{% static 'quiz/images/school_bus.png' %}" alt="School bus" style="width:100%;border-radius:16px;box-shadow:0 5px 18px rgba(0,0,0,0.18);">
+    <div id="game-board" class="rearrange-wrapper{% if feedback_overlay %} is-hidden-during-feedback{% endif %}" aria-live="polite">
+        <div class="rearrange-card" aria-label="Scrambled letters and drop area">
+            <p class="rearrange-label">Mix-up:</p>
+            <div id="letterPool" class="scrambled-container letter-pool" role="list" aria-label="Available letters">
+                {% for letter in scrambled_word %}
+                    <button type="button" class="scrambled-letter" id="letter-{{ forloop.counter0 }}" data-letter="{{ letter }}" data-position="{{ forloop.counter0 }}" aria-label="Letter {{ letter|upper }}" draggable="true">{{ letter }}</button>
+                {% endfor %}
+            </div>
+
+            <div class="drop-zone" aria-label="Spell the word by dropping letters into the boxes">
+                <p class="drop-zone-instruction">Drag each letter into the boxes below to spell the word.</p>
+                <div id="dropZone" class="drop-slots" data-slot-count="{{ scrambled_word|length }}">
+                    {% for _ in scrambled_word %}
+                        <div class="drop-slot" data-slot="{{ forloop.counter0 }}" aria-label="Position {{ forloop.counter }}">
+                            <span class="drop-placeholder">Drop</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if hint %}
+                <p class="hint-text">Hint: {{ hint }}</p>
+            {% endif %}
+        </div>
+
+        <form method="post" class="rearrange-form">
+            {% csrf_token %}
+            <input type="hidden" name="rearranged_word" id="rearrangedWordInput" value="">
+            <noscript>
+                <input type="text" name="rearranged_word_fallback" placeholder="Type the word" required
+                       style="width:100%;max-width:360px;padding:12px;font-size:1.15rem;border-radius:10px;border:1.5px solid #ff9800;margin-bottom:12px;text-transform:lowercase;" />
+            </noscript>
+            <div class="rearrange-actions">
+                <button type="button" id="clearArrangementButton" class="game-button clear-arrangement-button">Clear</button>
+                <button type="submit" id="submitArrangementButton" class="game-button submit-arrangement-button" disabled>Submit</button>
+            </div>
+        </form>
+
+        <div style="margin: 20px auto 10px auto; max-width: 420px;">
+            <img src="{% static 'quiz/images/school_bus.png' %}" alt="School bus" style="width:100%;border-radius:16px;box-shadow:0 5px 18px rgba(0,0,0,0.18);">
+        </div>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
+{{ block.super }}
+{% include "quiz/includes/game_feedback_script.html" %}
 <script>
-(function(){
-    const feedback = document.getElementById('feedback');
-    if (feedback) {
-        setTimeout(function(){ feedback.style.display = 'none'; }, 6000);
+document.addEventListener('DOMContentLoaded', function() {
+
+    const letterPool = document.getElementById('letterPool');
+    const dropZone = document.getElementById('dropZone');
+    const hiddenInput = document.getElementById('rearrangedWordInput');
+    const submitButton = document.getElementById('submitArrangementButton');
+    const clearButton = document.getElementById('clearArrangementButton');
+
+    if (!letterPool || !dropZone || !hiddenInput) {
+        return;
     }
-})();
+
+    const slots = Array.from(dropZone.querySelectorAll('.drop-slot'));
+    const letters = Array.from(letterPool.querySelectorAll('.scrambled-letter'));
+
+    const playDropSound = (() => {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+            return () => {};
+        }
+        const ctx = new AudioContext();
+        let unlocked = false;
+
+        const resumeContext = () => {
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+        };
+
+        const unlock = () => {
+            if (unlocked) {
+                return;
+            }
+            resumeContext();
+            const buffer = ctx.createBuffer(1, 1, 22050);
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(ctx.destination);
+            try {
+                source.start(0);
+            } catch (err) {
+                // ignore unlock errors
+            }
+            unlocked = true;
+        };
+
+        document.addEventListener('click', unlock, { once: true, passive: true });
+        document.addEventListener('touchstart', unlock, { once: true, passive: true });
+
+        return () => {
+            resumeContext();
+            const oscillator = ctx.createOscillator();
+            const gain = ctx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+            gain.gain.setValueAtTime(0.22, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            oscillator.connect(gain);
+            gain.connect(ctx.destination);
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + 0.18);
+        };
+    })();
+
+    function addPlaceholder(slot) {
+        if (!slot.querySelector('.drop-placeholder')) {
+            const placeholder = document.createElement('span');
+            placeholder.className = 'drop-placeholder';
+            placeholder.textContent = 'Drop';
+            slot.appendChild(placeholder);
+        }
+        slot.classList.remove('filled');
+    }
+
+    function removePlaceholder(slot) {
+        const placeholder = slot.querySelector('.drop-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+        slot.classList.add('filled');
+    }
+
+    function updateHiddenInput() {
+        const word = slots.map(slot => {
+            const letter = slot.querySelector('.scrambled-letter');
+            return letter ? letter.dataset.letter : '';
+        }).join('').toLowerCase();
+        hiddenInput.value = word;
+        if (submitButton) {
+            submitButton.disabled = word.length !== slots.length;
+        }
+    }
+
+    function resetSubmitButtonFocus() {
+        if (!submitButton) {
+            return;
+        }
+        if (submitButton.disabled) {
+            submitButton.setAttribute('aria-disabled', 'true');
+        } else {
+            submitButton.removeAttribute('aria-disabled');
+        }
+    }
+
+    function returnLetterToPool(letter) {
+        if (!letter) {
+            return;
+        }
+        const parentSlot = letter.closest('.drop-slot');
+        if (parentSlot) {
+            letter.classList.remove('placed');
+            parentSlot.removeChild(letter);
+            addPlaceholder(parentSlot);
+        }
+        letterPool.appendChild(letter);
+    }
+
+    function placeLetterInSlot(slot, letter) {
+        if (!slot || !letter) {
+            return;
+        }
+        const current = slot.querySelector('.scrambled-letter');
+        const previousParent = letter.parentElement && letter.parentElement.classList.contains('drop-slot')
+            ? letter.parentElement
+            : null;
+        if (current) {
+            letterPool.appendChild(current);
+            current.classList.remove('placed');
+        }
+        removePlaceholder(slot);
+        letter.classList.add('placed');
+        slot.appendChild(letter);
+        if (previousParent && previousParent !== slot) {
+            addPlaceholder(previousParent);
+        }
+        playDropSound();
+    }
+
+    function handleLetterDrop(target, letter, isPoolDrop) {
+        if (!letter) {
+            return;
+        }
+        const originSlot = letter.closest('.drop-slot');
+        if (isPoolDrop) {
+            if (originSlot) {
+                originSlot.removeChild(letter);
+                addPlaceholder(originSlot);
+            }
+            letter.classList.remove('placed');
+            letterPool.appendChild(letter);
+        } else {
+            placeLetterInSlot(target, letter);
+        }
+        updateHiddenInput();
+        resetSubmitButtonFocus();
+    }
+
+    letters.forEach(letter => {
+        letter.addEventListener('dragstart', event => {
+            event.dataTransfer.setData('text/plain', letter.id);
+            letter.classList.add('dragging');
+        });
+        letter.addEventListener('dragend', () => {
+            letter.classList.remove('dragging');
+        });
+        letter.addEventListener('click', () => {
+            const availableSlot = slots.find(slot => !slot.querySelector('.scrambled-letter'));
+            if (availableSlot) {
+                placeLetterInSlot(availableSlot, letter);
+                updateHiddenInput();
+                resetSubmitButtonFocus();
+            }
+        });
+        letter.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                const availableSlot = slots.find(slot => !slot.querySelector('.scrambled-letter'));
+                if (availableSlot) {
+                    placeLetterInSlot(availableSlot, letter);
+                    updateHiddenInput();
+                    resetSubmitButtonFocus();
+                }
+            } else if ((event.key === 'Backspace' || event.key === 'Delete') && letter.closest('.drop-slot')) {
+                event.preventDefault();
+                returnLetterToPool(letter);
+                updateHiddenInput();
+                resetSubmitButtonFocus();
+            }
+        });
+        letter.addEventListener('dblclick', () => {
+            if (letter.closest('.drop-slot')) {
+                returnLetterToPool(letter);
+                updateHiddenInput();
+                resetSubmitButtonFocus();
+            }
+        });
+    });
+
+    function allowDrop(target) {
+        target.addEventListener('dragover', event => {
+            event.preventDefault();
+            target.classList.add('drop-hover');
+        });
+        target.addEventListener('dragleave', () => {
+            target.classList.remove('drop-hover');
+        });
+        target.addEventListener('drop', event => {
+            event.preventDefault();
+            const letterId = event.dataTransfer.getData('text/plain');
+            const letter = document.getElementById(letterId);
+            target.classList.remove('drop-hover');
+            if (!letter) {
+                return;
+            }
+            const isPoolDrop = target === letterPool;
+            handleLetterDrop(target, letter, isPoolDrop);
+        });
+    }
+
+    allowDrop(letterPool);
+    slots.forEach(slot => allowDrop(slot));
+
+    function clearArrangement() {
+        slots.forEach(slot => {
+            const letter = slot.querySelector('.scrambled-letter');
+            if (letter) {
+                returnLetterToPool(letter);
+            } else {
+                addPlaceholder(slot);
+            }
+        });
+        letters
+            .slice()
+            .sort((a, b) => Number(a.dataset.position) - Number(b.dataset.position))
+            .forEach(letter => {
+                if (letter.parentElement !== letterPool) {
+                    return;
+                }
+                letterPool.appendChild(letter);
+            });
+        updateHiddenInput();
+        resetSubmitButtonFocus();
+    }
+
+    if (clearButton) {
+        clearButton.addEventListener('click', clearArrangement);
+    }
+
+    updateHiddenInput();
+    resetSubmitButtonFocus();
+});
 </script>
 {% endblock %}

@@ -1,0 +1,165 @@
+{% load static %}
+<style>
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .main-content {
+        padding-top: 160px;
+    }
+    .game-ribbon-banner {
+        position: absolute;
+        top: 14px;
+        left: 84px;
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        background: linear-gradient(90deg, #2196f3 80%, #64b5f6 100%);
+        color: #fff;
+        font-size: 1.6rem;
+        font-family: 'Comic Sans MS', 'Comic Sans', cursive, 'Segoe UI', Arial, sans-serif;
+        font-weight: bold;
+        letter-spacing: 0.045em;
+        padding: 14px 36px;
+        border-radius: 32px;
+        box-shadow: 0 4px 18px rgba(33, 150, 243, 0.18);
+        z-index: 2100;
+        pointer-events: auto;
+        white-space: nowrap;
+    }
+    .game-ribbon-banner span {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .game-ribbon-dot {
+        color: #ffeb3b;
+        font-size: 2.2rem;
+        line-height: 1;
+        vertical-align: middle;
+    }
+    @media (max-width: 1200px) {
+        .game-ribbon-banner {
+            left: 70px;
+            font-size: 1.4rem;
+            padding: 12px 28px;
+        }
+    }
+    @media (max-width: 980px) {
+        .game-ribbon-banner {
+            position: static;
+            margin: 80px auto 0 auto;
+            font-size: 1.25rem;
+            padding: 12px 22px;
+            white-space: normal;
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+        }
+        .main-content {
+            padding-top: 120px;
+        }
+    }
+    @media (max-width: 720px) {
+        .game-ribbon-banner {
+            margin: 90px 10px 0 10px;
+            font-size: 1.1rem;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .side-img {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+    }
+    .side-img {
+        position: fixed !important;
+        z-index: 900 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        display: block !important;
+        margin: 0 !important;
+        width: 18vw !important;
+        max-width: 320px !important;
+        min-width: 120px !important;
+        height: auto !important;
+    }
+    .side-img-left-top { top: 70px !important; left: 54px !important; }
+    .side-img-right-top { top: 70px !important; right: 24px !important; }
+    .side-img-left-bottom { bottom: 70px !important; left: 4px !important; }
+    .side-img-right-bottom { bottom: 70px !important; right: 24px !important; }
+
+    .decorative-side-col {
+        position: absolute;
+        top: 220px;
+        bottom: 80px;
+        width: 140px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        pointer-events: none;
+        z-index: 800;
+    }
+    .decorative-side-col.left { left: 32px; }
+    .decorative-side-col.right { right: 90px; }
+    .decorative-side-img {
+        width: 140px;
+        height: auto;
+        margin-top: 96px;
+        margin-bottom: 0;
+        pointer-events: auto;
+        user-select: none;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.10));
+    }
+    .decorative-side-img:first-child {
+        margin-top: 0;
+    }
+    @media (max-width: 900px) {
+        .decorative-side-col { display: none; }
+        .main-content {
+            padding-top: 140px;
+        }
+    }
+</style>
+<div class="game-ribbon-banner">
+    <span>
+        Reading
+        <span class="game-ribbon-dot">&bull;</span>
+        Math
+        <span class="game-ribbon-dot">&bull;</span>
+        Science
+        <span class="game-ribbon-dot">&bull;</span>
+        Art &amp; Colors
+        <span class="game-ribbon-dot">&bull;</span>
+        Music
+    </span>
+</div>
+<div class="decorative-side-col left">
+    <img src="{% static 'quiz/images/bird-boy.png' %}" class="decorative-side-img" alt="Bird Boy" />
+    <img src="{% static 'quiz/images/blue-cat.png' %}" class="decorative-side-img" alt="Blue Cat" />
+    <img src="{% static 'quiz/images/blue-cat-boy.png' %}" class="decorative-side-img" alt="Blue Cat Boy" />
+    <img src="{% static 'quiz/images/crazy-boy.png' %}" class="decorative-side-img" alt="Crazy Boy" />
+    <img src="{% static 'quiz/images/happy-boy.png' %}" class="decorative-side-img" alt="Happy Boy" />
+    <img src="{% static 'quiz/images/Side Images/ant.png' %}" class="decorative-side-img" alt="Ant" />
+    <img src="{% static 'quiz/images/Side Images/baby-giraff.png' %}" class="decorative-side-img" alt="Baby Giraffe" />
+    <img src="{% static 'quiz/images/Side Images/baby-lion.png' %}" class="decorative-side-img" alt="Baby Lion" />
+    <img src="{% static 'quiz/images/Side Images/banana-elephant.png' %}" class="decorative-side-img" alt="Banana Elephant" />
+    <img src="{% static 'quiz/images/Side Images/bobby.png' %}" class="decorative-side-img" alt="Bobby" />
+</div>
+<div class="decorative-side-col right">
+    <img src="{% static 'quiz/images/pencile-baby.png' %}" class="decorative-side-img" alt="Pencile Baby" />
+    <img src="{% static 'quiz/images/rabbit-friends.png' %}" class="decorative-side-img" alt="Rabbit Friends" />
+    <img src="{% static 'quiz/images/read-cat-boy.png' %}" class="decorative-side-img" alt="Read Cat Boy" />
+    <img src="{% static 'quiz/images/tablet-boy.png' %}" class="decorative-side-img" alt="Tablet Boy" />
+    <img src="{% static 'quiz/images/rabbit-dressed.png' %}" class="decorative-side-img" alt="Rabbit Dressed" />
+    <img src="{% static 'quiz/images/Side Images/cat-book.png' %}" class="decorative-side-img" alt="Cat Book" />
+    <img src="{% static 'quiz/images/Side Images/cutty.png' %}" class="decorative-side-img" alt="Cutty" />
+    <img src="{% static 'quiz/images/Side Images/donkey-lion.png' %}" class="decorative-side-img" alt="Donkey Lion" />
+    <img src="{% static 'quiz/images/Side Images/man-elephant.png' %}" class="decorative-side-img" alt="Man Elephant" />
+    <img src="{% static 'quiz/images/Side Images/piggy-book.png' %}" class="decorative-side-img" alt="Piggy Book" />
+    <img src="{% static 'quiz/images/Side Images/rat-elephant.png' %}" class="decorative-side-img" alt="Rat Elephant" />
+</div>

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.utils.translation import gettext as _
 from .views import animals_game, animals, fruits, SPELLING_WORDS, MISSPELLED_WORDS, REARRANGE_WORDS
 import random
 from .models import UserStat
@@ -37,7 +38,7 @@ def mixed_game(request):
                 a = answer * b
                 qtext = f"{a} ÷ {b} = ?"
             request.session["mixed_math_answer"] = answer
-            question_context = {"question": qtext, "game_type": "math"}
+            question_context = {"question": qtext, "game_type": "math", "math_answer": answer}
         elif game_type == "animal":
             animal = random.choice(animals)
             request.session["mixed_animal_name"] = animal[0]
@@ -48,7 +49,13 @@ def mixed_game(request):
                 if opt not in options:
                     options.append(opt)
             random.shuffle(options)
-            question_context = {"animal_image_url": animal_image_url, "options": options, "summary": animal[2], "game_type": "animal"}
+            question_context = {
+                "animal_image_url": animal_image_url,
+                "options": options,
+                "summary": animal[2],
+                "animal_name": animal[0],
+                "game_type": "animal",
+            }
         elif game_type == "fruit":
             fruit = random.choice(fruits)
             request.session["mixed_fruit_name"] = fruit[0]
@@ -59,7 +66,13 @@ def mixed_game(request):
                 if opt not in options:
                     options.append(opt)
             random.shuffle(options)
-            question_context = {"fruit_image_url": fruit_image_url, "options": options, "summary": fruit[2], "game_type": "fruit"}
+            question_context = {
+                "fruit_image_url": fruit_image_url,
+                "options": options,
+                "summary": fruit[2],
+                "fruit_name": fruit[0],
+                "game_type": "fruit",
+            }
         elif game_type == "spelling":
             word = random.choice(SPELLING_WORDS)
             request.session["mixed_spelling_word"] = word
@@ -119,53 +132,77 @@ def mixed_game(request):
 
     if request.method == "POST":
         # Check answer for the current type
+        feedback_message = ""
         if game_type == "math":
             correct = request.session.get("mixed_math_answer")
             try:
                 user = int(request.POST.get("answer", ""))
                 context["result"] = (user == correct)
+                context["user_answer"] = user
             except:
                 context["result"] = False
+                context["user_answer"] = request.POST.get("answer", "")
             if context["result"]:
                 request.session["mixed_correct"] = True
+                feedback_message = _("Great math work! You nailed that answer.")
             else:
                 request.session["mixed_correct"] = False
+                feedback_message = _("Not quite yet. Try the math problem again.")
+            context["correct_answer"] = correct
         elif game_type == "animal":
             correct = request.session.get("mixed_animal_name")
             user = request.POST.get("answer", "")
             context["result"] = (user == correct)
+            context["animal_name"] = correct
+            context["user_answer"] = user
             if context["result"]:
                 request.session["mixed_correct"] = True
+                feedback_message = _("Awesome! %(name)s is the right pick.") % {"name": correct}
             else:
                 request.session["mixed_correct"] = False
+                feedback_message = _("Give it another look. Which animal matches best?")
         elif game_type == "fruit":
             correct = request.session.get("mixed_fruit_name")
             user = request.POST.get("answer", "")
             context["result"] = (user == correct)
+            context["fruit_name"] = correct
+            context["user_answer"] = user
             if context["result"]:
                 request.session["mixed_correct"] = True
+                feedback_message = _("Yum! %(name)s is correct.") % {"name": correct}
             else:
                 request.session["mixed_correct"] = False
+                feedback_message = _("Try again. Which fruit do you think it is?")
         elif game_type == "spelling":
             correct = request.session.get("mixed_spelling_word", "").lower()
             user = request.POST.get("spelling", "").strip().lower()
             context["result"] = (user == correct)
+            context["correct_word"] = request.session.get("mixed_spelling_word", "")
+            context["user_answer"] = request.POST.get("spelling", "")
             if context["result"]:
                 request.session["mixed_correct"] = True
+                feedback_message = _("Perfect spelling! Keep it up.")
             else:
                 request.session["mixed_correct"] = False
+                feedback_message = _("Listen carefully and try spelling it again.")
         elif game_type == "time":
             correct = request.session.get("mixed_time")
             user = request.POST.get("user_choice", "")
             context["result"] = (user == correct)
+            context["correct_time"] = correct
+            context["user_answer"] = user
             if context["result"]:
                 request.session["mixed_correct"] = True
+                feedback_message = _("Nice job reading the clock!")
             else:
                 request.session["mixed_correct"] = False
+                feedback_message = _("Check the clock carefully and pick another time.")
         elif game_type == "basic":
             # Accept any answer, just move to next
             context["result"] = True
+            context["user_answer"] = request.POST.get("answer", "")
             request.session["mixed_correct"] = True
+            feedback_message = _("Thanks for sharing! Let's see what's next.")
         elif game_type == "correct_spelling":
             entry = request.session.get("mixed_correct_spelling_entry", {})
             expected = entry.get("correct", "")
@@ -175,6 +212,10 @@ def mixed_game(request):
             context["attempt_word"] = entry.get("incorrect")
             context["user_answer"] = user
             request.session["mixed_correct"] = bool(context["result"])
+            if context["result"]:
+                feedback_message = _("Well done fixing the spelling of %(word)s.") % {"word": expected or entry.get("incorrect") or ""}
+            else:
+                feedback_message = _("Not yet. Fix the spelling and try once more.")
         elif game_type == "rearrange_spelling":
             entry = request.session.get("mixed_rearrange_entry", {})
             expected = entry.get("word", "")
@@ -183,6 +224,16 @@ def mixed_game(request):
             context["correct_word"] = expected
             context["user_answer"] = user
             request.session["mixed_correct"] = bool(context["result"])
+            if context["result"]:
+                feedback_message = _("Super unscrambling skills!")
+            else:
+                feedback_message = _("Keep rearranging those letters.")
+
+        if not feedback_message:
+            feedback_message = _("Great job! That answer is correct.") if context.get("result") else _("Almost there. Give it another try.")
+
+        if feedback_message:
+            context["feedback_message"] = feedback_message
 
         # Record stat for mixed game if authenticated and answer submitted
         if request.user.is_authenticated:

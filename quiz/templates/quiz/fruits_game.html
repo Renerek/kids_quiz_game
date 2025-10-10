@@ -1,75 +1,65 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Fruits Game{% endblock %}
 {% block content %}
-<div class="container" style="text-align:center;position:relative;">
-    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
+<div class="container game-page" style="text-align:center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     {% if user.is_authenticated and user_name %}
         <div style="font-size:1.2rem; font-weight:bold; color:#007bff; margin-bottom:10px;">Welcome, {{ user_name|title }}!</div>
     {% endif %}
     <h1>{% trans "Fruits Game" %}</h1>
     <audio id="fruitsIntro" src="{% static 'quiz/audio/fruits_intro.mp3' %}" preload="auto"></audio>
-    {% if summary %}
-{% block bgmusic %}
-{% if user.is_authenticated and user.profile.sound_music %}
-<audio id="bgMusic" src="{% static 'quiz/audio/bg/fruits_piano.mp3' %}" loop autoplay></audio>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var bg = document.getElementById('bgMusic');
-    if (bg) {
-        bg.volume = 0.25;
-    }
-});
-</script>
-{% endif %}
-{% endblock %}
-    <div style="margin: 0 auto 18px auto; max-width: 600px; font-size: 1.15rem; color: #333; background: #f8f8f8; padding: 14px 20px; border-radius: 10px;">
-        {{ summary }}
-    </div>
-    {% endif %}
-    <div style="margin: 30px 0;">
-    <img src="{{ fruit_image_url }}" alt="Fruit" style="max-width:480px;max-height:480px;width:100%;height:auto;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);background:#fff;" />
-    </div>
-    <form method="post" style="margin-bottom:30px;">
-        {% csrf_token %}
-        <div style="display:flex;justify-content:center;gap:18px;flex-wrap:wrap;">
-            {% for option in options %}
-            <button type="submit" name="answer" value="{{ option }}" class="game-button" style="min-width:120px;font-size:1.2rem;">{{ option }}</button>
-            {% endfor %}
-        </div>
-    </form>
     {% if result is not None %}
-        <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
-            {% if result %}
-                <span class="feedback-correct"><span class="icon-check">✔️</span> {% blocktrans with answer=correct_answer %}Great Job! <span style='color:#1ca21c;font-weight:bold;'>{{ answer }}</span> is the correct answer!{% endblocktrans %}</span>
-                <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
-                <script>
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                        window.location.href = window.location.pathname;
-                    }, 5000);
-                </script>
-            {% else %}
-                <span class="feedback-incorrect"><span class="icon-x">❌</span> {% blocktrans with answer=user_answer %}<span style='color:#e53935;font-weight:bold;'>{{ answer }}</span> is incorrect, please try again!{% endblocktrans %}</span>
-                <audio autoplay src="{% static 'quiz/sounds/incorrect.mp3' %}"></audio>
-                <script>
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                    }, 5000);
-                </script>
-            {% endif %}
+        {% if result %}
+            {% blocktrans with fruit=fruit_name|default:'the fruit' asvar feedback_message %}Fantastic! {{ fruit }} is the correct fruit.{% endblocktrans %}
+        {% else %}
+            {% blocktrans with choice=user_answer|default:'That option' asvar feedback_message %}Try again. {{ choice }} isn't right yet.{% endblocktrans %}
+        {% endif %}
+        <div id="game-feedback"
+             class="game-feedback-wrapper"
+             data-result="{% if result %}correct{% else %}incorrect{% endif %}"
+             data-message="{{ feedback_message|escapejs }}"
+             data-redirect-url="{{ request.path }}"
+             data-reset-on-fade="true">
+            <div class="game-feedback-card{% if not result %} incorrect{% endif %}">
+                {% if result %}
+                    <div>Great Job! <span style='color:#1ca21c;font-weight:bold;'>{{ fruit_name|default:'the fruit' }}</span> is the correct answer!</div>
+                    <div class="subtitle">{% trans "A new fruit is coming right up." %}</div>
+                {% else %}
+                    <div><span style='color:#e53935;font-weight:bold;'>{{ user_answer|default:'That option' }}</span> is incorrect, please try again!</div>
+                    <div class="subtitle">{% trans "Pick another fruit to try again." %}</div>
+                {% endif %}
+            </div>
         </div>
+        {% if result %}
+            <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+        {% endif %}
     {% endif %}
+    <div id="game-board" class="game-board{% if result is not None %} is-hidden-during-feedback{% endif %}" aria-live="polite">
+        {% if summary %}
+        <div style="margin: 0 auto 18px auto; max-width: 560px; font-size: 1.05rem; color: #333; background: #f8f8f8; padding: 14px 20px; border-radius: 12px;">
+            {{ summary }}
+        </div>
+        {% endif %}
+        <div class="game-figure">
+            <img src="{{ fruit_image_url }}" alt="Fruit" />
+        </div>
+        <form method="post" style="margin-bottom:24px;">
+            {% csrf_token %}
+            <div class="game-choice-grid">
+                {% for option in options %}
+                <button type="submit" name="answer" value="{{ option }}" class="game-button">{{ option }}</button>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
 {% block scripts %}
+{{ block.super }}
+{% include "quiz/includes/game_feedback_script.html" %}
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const intro = document.getElementById('fruitsIntro');

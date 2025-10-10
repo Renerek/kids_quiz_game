@@ -17,6 +17,48 @@ from django.core.mail import EmailMultiAlternatives
 PASSWORD_RESET_TOKENS = {}
 TOKEN_EXPIRY_MINUTES = 30
 
+
+def send_password_reset_confirmation_email(user, request):
+    login_url = request.build_absolute_uri(reverse("quiz:login"))
+    contact_url = request.build_absolute_uri(reverse("quiz:contact"))
+    context = {
+        "username": user.username,
+        "login_url": login_url,
+        "contact_url": contact_url,
+        "reset_time": timezone.now(),
+    }
+    text_body = render_to_string("quiz/emails/password_reset_confirmation.txt", context)
+    html_body = render_to_string("quiz/emails/password_reset_confirmation.html", context)
+    msg = EmailMultiAlternatives(
+        "Your Kids Quiz Game password has been reset",
+        text_body,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+    )
+    msg.attach_alternative(html_body, "text/html")
+    try:
+        msg.send(fail_silently=False)
+    except smtplib.SMTPAuthenticationError:
+        logging.exception("SMTP authentication failed when sending password reset confirmation email")
+        try:
+            file_conn = get_connection(
+                "django.core.mail.backends.filebased.EmailBackend",
+                file_path=settings.EMAIL_FILE_PATH,
+            )
+            file_conn.send_messages([msg])
+        except Exception:
+            logging.exception("Failed to write password reset confirmation email to file backend")
+    except Exception:
+        logging.exception("Failed to send password reset confirmation email")
+        try:
+            file_conn = get_connection(
+                "django.core.mail.backends.filebased.EmailBackend",
+                file_path=settings.EMAIL_FILE_PATH,
+            )
+            file_conn.send_messages([msg])
+        except Exception:
+            logging.exception("Failed to write password reset confirmation email to file backend after general failure")
+
 def password_reset_request(request):
     if request.method == "POST":
         form = CustomPasswordResetRequestForm(request.POST)
@@ -116,6 +158,10 @@ def password_reset_confirm(request, token):
             password = form.cleaned_data["new_password1"]
             user.set_password(password)
             user.save()
+            try:
+                send_password_reset_confirmation_email(user, request)
+            except Exception:
+                logging.exception("Unexpected error while sending password reset confirmation email")
             del PASSWORD_RESET_TOKENS[token]
             messages.success(request, "Password reset successful! You can now log in.")
             return redirect("quiz:login")

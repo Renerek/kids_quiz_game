@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}What Time Is It?{% endblock %}
 {% block bgmusic %}
 {% if user.is_authenticated and user.profile.sound_music %}
@@ -15,90 +16,76 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 {% endblock %}
 {% block content %}
-<div class="container" style="margin: 40px auto; text-align: center; position:relative;">
-    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
+    <div class="container game-page" style="margin: 40px auto; text-align: center; position:relative;">
+        {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <h1 class="big-heading">What Time Is It?</h1>
     <p>Welcome, {{ user_name }}! Look at the clock and select the correct time.</p>
     <audio id="introAudio" src="{% static 'quiz/audio/time_intro.mp3' %}" preload="auto"></audio>
-    <audio id="correctVoice" src="{% static 'quiz/audio/correct_voice.mp3' %}" preload="auto"></audio>
-    <audio id="tryAgainVoice" src="{% static 'quiz/audio/try_again.mp3' %}" preload="auto"></audio>
-    <div class="clock-container" style="display: inline-block;">
-        <div class="digital-clock">
-            <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
-        </div>
-        <div class="analog-clock" style="margin: 0 auto; display: flex; justify-content: center; align-items: center;">
-            <svg id="svg-clock" width="220" height="220" viewBox="0 0 220 220">
-                <circle cx="110" cy="110" r="100" fill="#fffbe6" stroke="#333" stroke-width="4" />
-                <!-- Hour marks (adjusted positions) -->
-                <text x="110" y="38" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">12</text>
-                <text x="150" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">1</text>
-                <text x="180" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">2</text>
-                <text x="195" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">3</text>
-                <text x="180" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">4</text>
-                <text x="150" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">5</text>
-                <text x="110" y="202" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">6</text>
-                <text x="70" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">7</text>
-                <text x="40" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">8</text>
-                <text x="25" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">9</text>
-                <text x="40" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">10</text>
-                <text x="70" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">11</text>
-                <!-- Hour hand -->
-                <line id="svg-hour-hand" x1="110" y1="110" x2="110" y2="60" stroke="#333" stroke-width="6" stroke-linecap="round" />
-                <!-- Minute hand -->
-                <line id="svg-minute-hand" x1="110" y1="110" x2="110" y2="40" stroke="#007bff" stroke-width="4" stroke-linecap="round" />
-                <circle cx="110" cy="110" r="8" fill="#333" />
-            </svg>
-        </div>
-    </div>
-    <form method="post" action="">
-        {% csrf_token %}
-        <input type="hidden" name="clock_time" value="{{ clock_time }}">
-        <div class="time-form">
-            <label for="user_choice">What time is it?</label>
-            <div style="margin-top: 18px;">
-                {% for choice in choices %}
-                    <button type="submit" name="user_choice" value="{{ choice }}" style="font-size: 1.3rem; margin: 8px; padding: 12px 28px; border-radius: 18px; background-color: #007bff; color: white; border: none; cursor: pointer; transition: background 0.2s;">{{ choice }}</button>
-                {% endfor %}
+    {% if feedback_overlay %}
+        {% with overlay=feedback_overlay %}
+            <div id="game-feedback"
+                 class="game-feedback-wrapper"
+                 data-result="{{ overlay.result }}"
+                 data-message="{{ overlay.voice_message|default:''|escapejs }}"
+                 data-redirect-url="{{ request.path }}"
+                 {% if overlay.correct_delay %}data-correct-delay="{{ overlay.correct_delay }}"{% endif %}
+                 {% if overlay.incorrect_delay %}data-incorrect-delay="{{ overlay.incorrect_delay }}"{% endif %}
+                 {% if overlay.reset_on_fade %}data-reset-on-fade="true"{% endif %}>
+                <div class="game-feedback-card{% if overlay.result != 'correct' %} incorrect{% endif %}">
+                    <div class="heading">{{ overlay.heading }}</div>
+                    <div class="subtitle">{{ overlay.subtitle }}</div>
+                    {% if overlay.body %}
+                        <div class="body-text">{{ overlay.body }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if overlay.result == 'correct' %}
+                <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+
+    <div id="game-board" class="time-game-board{% if feedback_overlay %} is-hidden-during-feedback{% endif %}" aria-live="polite">
+        <div class="clock-container" style="display: inline-block;">
+            <div class="digital-clock">
+                <div class="digital-time">{{ hour_str }}:{{ minute_str }}</div>
+            </div>
+            <div class="analog-clock" style="margin: 0 auto; display: flex; justify-content: center; align-items: center;">
+                <svg id="svg-clock" width="220" height="220" viewBox="0 0 220 220">
+                    <circle cx="110" cy="110" r="100" fill="#fffbe6" stroke="#333" stroke-width="4" />
+                    <!-- Hour marks (adjusted positions) -->
+                    <text x="110" y="38" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">12</text>
+                    <text x="150" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">1</text>
+                    <text x="180" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">2</text>
+                    <text x="195" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">3</text>
+                    <text x="180" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">4</text>
+                    <text x="150" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">5</text>
+                    <text x="110" y="202" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">6</text>
+                    <text x="70" y="190" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">7</text>
+                    <text x="40" y="160" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">8</text>
+                    <text x="25" y="120" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">9</text>
+                    <text x="40" y="80" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">10</text>
+                    <text x="70" y="50" text-anchor="middle" alignment-baseline="middle" font-size="18" fill="#333">11</text>
+                    <!-- Hour hand -->
+                    <line id="svg-hour-hand" x1="110" y1="110" x2="110" y2="60" stroke="#333" stroke-width="6" stroke-linecap="round" />
+                    <!-- Minute hand -->
+                    <line id="svg-minute-hand" x1="110" y1="110" x2="110" y2="40" stroke="#007bff" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="110" cy="110" r="8" fill="#333" />
+                </svg>
             </div>
         </div>
-    </form>
-    <div id="feedback-area">
-        {% if result == 'correct' %}
-            <div id="feedback" class="feedback correct">
-                <p>Correct! The time is {{ correct_time }}. 🎉</p>
-                <script>
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                        window.location.href = window.location.pathname;
-                    }, 5000);
-                </script>
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="clock_time" value="{{ clock_time }}">
+            <div class="time-form">
+                <label for="user_choice">What time is it?</label>
+                <div style="margin-top: 18px;">
+                    {% for choice in choices %}
+                        <button type="submit" name="user_choice" value="{{ choice }}" style="font-size: 1.3rem; margin: 8px; padding: 12px 28px; border-radius: 18px; background-color: #007bff; color: white; border: none; cursor: pointer; transition: background 0.2s;">{{ choice }}</button>
+                    {% endfor %}
+                </div>
             </div>
-        {% elif result == 'incorrect' %}
-            <div id="feedback" class="feedback incorrect">
-                <p>Incorrect. Try again!</p>
-                <script>
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                    }, 5000);
-                </script>
-            </div>
-        {% elif result == 'show_answer' %}
-            <div id="feedback" class="feedback incorrect">
-                <p>Incorrect. The correct time is {{ correct_time }}.</p>
-                <script>
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                        window.location.href = window.location.pathname;
-                    }, 5000);
-                </script>
-            </div>
-        {% endif %}
+        </form>
     </div>
     <!-- Back to Home button removed -->
     <div style="margin: 30px 0 20px 0;">
@@ -107,60 +94,37 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 {% endblock %}
 {% block scripts %}
+{{ block.super }}
+{% include "quiz/includes/game_feedback_script.html" %}
 <script>
-    // Set SVG clock hands
     function setClockHands(hour, minute) {
         const hourHand = document.getElementById('svg-hour-hand');
         const minuteHand = document.getElementById('svg-minute-hand');
-        // Calculate angles
         const hourAngle = ((hour % 12) + minute / 60) * 30;
         const minuteAngle = minute * 6;
-        // Calculate hand positions
         const hourLength = 50;
         const minuteLength = 70;
         const centerX = 110;
         const centerY = 110;
-        // Hour hand
         const hourRadians = (Math.PI / 180) * (hourAngle - 90);
         hourHand.setAttribute('x2', centerX + hourLength * Math.cos(hourRadians));
         hourHand.setAttribute('y2', centerY + hourLength * Math.sin(hourRadians));
-        // Minute hand
         const minuteRadians = (Math.PI / 180) * (minuteAngle - 90);
         minuteHand.setAttribute('x2', centerX + minuteLength * Math.cos(minuteRadians));
         minuteHand.setAttribute('y2', centerY + minuteLength * Math.sin(minuteRadians));
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         setClockHands(parseInt("{{ hour }}"), parseInt("{{ minute }}"));
-        // Play sound feedback based on result
-        const result = "{{ result }}";
-        if (result === 'correct') {
-            const correctSound = document.getElementById('correctSound');
-            correctSound.play().catch(()=>{});
-            setTimeout(function() {
-                document.getElementById('feedback-area').style.display = 'none';
-            }, 5000);
-            setTimeout(()=>{document.getElementById('correctVoice').play().catch(()=>{});}, 1200);
-        } else if (result === 'incorrect') {
-            const incorrectSound = document.getElementById('incorrectSound');
-            incorrectSound.play().catch(()=>{});
-            setTimeout(()=>{document.getElementById('tryAgainVoice').play().catch(()=>{});}, 1200);
-        } else if (result === 'show_answer') {
-            const incorrectSound = document.getElementById('incorrectSound');
-            incorrectSound.play().catch(()=>{});
-            setTimeout(function() {
-                document.getElementById('feedback-area').style.display = 'none';
-            }, 5000);
-            setTimeout(()=>{document.getElementById('tryAgainVoice').play().catch(()=>{});}, 1200);
-        }
-        // Play intro audio when page loads
+        const result = "{{ result|default:'' }}";
         if (!result) {
             setTimeout(() => {
                 const introAudio = document.getElementById('introAudio');
-                introAudio.play().catch(()=>{});
+                if (introAudio) {
+                    introAudio.play().catch(()=>{});
+                }
             }, 500);
         }
     });
 </script>
-<audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
-<audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
 {% endblock %}

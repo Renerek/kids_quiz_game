@@ -1,0 +1,24 @@
+{% load static %}
+{% url 'quiz:start' as fallback_back_href %}
+<div class="game-back-button-wrapper">
+    {% if back_href %}
+    <a href="{{ back_href }}" class="game-back-button" aria-label="{{ aria_label|default:'Go back to game menu' }}" title="{{ tooltip|default:'Back' }}">
+    {% else %}
+    <a href="#" class="game-back-button" aria-label="{{ aria_label|default:'Go back to game menu' }}" title="{{ tooltip|default:'Back' }}" data-fallback-href="{{ fallback_back_href }}" onclick="event.preventDefault(); if (window.history.length > 1) { window.history.back(); } else { window.location.href = this.dataset.fallbackHref; }">
+    {% endif %}
+        <span class="game-back-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 width="40" height="40"
+                 fill="none"
+                 stroke="blue"
+                 stroke-width="3.5"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 role="presentation"
+                 focusable="false">
+                <path d="M9 15l-6-6 6-6M3 9h13a5 5 0 0 1 0 10H9" />
+            </svg>
+        </span>
+    </a>
+</div>
