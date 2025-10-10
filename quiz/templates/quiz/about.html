@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 40px auto;">
+    <h1 class="big-heading">About Kids Quiz Game</h1>
+    
+    <div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color: #007bff; margin-top: 0; font-size: 1.4rem;">Our Purpose</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+            Kids Quiz Game is an educational web application designed to make learning fun and engaging for children. 
+            Our mission is to provide a safe, interactive environment where kids can develop essential skills through 
+            playful activities including math problems, spelling games, time-telling exercises, and knowledge quizzes.
+        </p>
+    </div>
+
+    <div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color: #007bff; margin-top: 0; font-size: 1.4rem;">What We Offer</h2>
+        <ul style="font-size: 1.1rem; line-height: 1.8; color: #333;">
+            <li><strong>Math Quiz:</strong> Practice addition, subtraction, multiplication, and division with different difficulty levels</li>
+            <li><strong>Spelling Games:</strong> Improve spelling skills through interactive word activities</li>
+            <li><strong>What Time Is It?:</strong> Learn to read analog clocks and tell time</li>
+            <li><strong>Basic Questions:</strong> Personalized questions to help children express themselves</li>
+            <li><strong>Colors & Shapes:</strong> Learn about different colors and geometric shapes</li>
+            <li><strong>Animals & Fruits Games:</strong> Discover interesting facts about animals and fruits</li>
+            <li><strong>General Knowledge:</strong> Expand knowledge with fun trivia questions</li>
+            <li><strong>Mixed Game Mode:</strong> Enjoy a combination of different activities</li>
+        </ul>
+    </div>
+
+    <div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color: #007bff; margin-top: 0; font-size: 1.4rem;">Our Features</h2>
+        <ul style="font-size: 1.1rem; line-height: 1.8; color: #333;">
+            <li>🎨 Colorful, kid-friendly interface</li>
+            <li>🔊 Audio feedback and encouragement</li>
+            <li>👤 User accounts with progress tracking</li>
+            <li>📊 Statistics to monitor learning progress</li>
+            <li>🌍 Multi-language support</li>
+            <li>📱 Mobile-responsive design</li>
+            <li>🎯 Age-appropriate content</li>
+        </ul>
+    </div>
+
+    <div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color: #007bff; margin-top: 0; font-size: 1.4rem;">About the Creators</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+            Kids Quiz Game was developed with passion and dedication to provide quality educational content for children. 
+            Our team believes in the power of interactive learning and the importance of making education accessible 
+            and enjoyable for every child.
+        </p>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+            We continuously work to improve and expand the application based on feedback from parents, teachers, and 
+            most importantly, the children who use it. Our goal is to create a learning experience that children love 
+            and parents trust.
+        </p>
+    </div>
+
+    <div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color: #007bff; margin-top: 0; font-size: 1.4rem;">Get in Touch</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+            Have questions, suggestions, or feedback? We'd love to hear from you!
+        </p>
+        <a href="{% url 'quiz:contact' %}" style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1rem; margin-top: 10px;">
+            Contact Us
+        </a>
+    </div>
+</div>
+{% endblock %}

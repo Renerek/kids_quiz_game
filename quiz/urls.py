@@ -20,6 +20,7 @@ urlpatterns = [
     path("basic-questions/", views.basic_questions, name="basic_questions"),
     path("colors-shapes/", views.colors_shapes, name="colors_shapes"),
     path("contact/", views.contact, name="contact"),
+    path("about/", views.about_us, name="about_us"),
     path("login/", views.login, name="login"),
     path("signup/", views.signup, name="signup"),
     path("logout/", views.logout, name="logout"),
