@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Assignment Complete{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h1 class="h3 text-primary mb-3">Great work!</h1>
+          <p class="lead">Ready to mark <strong>{{ assignment.get_game_display }}</strong> as complete?</p>
+          <p class="text-muted">We'll record your latest quiz results and notify your grown-ups.</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-lg w-100 mb-3">Yes, mark it complete</button>
+            <a href="{% url 'quiz:child_assignments' %}" class="btn btn-outline-secondary w-100">Not yet</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

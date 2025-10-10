@@ -1,0 +1,36 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>{% translate "Assignment completed" %}</title>
+	</head>
+	<body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #fef9f2; padding: 24px; color: #2b2b2b;">
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); overflow: hidden;">
+			<tr>
+				<td style="background: linear-gradient(135deg, #FF9800, #FFC107); padding: 24px; color: #2b2b2b;">
+					<h1 style="margin: 0; font-size: 24px;">{% blocktrans with name=student.username %}{{ name }} finished an assignment!{% endblocktrans %}</h1>
+					<p style="margin: 12px 0 0; font-size: 16px;">{% blocktrans %}Here's a quick summary of their hard work.{% endblocktrans %}</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding: 24px;">
+					<p style="font-size: 16px; line-height: 1.6; margin: 0 0 12px;">{% blocktrans with game=game_name %}Game: <strong>{{ game }}</strong>{% endblocktrans %}</p>
+					<p style="font-size: 16px; line-height: 1.6; margin: 0 0 12px;">{% blocktrans with teacher=assigned_by.username %}Assigned by: {{ teacher }}{% endblocktrans %}</p>
+					<p style="font-size: 16px; line-height: 1.6; margin: 0 0 12px;">{% blocktrans with due=due_at|date:"F j, Y" time=due_at|date:"g:i a" %}Due date: {{ due }} at {{ time }}{% endblocktrans %}</p>
+					<div style="background: #fff7e0; padding: 16px; border-radius: 12px; margin: 16px 0;">
+						<p style="margin: 0 0 8px; font-size: 15px;">{% translate "Results:" %}</p>
+						<ul style="margin: 0; padding: 0 0 0 20px; font-size: 15px;">
+							<li>{% blocktrans with score=result.score %}Score: {{ score }}{% endblocktrans %}</li>
+							<li>{% blocktrans with correct=result.correct %}Correct answers: {{ correct }}{% endblocktrans %}</li>
+							<li>{% blocktrans with incorrect=result.incorrect %}Incorrect answers: {{ incorrect }}{% endblocktrans %}</li>
+							<li>{% blocktrans with seconds=result.time_spent|floatformat:1 %}Time spent: {{ seconds }} seconds{% endblocktrans %}</li>
+						</ul>
+					</div>
+					<p style="font-size: 16px; line-height: 1.6;">{% translate "Give them a high five and keep the learning excitement going!" %}</p>
+					<p style="font-size: 16px; line-height: 1.6; margin-top: 24px;">{% translate "With appreciation," %}<br />{% translate "The Kids Quiz Game Team" %}</p>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

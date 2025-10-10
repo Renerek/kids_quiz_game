@@ -1,0 +1,32 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>{% translate "New Kids Quiz Game assignment" %}</title>
+	</head>
+	<body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f8ff; padding: 24px; color: #113;">
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgba(17, 51, 102, 0.08); overflow: hidden;">
+			<tr>
+				<td style="background: linear-gradient(135deg, #1976D2, #64B5F6); padding: 24px; color: #fff;">
+					<h1 style="margin: 0; font-size: 24px;">{% blocktrans with name=student.username %}Hi {{ name }}!{% endblocktrans %}</h1>
+					<p style="margin: 12px 0 0; font-size: 16px;">{% blocktrans with teacher=assigned_by.username %}{{ teacher }} just shared a fun new challenge with you.{% endblocktrans %}</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding: 24px;">
+					<p style="font-size: 17px; margin: 0 0 12px;">{% blocktrans with game=game_name %}Game: <strong>{{ game }}</strong>{% endblocktrans %}</p>
+					<p style="font-size: 17px; margin: 0 0 12px;">{% blocktrans with due=due_at|date:"F j, Y" time=due_at|date:"g:i a" %}Due: {{ due }} at {{ time }}{% endblocktrans %}</p>
+					{% if notes %}
+						<p style="font-size: 16px; margin: 0 0 16px;">{% blocktrans %}Notes: {{ notes }}{% endblocktrans %}</p>
+					{% endif %}
+					<p style="text-align: center; margin: 24px 0;">
+						<a href="{{ dashboard_link }}" style="display: inline-block; padding: 12px 28px; background: #43A047; color: #fff; border-radius: 999px; text-decoration: none; font-weight: bold;">{% translate "Go to My Assignments" %}</a>
+					</p>
+					<p style="font-size: 16px; line-height: 1.5;">{% translate "Have fun, take your time, and show us what you know!" %}</p>
+					<p style="font-size: 16px; line-height: 1.5; margin-top: 24px;">{% translate "The Kids Quiz Game Team" %}</p>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Remove Learner{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h1 class="h3 text-danger mb-3">Remove {{ child.username }}?</h1>
+          <p class="lead">This learner will no longer be linked to your dashboard.</p>
+          <p class="text-muted">You can re-link them later with their username or email.</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg w-100 mb-3">Yes, remove learner</button>
+            <a href="{% url 'quiz:parent_dashboard' %}" class="btn btn-outline-secondary w-100">Keep learner</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

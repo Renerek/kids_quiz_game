@@ -1,0 +1,13 @@
+Hi {{ student.username }},
+
+You have a new Kids Quiz Game assignment from {{ assigned_by.username }}.
+
+Game: {{ game_name }}
+Due: {{ due_at|date:"F j, Y" }} at {{ due_at|date:"g:i a" }}
+{% if notes %}Notes: {{ notes }}
+{% endif %}
+Play and submit your results here:
+{{ dashboard_link }}
+
+Have fun and give it your best shot!
+The Kids Quiz Game Team

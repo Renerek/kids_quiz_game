@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Remove Assignment{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h1 class="h3 text-danger mb-3">Remove this assignment?</h1>
+          <p class="lead">You're about to delete the <strong>{{ assignment.get_game_display }}</strong> assignment for <strong>{{ assignment.assigned_to.username }}</strong>.</p>
+          <p class="text-muted">This learner will no longer see it on their assignments list.</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg w-100 mb-3">Yes, remove it</button>
+            <a href="{% url 'quiz:parent_dashboard' %}" class="btn btn-outline-secondary w-100">Keep assignment</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,48 @@
-
 from django.contrib.auth.models import User
 from django.db import models
+
+
+class ParentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="parent_profile")
+    children = models.ManyToManyField(User, related_name="parent_set", blank=True)
+    # Optionally: educator/teacher flag, contact info, etc.
+    def __str__(self):
+        return f"Parent/Educator: {self.user.username}"
+
+
+class Assignment(models.Model):
+    GAME_CHOICES = [
+        ("math", "Math Quiz"),
+        ("spelling", "Spelling Game"),
+        ("animals", "Animals Game"),
+        ("fruits", "Fruits Game"),
+        ("mixed", "Mixed Game"),
+        ("time", "What Time Is It"),
+        # Add more as needed
+    ]
+    assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assignments_given")
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assignments_received")
+    game = models.CharField(max_length=32, choices=GAME_CHOICES)
+    due_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+    is_completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.game} for {self.assigned_to.username} (due {self.due_date:%Y-%m-%d})"
+
+
+class AssignmentResult(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="results")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    completed_at = models.DateTimeField(auto_now_add=True)
+    score = models.IntegerField(default=0)
+    correct = models.IntegerField(default=0)
+    incorrect = models.IntegerField(default=0)
+    time_spent = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"Result for {self.user.username} on {self.assignment}"
 
 class UserStat(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

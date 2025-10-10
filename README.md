@@ -13,6 +13,8 @@ An educational Django web app with multiple kid‑friendly learning mini‑games
 - Dynamic audio feedback (intros, correct/incorrect, encouragement streaks)
 - Optional personalized spoken encouragement (Web Speech API client side)
 - Video mascot on home page (muted autoplay with explicit unmute/restart)
+- Parent & educator dashboard for linking learners, tracking performance, and printing progress snapshots
+- Assignment mode for scheduling games with due dates and automated email notifications
 - User accounts (signup, login, logout)
 - Email verification (inactive until verified)
 - Resend verification email endpoint

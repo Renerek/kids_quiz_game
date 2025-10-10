@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Parent Access{% endblock %}
+
+{% block content %}
+<style>
+  .gate-form {
+    max-width: 360px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+  }
+  .gate-form label {
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+  }
+  .gate-form .form-input-wrapper {
+    justify-content: center;
+    width: 100%;
+  }
+  .gate-form input {
+    max-width: 240px;
+    text-align: center;
+  }
+  .gate-form .form-error-inline {
+    white-space: normal;
+    text-align: left;
+  }
+</style>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <h1 class="h4 mb-0">Parent &amp; Educator Access</h1>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">For safety, please confirm that you're an adult (18+) each time you open the dashboard.</p>
+          <form method="post" class="gate-form">
+            {% csrf_token %}
+            <input type="hidden" name="parent_gate_submit" value="1" />
+            <div class="mb-3">
+              {{ gate_form.age.label_tag }}
+              <div class="form-input-wrapper">
+                {{ gate_form.age }}
+                {% if gate_form.age.errors %}
+                  <span class="form-error-inline">{{ gate_form.age.errors|join:", " }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="mb-3">
+              {{ gate_form.birth_year.label_tag }}
+              <div class="form-input-wrapper">
+                {{ gate_form.birth_year }}
+                {% if gate_form.birth_year.errors %}
+                  <span class="form-error-inline">{{ gate_form.birth_year.errors|join:", " }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Verify Age &amp; Continue</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

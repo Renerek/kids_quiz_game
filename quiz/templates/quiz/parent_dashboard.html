@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Parent & Educator Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .parent-dashboard .dashboard-form {
+    max-width: 380px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .parent-dashboard .dashboard-form .form-input-wrapper {
+    justify-content: center;
+    width: 100%;
+  }
+  .parent-dashboard .dashboard-form .form-control,
+  .parent-dashboard .dashboard-form .form-select,
+  .parent-dashboard .dashboard-form textarea {
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .parent-dashboard .dashboard-form label {
+    font-weight: 600;
+    text-align: center;
+  }
+  .parent-dashboard .dashboard-form button {
+    align-self: center;
+    min-width: 180px;
+  }
+  .parent-dashboard .card-body > p {
+    text-align: center;
+  }
+  .parent-dashboard .strengths-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15, 76, 129, 0.08);
+  }
+  .parent-dashboard .strengths-table th,
+  .parent-dashboard .strengths-table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 12px;
+  }
+  .parent-dashboard .strengths-table thead {
+    background: linear-gradient(135deg, #2196f3, #64b5f6);
+    color: #fff;
+    font-weight: 600;
+  }
+  .parent-dashboard .strengths-table tbody tr:nth-child(even) {
+    background: #f5f9ff;
+  }
+  .parent-dashboard .strengths-table tbody tr:hover {
+    background: #e3f2fd;
+  }
+  .parent-dashboard .strengths-table .accuracy-good {
+    color: #2e7d32;
+    font-weight: 600;
+  }
+  .parent-dashboard .strengths-table .accuracy-low {
+    color: #c62828;
+    font-weight: 600;
+  }
+</style>
+<div class="container py-4 parent-dashboard">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">Parent &amp; Educator Dashboard</h1>
+    <button class="btn btn-outline-secondary" onclick="window.print()">
+      &#128424; Print Report
+    </button>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h2 class="h5 mb-0">Link a Learner</h2>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Add your child or student by their username or email so you can monitor their progress.</p>
+          <form method="post" class="dashboard-form">
+            {% csrf_token %}
+            <input type="hidden" name="add_child_submit" value="1" />
+            <div class="mb-3">
+              {{ add_child_form.child_identifier.label_tag }}
+              <div class="form-input-wrapper">
+                {{ add_child_form.child_identifier }}
+                {% if add_child_form.child_identifier.errors %}
+                  <span class="form-error-inline">{{ add_child_form.child_identifier.errors|join:", " }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success">Link Learner</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h5 mb-0">Create an Assignment</h2>
+        </div>
+        <div class="card-body">
+          {% if children_count %}
+            <p class="text-muted">Choose a learner, pick a game, and set a due date. We'll send them an email with the details.</p>
+            <form method="post" class="dashboard-form">
+              {% csrf_token %}
+              <input type="hidden" name="create_assignment_submit" value="1" />
+              <div class="mb-3">
+                {{ assignment_form.assigned_to.label_tag }}
+                <div class="form-input-wrapper">
+                  {{ assignment_form.assigned_to }}
+                  {% if assignment_form.assigned_to.errors %}
+                    <span class="form-error-inline">{{ assignment_form.assigned_to.errors|join:", " }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="mb-3">
+                {{ assignment_form.game.label_tag }}
+                <div class="form-input-wrapper">
+                  {{ assignment_form.game }}
+                  {% if assignment_form.game.errors %}
+                    <span class="form-error-inline">{{ assignment_form.game.errors|join:", " }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="mb-3">
+                {{ assignment_form.due_date.label_tag }}
+                <div class="form-input-wrapper">
+                  {{ assignment_form.due_date }}
+                  {% if assignment_form.due_date.errors %}
+                    <span class="form-error-inline">{{ assignment_form.due_date.errors|join:", " }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="mb-3">
+                {{ assignment_form.notes.label_tag }}
+                <div class="form-input-wrapper align-start">
+                  {{ assignment_form.notes }}
+                  {% if assignment_form.notes.errors %}
+                    <span class="form-error-inline">{{ assignment_form.notes.errors|join:", " }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Assign Game</button>
+            </form>
+          {% else %}
+            <div class="alert alert-info mb-0">
+              Link at least one learner to start creating assignments.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5" />
+
+  {% if children_data %}
+    {% for child_data in children_data %}
+      <section class="mb-5 print-section">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div class="d-flex align-items-center gap-3">
+            <h2 class="h3 text-secondary mb-0">{{ child_data.child.username }}'s Progress</h2>
+            <a href="{% url 'quiz:remove_child' child_data.child.pk %}" class="btn btn-sm btn-outline-danger">Remove Learner</a>
+          </div>
+          {% if child_data.last_played %}
+            <span class="badge bg-secondary">Last played {{ child_data.last_played|date:"M d, Y g:i a" }}</span>
+          {% endif %}
+        </div>
+        <div class="row g-4 mt-1">
+          <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-body">
+                <h3 class="h5">Quiz History</h3>
+                <ul class="list-unstyled small">
+                  <li><strong>Total sessions:</strong> {{ child_data.total_sessions }}</li>
+                  <li><strong>Total correct:</strong> {{ child_data.total_correct }}</li>
+                  <li><strong>Total incorrect:</strong> {{ child_data.total_incorrect }}</li>
+                  <li><strong>Average score:</strong> {{ child_data.average_score }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-body">
+                <h3 class="h5">Strengths &amp; Gaps</h3>
+                {% if child_data.by_game %}
+                  <div class="table-responsive">
+                    <table class="strengths-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Game</th>
+                          <th scope="col">Correct</th>
+                          <th scope="col">Incorrect</th>
+                          <th scope="col">Accuracy</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for game in child_data.by_game %}
+                          <tr>
+                            <td>{{ game.game|title }}</td>
+                            <td>{{ game.total_correct }}</td>
+                            <td>{{ game.total_incorrect }}</td>
+                            {% if game.accuracy is not None %}
+                              <td class="{% if game.accuracy >= 70 %}accuracy-good{% elif game.accuracy <= 40 %}accuracy-low{% endif %}">{{ game.accuracy }}%</td>
+                            {% else %}
+                              <td class="text-muted">—</td>
+                            {% endif %}
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <p class="text-muted small mb-0">No quiz history yet.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-body">
+                <h3 class="h5">Assignments</h3>
+                {% if child_data.pending_assignments %}
+                  <p class="small text-muted">Upcoming</p>
+                  <ul class="list-unstyled small">
+                    {% for assignment in child_data.pending_assignments %}
+                      <li class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                          <div>
+                            <strong>{{ assignment.get_game_display }}</strong><br />
+                            <span class="text-muted">Due {{ assignment.due_date|date:"M d, Y g:i a" }}</span>
+                          </div>
+                          <a href="{% url 'quiz:assignment_delete' assignment.pk %}" class="btn btn-sm btn-outline-danger">Remove</a>
+                        </div>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-muted small">No pending assignments.</p>
+                {% endif %}
+                {% if child_data.completed_assignments %}
+                  <p class="small text-muted mt-3">Recently completed</p>
+                  <ul class="list-unstyled small">
+                    {% for assignment in child_data.completed_assignments %}
+                      <li>
+                        {{ assignment.get_game_display }} on {{ assignment.due_date|date:"M d" }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">Once you link a learner, their progress will appear here.</div>
+  {% endif %}
+</div>
+{% endblock %}

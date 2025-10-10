@@ -1,0 +1,13 @@
+Hello,
+
+Great news! {{ student.username }} just completed the {{ game_name }} assignment.
+
+Assigned by: {{ assigned_by.username }}
+Due date: {{ due_at|date:"F j, Y" }} at {{ due_at|date:"g:i a" }}
+Score: {{ result.score }}
+Correct answers: {{ result.correct }}
+Incorrect answers: {{ result.incorrect }}
+Time spent: {{ result.time_spent|floatformat:1 }} seconds
+
+Celebrate their effort and keep cheering them on!
+— Kids Quiz Game

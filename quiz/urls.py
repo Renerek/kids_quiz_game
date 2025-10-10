@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 
 
 from . import views
+from . import views_parent
 from .views_mixed import mixed_game
 
 app_name = "quiz"
@@ -42,4 +43,9 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path("update-account/", views.update_account, name="update_account"),
     path("settings/", views.settings_view, name="settings"),
+    path("parent-dashboard/", views_parent.parent_dashboard, name="parent_dashboard"),
+    path("parent-dashboard/remove-child/<int:child_id>/", views_parent.remove_child, name="remove_child"),
+    path("assignments/", views_parent.child_assignments, name="child_assignments"),
+    path("assignments/<int:pk>/complete/", views_parent.assignment_mark_complete, name="assignment_mark_complete"),
+    path("assignments/<int:pk>/delete/", views_parent.assignment_delete, name="assignment_delete"),
 ]
