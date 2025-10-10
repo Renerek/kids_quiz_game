@@ -1136,3 +1136,20 @@ class GeneralKnowledgeGameTests(TestCase):
         session.save()
         resp = self.client.get(reverse("quiz:general_knowledge_game"))
         self.assertTemplateUsed(resp, "quiz/guest_limit.html")
+
+class AboutUsPageTests(TestCase):
+    def test_about_us_page_accessible(self):
+        """Test that the About Us page is accessible and returns correct status"""
+        resp = self.client.get(reverse("quiz:about_us"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "quiz/about.html")
+    
+    def test_about_us_page_content(self):
+        """Test that the About Us page contains expected content"""
+        resp = self.client.get(reverse("quiz:about_us"))
+        self.assertContains(resp, "About Kids Quiz Game")
+        self.assertContains(resp, "Our Purpose")
+        self.assertContains(resp, "What We Offer")
+        self.assertContains(resp, "Our Features")
+        self.assertContains(resp, "About the Creators")
+        self.assertContains(resp, "Get in Touch")

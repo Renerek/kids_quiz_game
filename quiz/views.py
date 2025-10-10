@@ -443,6 +443,9 @@ def contact(request):
         sent = True
     return render(request, "quiz/contact.html", {"sent": sent})
 
+def about_us(request):
+    return render(request, "quiz/about.html")
+
 def login(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
