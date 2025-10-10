@@ -1,16 +1,11 @@
 
 {% extends "base.html" %}
 {% load static %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Colors & Shapes Learning Game{% endblock %}
 {% block content %}
-<div class="container" style="position:relative;">
-    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
+<div class="container game-page">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px;margin-top:8px;">
         <h1 class="big-heading" style="margin:0;">Colors & Shapes Learning Game</h1>
         {% if user.is_authenticated and user_name %}
@@ -19,101 +14,112 @@
     </div>
 <audio id="colorsShapesIntro" src="{% static 'quiz/audio/colors_shapes_intro.mp3' %}" preload="auto"></audio>
 <div class="container">
-    <h1>Learn Colors and Shapes!</h1>
-    <!-- Back to Home button removed -->
-    <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
-        <div class="color-card" style="background: #e74c3c;" data-audio="Red">Red</div>
-        <div class="color-card" style="background: #3498db;" data-audio="Blue">Blue</div>
-        <div class="color-card" style="background: #27ae60;" data-audio="Green">Green</div>
-        <div class="color-card" style="background: #f1c40f; color: #333;" data-audio="Yellow">Yellow</div>
-        <div class="color-card" style="background: #9b59b6;" data-audio="Purple">Purple</div>
-        <div class="color-card" style="background: #e67e22;" data-audio="Orange">Orange</div>
-        <div class="color-card" style="background: #ff69b4; color: #333;" data-audio="Pink">Pink</div>
-        <div class="color-card" style="background: #8b4513; color: #fff;" data-audio="Brown">Brown</div>
-        <div class="color-card" style="background: #808080; color: #fff;" data-audio="Gray">Gray</div>
-        <div class="color-card" style="background: #00bcd4; color: #333;" data-audio="Cyan">Cyan</div>
-        <div class="color-card" style="background: #ffd700; color: #333;" data-audio="Gold">Gold</div>
-        <div class="color-card" style="background: #c0c0c0; color: #333;" data-audio="Silver">Silver</div>
-        <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;" data-audio="White">White</div>
-        <div class="color-card" style="background: #333; color: #fff;" data-audio="Black">Black</div>
-    </div>
-    <h2>Shapes</h2>
-    <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
-        <div class="shape-card" data-audio="Circle">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <circle cx="30" cy="30" r="24" fill="#3498db" />
-            </svg>
-            Circle
-        </div>
-        <div class="shape-card" data-audio="Square">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <rect x="12" y="12" width="36" height="36" fill="#e74c3c" />
-            </svg>
-            Square
-        </div>
-        <div class="shape-card" data-audio="Triangle">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <polygon points="30,6 54,54 6,54" fill="#27ae60" />
-            </svg>
-            Triangle
-        </div>
-        <div class="shape-card" data-audio="Rectangle">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <rect x="6" y="18" width="48" height="24" fill="#f1c40f" />
-            </svg>
-            Rectangle
-        </div>
-        <div class="shape-card" data-audio="Oval">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <ellipse cx="30" cy="30" rx="24" ry="15" fill="#9b59b6" />
-            </svg>
-            Oval
-        </div>
-        <div class="shape-card" data-audio="Star">
-            <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
-                <polygon points="30,6 36,23 54,23 39,34 45,51 30,41 15,51 21,34 6,23 24,23" fill="#e67e22" />
-            </svg>
-            Star
+    <div id="game-feedback" class="game-feedback-wrapper" aria-live="assertive">
+        <div class="game-feedback-card">
+            <div data-role="heading"></div>
+            <div data-role="subtitle" class="subtitle"></div>
+            <div data-role="body" class="body-text"></div>
         </div>
     </div>
-    <h2>Exercise: Match the Color and Shape!</h2>
-    <div id="targetRequest" style="font-size:1.3rem;font-weight:bold;margin-bottom:20px;"></div>
-    <form id="colorShapeForm" style="margin-top:10px;">
-        <label for="colorSelect">Pick a color:</label>
-        <select id="colorSelect" name="colorSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
-            <option value="">--Choose--</option>
-            <option value="Red">Red</option>
-            <option value="Blue">Blue</option>
-            <option value="Green">Green</option>
-            <option value="Yellow">Yellow</option>
-            <option value="Purple">Purple</option>
-            <option value="Orange">Orange</option>
-            <option value="Pink">Pink</option>
-            <option value="Brown">Brown</option>
-            <option value="Gray">Gray</option>
-            <option value="Cyan">Cyan</option>
-            <option value="Gold">Gold</option>
-            <option value="Silver">Silver</option>
-            <option value="White">White</option>
-            <option value="Black">Black</option>
-        </select>
-        <label for="shapeSelect">Pick a shape:</label>
-        <select id="shapeSelect" name="shapeSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
-            <option value="">--Choose--</option>
-            <option value="Circle">Circle</option>
-            <option value="Square">Square</option>
-            <option value="Triangle">Triangle</option>
-            <option value="Rectangle">Rectangle</option>
-            <option value="Oval">Oval</option>
-            <option value="Star">Star</option>
-        </select>
-        <button type="button" onclick="checkMatch()" style="padding:8px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:bold;margin-left:10px;">Check</button>
-    </form>
-    <div id="exerciseResult" style="margin-top:20px;font-size:1.2rem;font-weight:bold;"></div>
-    <div id="showAnswer" style="margin-top:20px;"></div>
+
+    <div id="game-board" class="colors-shapes-board" aria-live="polite">
+        <h1>Learn Colors and Shapes!</h1>
+        <!-- Back to Home button removed -->
+        <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
+            <div class="color-card" style="background: #e74c3c;" data-audio="Red">Red</div>
+            <div class="color-card" style="background: #3498db;" data-audio="Blue">Blue</div>
+            <div class="color-card" style="background: #27ae60;" data-audio="Green">Green</div>
+            <div class="color-card" style="background: #f1c40f; color: #333;" data-audio="Yellow">Yellow</div>
+            <div class="color-card" style="background: #9b59b6;" data-audio="Purple">Purple</div>
+            <div class="color-card" style="background: #e67e22;" data-audio="Orange">Orange</div>
+            <div class="color-card" style="background: #ff69b4; color: #333;" data-audio="Pink">Pink</div>
+            <div class="color-card" style="background: #8b4513; color: #fff;" data-audio="Brown">Brown</div>
+            <div class="color-card" style="background: #808080; color: #fff;" data-audio="Gray">Gray</div>
+            <div class="color-card" style="background: #00bcd4; color: #333;" data-audio="Cyan">Cyan</div>
+            <div class="color-card" style="background: #ffd700; color: #333;" data-audio="Gold">Gold</div>
+            <div class="color-card" style="background: #c0c0c0; color: #333;" data-audio="Silver">Silver</div>
+            <div class="color-card" style="background: #fff; color: #333; border: 2px solid #333;" data-audio="White">White</div>
+            <div class="color-card" style="background: #333; color: #fff;" data-audio="Black">Black</div>
+        </div>
+        <h2>Shapes</h2>
+        <div class="color-shape-container" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;">
+            <div class="shape-card" data-audio="Circle">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <circle cx="30" cy="30" r="24" fill="#3498db" />
+                </svg>
+                Circle
+            </div>
+            <div class="shape-card" data-audio="Square">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <rect x="12" y="12" width="36" height="36" fill="#e74c3c" />
+                </svg>
+                Square
+            </div>
+            <div class="shape-card" data-audio="Triangle">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <polygon points="30,6 54,54 6,54" fill="#27ae60" />
+                </svg>
+                Triangle
+            </div>
+            <div class="shape-card" data-audio="Rectangle">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <rect x="6" y="18" width="48" height="24" fill="#f1c40f" />
+                </svg>
+                Rectangle
+            </div>
+            <div class="shape-card" data-audio="Oval">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <ellipse cx="30" cy="30" rx="24" ry="15" fill="#9b59b6" />
+                </svg>
+                Oval
+            </div>
+            <div class="shape-card" data-audio="Star">
+                <svg class="shape-svg" viewBox="0 0 60 60" width="60" height="60">
+                    <polygon points="30,6 36,23 54,23 39,34 45,51 30,41 15,51 21,34 6,23 24,23" fill="#e67e22" />
+                </svg>
+                Star
+            </div>
+        </div>
+        <h2>Exercise: Match the Color and Shape!</h2>
+        <div id="targetRequest" style="font-size:1.3rem;font-weight:bold;margin-bottom:20px;"></div>
+        <form id="colorShapeForm" style="margin-top:10px;">
+            <label for="colorSelect">Pick a color:</label>
+            <select id="colorSelect" name="colorSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
+                <option value="">--Choose--</option>
+                <option value="Red">Red</option>
+                <option value="Blue">Blue</option>
+                <option value="Green">Green</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Purple">Purple</option>
+                <option value="Orange">Orange</option>
+                <option value="Pink">Pink</option>
+                <option value="Brown">Brown</option>
+                <option value="Gray">Gray</option>
+                <option value="Cyan">Cyan</option>
+                <option value="Gold">Gold</option>
+                <option value="Silver">Silver</option>
+                <option value="White">White</option>
+                <option value="Black">Black</option>
+            </select>
+            <label for="shapeSelect">Pick a shape:</label>
+            <select id="shapeSelect" name="shapeSelect" style="font-size:1.1rem;padding:8px 12px;margin:0 10px;">
+                <option value="">--Choose--</option>
+                <option value="Circle">Circle</option>
+                <option value="Square">Square</option>
+                <option value="Triangle">Triangle</option>
+                <option value="Rectangle">Rectangle</option>
+                <option value="Oval">Oval</option>
+                <option value="Star">Star</option>
+            </select>
+            <button type="button" onclick="checkMatch()" style="padding:8px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:bold;margin-left:10px;">Check</button>
+        </form>
+        <div id="exerciseResult" style="margin-top:20px;font-size:1.2rem;font-weight:bold;"></div>
+        <div id="showAnswer" style="margin-top:20px;"></div>
+    </div>
 </div>
 {% endblock %}
 {% block scripts %}
+{{ block.super }}
 <script>
     // Color and shape data
     const colors = [
@@ -136,6 +142,7 @@
 
     let targetColor = '';
     let targetShape = '';
+    let showFeedbackOverlay = function(){};
 
     function playAudioFor(label, type) {
         const id = `${type}_${label.toLowerCase()}`; // e.g., color_red or shape_circle
@@ -147,6 +154,69 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const feedbackOverlay = document.getElementById('game-feedback');
+        const feedbackCard = feedbackOverlay ? feedbackOverlay.querySelector('.game-feedback-card') : null;
+        const feedbackHeading = feedbackOverlay ? feedbackOverlay.querySelector('[data-role="heading"]') : null;
+        const feedbackSubtitle = feedbackOverlay ? feedbackOverlay.querySelector('[data-role="subtitle"]') : null;
+        const feedbackBody = feedbackOverlay ? feedbackOverlay.querySelector('[data-role="body"]') : null;
+        const gameBoard = document.getElementById('game-board');
+
+        function announce(message) {
+            if (!message) { return; }
+            const say = () => {
+                if (window.appSpeak) {
+                    window.appSpeak(message);
+                } else if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.rate = 0.95;
+                    window.speechSynthesis.speak(utterance);
+                }
+            };
+            setTimeout(say, 160);
+        }
+
+        showFeedbackOverlay = function(options) {
+            if (!feedbackOverlay || !feedbackCard) { return; }
+            const {
+                result = 'incorrect',
+                heading = '',
+                subtitle = '',
+                body = '',
+                voiceMessage = '',
+                holdFor,
+                onComplete
+            } = options || {};
+            const duration = holdFor !== undefined ? holdFor : (result === 'correct' ? 3200 : 2200);
+            feedbackCard.classList.toggle('incorrect', result !== 'correct');
+            if (feedbackHeading) { feedbackHeading.textContent = heading; }
+            if (feedbackSubtitle) { feedbackSubtitle.textContent = subtitle; }
+            if (feedbackBody) {
+                feedbackBody.textContent = body;
+                feedbackBody.style.display = body ? '' : 'none';
+            }
+            feedbackOverlay.classList.remove('fade-out');
+            feedbackOverlay.classList.add('is-visible');
+            if (gameBoard) {
+                gameBoard.classList.add('is-hidden-during-feedback');
+                gameBoard.setAttribute('aria-hidden', 'true');
+            }
+            announce(voiceMessage);
+            setTimeout(function() {
+                feedbackOverlay.classList.add('fade-out');
+                setTimeout(function() {
+                    feedbackOverlay.classList.remove('fade-out');
+                    feedbackOverlay.classList.remove('is-visible');
+                    if (gameBoard) {
+                        gameBoard.classList.remove('is-hidden-during-feedback');
+                        gameBoard.removeAttribute('aria-hidden');
+                    }
+                    if (typeof onComplete === 'function') {
+                        onComplete();
+                    }
+                }, 320);
+            }, Math.max(duration, 1400));
+        };
+
         // Play intro once per session
         const intro = document.getElementById('colorsShapesIntro');
         if (intro && !sessionStorage.getItem('playedColorsShapesIntro')) {
@@ -191,31 +261,47 @@
         var correctSound = document.getElementById('correctSound');
         var incorrectSound = document.getElementById('incorrectSound');
         if (!color || !shape) {
-            result.textContent = 'Please select both a color and a shape.';
-            result.style.color = '#e74c3c';
+            result.textContent = '';
             answerDiv.innerHTML = '';
             incorrectSound.play().catch(()=>{});
+            showFeedbackOverlay({
+                result: 'incorrect',
+                heading: 'Pick both choices',
+                subtitle: 'Choose a color and a shape before checking.',
+                body: '',
+                voiceMessage: 'Please choose both a color and a shape before you check your answer.',
+                holdFor: 2200
+            });
             return;
         }
         if (color === targetColor && shape === targetShape) {
-            result.textContent = 'Correct!';
-            result.style.color = '#27ae60';
+            result.textContent = '';
             correctSound.play().catch(()=>{});
             // Show correct shape and color
             answerDiv.innerHTML = renderShape(color, shape);
-            setTimeout(function() {
-                result.textContent = '';
-                answerDiv.innerHTML = '';
-                randomTarget();
-            }, 5000);
+            showFeedbackOverlay({
+                result: 'correct',
+                heading: 'Great matching!',
+                subtitle: `The ${targetColor} ${targetShape} is correct.`,
+                body: 'A new challenge is on the way!',
+                voiceMessage: `Great job! You matched the ${targetColor} ${targetShape}.`,
+                holdFor: 3200,
+                onComplete: function() {
+                    answerDiv.innerHTML = '';
+                    randomTarget();
+                }
+            });
         } else {
-            result.textContent = 'Try again!';
-            result.style.color = '#e74c3c';
             answerDiv.innerHTML = '';
             incorrectSound.play().catch(()=>{});
-            setTimeout(function() {
-                result.textContent = '';
-            }, 5000);
+            showFeedbackOverlay({
+                result: 'incorrect',
+                heading: 'Try again!',
+                subtitle: `Look for the ${targetColor} ${targetShape}.`,
+                body: 'Check both dropdowns and give it another go.',
+                voiceMessage: `Not quite. We are looking for the ${targetColor} ${targetShape}.`,
+                holdFor: 2400
+            });
         }
     }
 

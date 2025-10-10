@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}General Knowledge Game{% endblock %}
 {% block bgmusic %}
 {% if user.is_authenticated and user.profile.sound_music %}
@@ -15,52 +17,59 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 {% endblock %}
 {% block content %}
-<div class="container" style="max-width:600px;margin:40px auto;position:relative;">
-    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
+<div class="container game-page" style="max-width:640px;margin:40px auto;text-align:center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <h1 class="big-heading" style="margin-top:0.5em;">General Knowledge</h1>
     {% if user_name %}
         <div class="mb-2" style="font-size:1.2rem;font-weight:bold;color:#1976d2;margin-bottom:18px;">Hello, {{ user_name|title }}!</div>
     {% endif %}
-    <div style="text-align:center;margin-bottom:20px;">
-        <img src="{{ image }}" alt="Question Image" style="max-width:260px;max-height:260px;object-fit:contain;">
-    </div>
-    <form method="post" style="margin-bottom:20px;">
-        {% csrf_token %}
-        <input type="hidden" name="q_idx" value="{{ q_idx }}">
-        <div style="font-size:1.2em;margin-bottom:16px;">{{ question }}</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-            {% for opt in options %}
-            <button type="submit" name="answer" value="{{ opt }}" class="btn btn-outline-primary" style="width:60%;margin:0 auto;font-size:1em;padding:6px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ opt }}</button>
-            {% endfor %}
-        </div>
-    </form>
-    <audio id="audio-correct" src="{% static 'quiz/audio/correct.mp3' %}" preload="auto"></audio>
-    <audio id="audio-incorrect" src="{% static 'quiz/audio/incorrect.mp3' %}" preload="auto"></audio>
     {% if result is not None %}
-        <input type="hidden" id="gk_result" value="{% if result %}1{% elif result is not none %}0{% endif %}">
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var isCorrect = document.getElementById('gk_result').value === '1';
-            if (isCorrect) {
-                document.getElementById('audio-correct').play();
-                setTimeout(function(){ window.location.href = "{% url 'quiz:general_knowledge_game' %}"; }, 1800);
-            } else if(document.getElementById('gk_result').value === '0') {
-                document.getElementById('audio-incorrect').play();
-            }
-        });
-        </script>
-        {% if result %}
-            <div class="alert alert-success">Correct! 🎉</div>
-        {% else %}
-            <div class="alert alert-danger">Incorrect. The correct answer is <b>{{ correct_answer }}</b>.</div>
-        {% endif %}
-        {# No manual next button, auto-advance after correct #}
+    {% if result %}
+        {% blocktrans with answer=correct_answer|default:'That answer' asvar feedback_message %}Great job! {{ answer }} is correct.{% endblocktrans %}
+    {% else %}
+        {% blocktrans asvar feedback_message %}Not quite. Try again with a different answer.{% endblocktrans %}
     {% endif %}
+    <div id="game-feedback"
+         class="game-feedback-wrapper"
+         data-result="{% if result %}correct{% else %}incorrect{% endif %}"
+         data-message="{{ feedback_message|escapejs }}"
+         data-redirect-url="{{ request.path }}"
+         data-reset-on-fade="true">
+        <div class="game-feedback-card{% if not result %} incorrect{% endif %}">
+            {% if result %}
+                <div style="font-size:1.45rem;font-weight:700;">{% trans "Correct!" %}</div>
+                <div class="subtitle" style="margin-top:6px;">{% trans "Well done!" %}</div>
+                <div class="subtitle">{% blocktrans with answer=correct_answer %}{{ answer }} was the right choice.{% endblocktrans %}</div>
+            {% else %}
+                <div style="font-size:1.45rem;font-weight:700;">{% trans "Incorrect" %}</div>
+                <div class="subtitle">{% trans "Let's try that again." %}</div>
+                <div class="subtitle">{% blocktrans with answer=correct_answer %}The correct answer is {{ answer }}.{% endblocktrans %}</div>
+                {% if user_answer %}<div class="subtitle" style="font-size:0.9rem;opacity:0.85;">{% blocktrans with answer=user_answer %}You picked {{ answer }}.{% endblocktrans %}</div>{% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% if result %}
+        <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+    {% endif %}
+    {% endif %}
+    <div id="game-board" class="game-board{% if result is not None %} is-hidden-during-feedback{% endif %}" aria-live="polite">
+        <div class="game-figure">
+            <img src="{{ image }}" alt="Question Image" />
+        </div>
+        <form method="post" style="margin-bottom:20px;">
+            {% csrf_token %}
+            <input type="hidden" name="q_idx" value="{{ q_idx }}">
+            <div style="font-size:1.2em;margin-bottom:16px;">{{ question }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto;">
+                {% for opt in options %}
+                <button type="submit" name="answer" value="{{ opt }}" class="game-button" style="width:100%;font-size:1rem;padding:10px 12px;white-space:normal;">{{ opt }}</button>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ block.super }}
+{% include "quiz/includes/game_feedback_script.html" %}
 {% endblock %}

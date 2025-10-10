@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}What Time Is It?{% endblock %}
 {% block content %}
-<div class="container" style="margin: 40px auto; max-width: 600px; text-align:center;">
+<div class="container game-page" style="margin: 40px auto; max-width: 600px; text-align:center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <h1 class="big-heading">What Time Is It?</h1>
     <p>This is a placeholder for the 'What Time Is It?' game. You can implement the game logic here.</p>
     <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" alt="Clock" style="max-width:180px; margin:30px auto;">

@@ -1,9 +1,11 @@
 
 {% extends "base.html" %}
 {% load static %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Enter Your Name{% endblock %}
 {% block content %}
-<div class="container">
+<div class="container game-page">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <h1 class="big-heading">Basic Questions</h1>
     <div class="name-container">
         <img src="{% static 'quiz/images/questions_icon.png' %}" alt="Questions" class="questions-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1946/1946488.png'">

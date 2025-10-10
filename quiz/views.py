@@ -12,6 +12,7 @@ def what_time_is_it(request):
     result = None
     correct_time = None
     choices = []
+    feedback_overlay = None
 
     # Track attempts in session
     if 'time_attempts' not in request.session:
@@ -35,6 +36,14 @@ def what_time_is_it(request):
                         incorrect=0,
                         time_spent=0.0
                     )
+                feedback_overlay = {
+                    "result": "correct",
+                    "voice_message": f"Great job! {correct_time} matches the clock.",
+                    "heading": "Correct!",
+                    "subtitle": f"{correct_time} is exactly right.",
+                    "body": "A new clock will appear in just a moment.",
+                    "correct_delay": 3600,
+                }
             else:
                 request.session['time_attempts'] += 1
                 if request.session['time_attempts'] == 1:
@@ -48,6 +57,15 @@ def what_time_is_it(request):
                             incorrect=1,
                             time_spent=0.0
                         )
+                    feedback_overlay = {
+                        "result": "incorrect",
+                        "voice_message": "Not quite. Look closely and try again.",
+                        "heading": "Try again!",
+                        "subtitle": "Check both the hour and minute hands.",
+                        "body": "You have another chance to match the time.",
+                        "reset_on_fade": True,
+                        "incorrect_delay": 2600,
+                    }
                 else:
                     result = 'show_answer'  # show correct answer and reset
                     request.session['time_attempts'] = 0
@@ -60,6 +78,14 @@ def what_time_is_it(request):
                             incorrect=1,
                             time_spent=0.0
                         )
+                    feedback_overlay = {
+                        "result": "correct",
+                        "voice_message": f"The correct time was {correct_time}. Let's try another clock.",
+                        "heading": "Here's the answer!",
+                        "subtitle": f"The clock was showing {correct_time}.",
+                        "body": "We'll show you a new clock right away.",
+                        "correct_delay": 4200,
+                    }
         except (ValueError, TypeError):
             result = 'show_answer'
             correct_time = clock_time
@@ -73,6 +99,15 @@ def what_time_is_it(request):
                     incorrect=1,
                     time_spent=0.0
                 )
+            if clock_time:
+                feedback_overlay = {
+                    "result": "correct",
+                    "voice_message": f"The correct time was {clock_time}. Let's try another clock.",
+                    "heading": "Here's the answer!",
+                    "subtitle": f"The clock was showing {clock_time}.",
+                    "body": "We'll try a different time next.",
+                    "correct_delay": 4200,
+                }
 
     # Generate 3 distractor choices
     correct = f"{hour}:{minute:02d}"
@@ -115,6 +150,7 @@ def what_time_is_it(request):
             "correct_time": correct_time,
             "user_name": user_name,
             "choices": choices,
+            "feedback_overlay": feedback_overlay,
         },
     )
 import logging
@@ -777,6 +813,7 @@ def spelling_game(request):
     user_name = None
     if request.user.is_authenticated:
         user_name = getattr(getattr(request.user, 'profile', None), 'first_name', request.user.username)
+    feedback_overlay = None
     if request.method == "POST":
         word = request.session.get("current_spelling_word", "").lower()
         user_spelling = request.POST.get("spelling", "").strip().lower()
@@ -790,10 +827,35 @@ def spelling_game(request):
                 incorrect=0 if result else 1,
                 time_spent=0.0  # Could add timing logic if desired
             )
+        attempt_label = user_spelling or "that try"
+        typed_value = user_spelling or "(no answer)"
+        if result:
+            feedback_overlay = {
+                "result": "correct",
+                "voice_message": f"Wonderful! {word} is spelled correctly.",
+                "heading": "Correct!",
+                "subtitle": f"{word.title()} is spelled perfectly.",
+                "body": "Get ready for a brand new word!",
+            }
+        else:
+            feedback_overlay = {
+                "result": "incorrect",
+                "voice_message": f"Not quite. {attempt_label} doesn't spell {word} yet.",
+                "heading": "Incorrect",
+                "subtitle": f"The correct spelling is {word}.",
+                "body": f"You typed {typed_value}. Look closely at each letter and try again!",
+                "reset_on_fade": True,
+            }
         return render(
             request,
             "quiz/spelling.html",
-            {"word": word, "result": result, "user_name": user_name},
+            {
+                "word": word,
+                "result": result,
+                "user_name": user_name,
+                "user_answer": user_spelling,
+                "feedback_overlay": feedback_overlay,
+            },
         )
 
     word = random.choice(SPELLING_WORDS)
@@ -801,7 +863,7 @@ def spelling_game(request):
     return render(
         request,
         "quiz/spelling.html",
-        {"word": word, "user_name": user_name},
+        {"word": word, "user_name": user_name, "feedback_overlay": None},
     )
 
 
@@ -829,7 +891,7 @@ def correct_spelling_game(request):
     else:
         current_entry = _choose_new_correct_spelling_entry()
 
-    feedback = None
+    feedback_overlay = None
     if request.method == "POST":
         user_answer = request.POST.get("correct_spelling", "").strip()
         expected = current_entry["correct"]
@@ -843,17 +905,29 @@ def correct_spelling_game(request):
                 incorrect=0 if result else 1,
                 time_spent=0.0,
             )
-        feedback = {
-            "result": result,
-            "attempt_word": current_entry["incorrect"],
-            "correct_word": expected,
-            "user_answer": user_answer,
-        }
+        incorrect_word = current_entry["incorrect"]
+        if result:
+            feedback_overlay = {
+                "result": "correct",
+                "voice_message": f"Excellent! You fixed {incorrect_word} to {expected}.",
+                "heading": "Correct!",
+                "subtitle": f"{expected.title()} is the correct spelling.",
+                "body": "A fresh word is on the way—keep it up!",
+            }
+        else:
+            typed_value = user_answer or "(no answer)"
+            feedback_overlay = {
+                "result": "incorrect",
+                "voice_message": f"Not yet. The correct spelling of {incorrect_word} is {expected}.",
+                "heading": "Incorrect",
+                "subtitle": f"{expected.title()} is the correct spelling.",
+                "body": f"You typed {typed_value}. Check each letter and try again.",
+                "reset_on_fade": True,
+            }
         if result:
             current_entry = _choose_new_correct_spelling_entry(current_entry["incorrect"])
             request.session["correct_spelling_entry"] = current_entry
         else:
-            feedback["show_correct"] = True
             request.session["correct_spelling_entry"] = current_entry
     else:
         request.session["correct_spelling_entry"] = current_entry
@@ -864,9 +938,9 @@ def correct_spelling_game(request):
         {
             "incorrect_word": current_entry["incorrect"],
             "hint": current_entry.get("hint"),
-            "feedback": feedback,
-            "result": feedback["result"] if feedback else None,
+            "result": None if feedback_overlay is None else (feedback_overlay["result"] == "correct"),
             "user_name": user_name,
+            "feedback_overlay": feedback_overlay,
         },
     )
 
@@ -906,7 +980,7 @@ def rearrange_spelling_game(request):
     else:
         current_entry = _build_rearrange_entry()
 
-    feedback = None
+    feedback_overlay = None
     if request.method == "POST":
         user_answer = request.POST.get("rearranged_word", "").strip()
         expected = current_entry["word"]
@@ -920,17 +994,29 @@ def rearrange_spelling_game(request):
                 incorrect=0 if result else 1,
                 time_spent=0.0,
             )
-        feedback = {
-            "result": result,
-            "scrambled": current_entry["scrambled"],
-            "correct_word": expected,
-            "user_answer": user_answer,
-        }
+        scrambled_word = current_entry["scrambled"]
+        if result:
+            feedback_overlay = {
+                "result": "correct",
+                "voice_message": f"Awesome! You rearranged {scrambled_word} into {expected}.",
+                "heading": "Correct!",
+                "subtitle": f"{expected.title()} is the correct word.",
+                "body": "Get ready for a brand-new puzzle!",
+            }
+        else:
+            typed_value = user_answer or "(no answer)"
+            feedback_overlay = {
+                "result": "incorrect",
+                "voice_message": f"Not quite. The correct word was {expected}.",
+                "heading": "Incorrect",
+                "subtitle": f"The correct word was {expected.title()}.",
+                "body": f"You entered {typed_value}. Peek at the letters and try again!",
+                "reset_on_fade": True,
+            }
         if result:
             current_entry = _build_rearrange_entry(current_entry["word"])
             request.session["rearrange_spelling_entry"] = current_entry
         else:
-            feedback["show_correct"] = True
             request.session["rearrange_spelling_entry"] = current_entry
     else:
         request.session["rearrange_spelling_entry"] = current_entry
@@ -941,9 +1027,9 @@ def rearrange_spelling_game(request):
         {
             "scrambled_word": current_entry["scrambled"],
             "hint": current_entry.get("hint"),
-            "feedback": feedback,
-            "result": feedback["result"] if feedback else None,
+            "result": None if feedback_overlay is None else (feedback_overlay["result"] == "correct"),
             "user_name": user_name,
+            "feedback_overlay": feedback_overlay,
         },
     )
 

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Spelling Game{% endblock %}
 {% block bgmusic %}
 {% if user.is_authenticated and user.profile.sound_music %}
@@ -15,7 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 {% endblock %}
 {% block content %}
-<div class="container" style="margin: 40px auto; text-align: center;">
+<div class="container game-page" style="margin: 40px auto; text-align: center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <div style="margin-bottom: 20px;">
         <img src="{% static 'quiz/images/logo.png' %}" alt="ABCmouse Logo" style="max-width: 180px;">
     </div>
@@ -26,7 +28,31 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endif %}
         <p class="typing-effect">Let's improve your spelling skills!</p>
     </div>
-    <div class="spelling-container" style="display: inline-block; text-align: center;">
+    {% if feedback_overlay %}
+        {% with overlay=feedback_overlay %}
+            <div id="game-feedback"
+                 class="game-feedback-wrapper"
+                 data-result="{{ overlay.result }}"
+                 data-message="{{ overlay.voice_message|default:''|escapejs }}"
+                 data-redirect-url="{{ request.path }}"
+                 {% if overlay.correct_delay %}data-correct-delay="{{ overlay.correct_delay }}"{% endif %}
+                 {% if overlay.incorrect_delay %}data-incorrect-delay="{{ overlay.incorrect_delay }}"{% endif %}
+                 {% if overlay.reset_on_fade %}data-reset-on-fade="true"{% endif %}>
+                <div class="game-feedback-card{% if overlay.result != 'correct' %} incorrect{% endif %}">
+                    <div class="heading">{{ overlay.heading }}</div>
+                    <div class="subtitle">{{ overlay.subtitle }}</div>
+                    {% if overlay.body %}
+                        <div class="body-text">{{ overlay.body }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if overlay.result == 'correct' %}
+                <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+
+    <div id="game-board" class="game-board spelling-container{% if feedback_overlay %} is-hidden-during-feedback{% endif %}" aria-live="polite" style="display: inline-block; text-align: center;">
         <img src="https://cdn-icons-png.flaticon.com/512/167/167755.png" alt="Spelling Icon" class="quiz-icon" />
         <h2>Listen to the word and type the correct spelling:</h2>
         <button id="speakWord">🔊 Speak Word</button>
@@ -39,28 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <input type="text" name="spelling" required autofocus style="width:100%;max-width:350px;padding:12px;font-size:1.15rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;" />
             <button type="submit">Submit Answer</button>
         </form>
-        {% if result is not None %}
-            <div id="feedback" class="feedback {% if result %}animate-correct{% else %}animate-wrong{% endif %}">
-                {% if result %}
-                    <h3 class="feedback-correct"><span class="icon-check">✔️</span> Correct!</h3>
-                    <p>Great job spelling "{{ word }}"!</p>
-                    <script>
-                        setTimeout(function() {
-                            document.getElementById('feedback').style.display = 'none';
-                            window.location.href = window.location.pathname;
-                        }, 5000);
-                    </script>
-                {% else %}
-                    <h3 class="feedback-incorrect"><span class="icon-x">❌</span> Incorrect</h3>
-                    <p>The correct spelling is <strong>{{ word }}</strong>.</p>
-                    <script>
-                        setTimeout(function() {
-                            document.getElementById('feedback').style.display = 'none';
-                        }, 5000);
-                    </script>
-                {% endif %}
-            </div>
-        {% endif %}
     </div>
     <!-- Back to Home button removed -->
     <div style="margin: 30px 0 20px 0;">
@@ -69,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 {% endblock %}
 {% block scripts %}
+{{ block.super }}
 <audio id="spellIntro" src="{% static 'quiz/audio/spell_word_intro.mp3' %}" preload="auto"></audio>
 <audio id="spellingGameIntro" src="{% static 'quiz/audio/spelling_intro.mp3' %}" preload="auto"></audio>
 <audio id="encouragementKeepGoing" src="{% static 'quiz/audio/keep_going.mp3' %}" preload="auto"></audio>
@@ -76,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <audio id="encouragementTryAgain" src="{% static 'quiz/audio/try_again.mp3' %}" preload="auto"></audio>
 <audio id="correctSound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
 <audio id="incorrectSound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
+{% include "quiz/includes/game_feedback_script.html" %}
 <script>
     // Use female voice for spelling words
     function speakWord() {
@@ -150,30 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
             playSpellIntroAndWord(document.getElementById('word').textContent);
         }
     }
+    const hasFeedback = Boolean(document.getElementById('game-feedback'));
     window.addEventListener('load', function() {
-        setTimeout(function() {
-            speakWordOnLoad();
-        }, 1000);
-        // Play correct/incorrect sound
-        const result = "{{ result|default:'' }}";
-        const nextWord = "{{ next_word|default:'' }}";
-        if (result === "True" || result === "true" || result === "1") {
-            if (nextWord) {
-                document.getElementById('word').textContent = nextWord;
-                stopAllAudio();
-                document.getElementById('correctSound').onended = function() {
-                    playSpellIntroAndWord(nextWord);
-                };
-                document.getElementById('correctSound').play().catch(()=>{});
-                // Light encouragement every correct cycle (alternating)
-                if (Math.random() < 0.5) {
-                    setTimeout(()=>document.getElementById('encouragementKeepGoing').play().catch(()=>{}), 2200);
-                }
-            }
-        } else if (result === "False" || result === "false" || result === "0") {
-            stopAllAudio();
-            document.getElementById('incorrectSound').play().catch(()=>{});
-            setTimeout(()=>document.getElementById('encouragementTryAgain').play().catch(()=>{}), 1500);
+        if (!hasFeedback) {
+            setTimeout(function() {
+                speakWordOnLoad();
+            }, 600);
         }
     });
     document.getElementById('speakWord').addEventListener('click', speakWord);
@@ -183,12 +171,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const showing = wordElement.style.display !== 'none';
         if(showing){
             wordElement.style.display='none';
-            this.textContent='�️';
+            this.textContent='👁️';
             this.setAttribute('aria-label','Show word');
             this.title='Show word';
         } else {
             wordElement.style.display='block';
-            this.textContent='�';
+            this.textContent='🙈';
             this.setAttribute('aria-label','Hide word');
             this.title='Hide word';
         }

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
+{% block site_banner %}{% include "quiz/includes/game_site_banner.html" %}{% endblock %}
 {% block title %}Mixed Game{% endblock %}
 {% block bgmusic %}
 {% if user.is_authenticated and user.profile.sound_music %}
@@ -15,52 +17,96 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 {% endblock %}
 {% block content %}
-<div class="container" style="text-align:center;position:relative;">
-    {% if game_type != "spelling" %}
-    <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
-    {% endif %}
+<div class="container game-page" style="text-align:center;">
+    {% include "quiz/includes/game_back_button.html" with aria_label="Back to games menu" label="Back" %}
     <h1 style="margin-top:0.5em;">Mixed Game</h1>
+    {% if result is not None %}
+        <div id="game-feedback"
+             class="game-feedback-wrapper"
+             data-result="{% if result %}correct{% else %}incorrect{% endif %}"
+             data-message="{{ feedback_message|default:''|escapejs }}"
+             data-redirect-url="{{ request.path }}"
+             data-reset-on-fade="true">
+            <div class="game-feedback-card{% if not result %} incorrect{% endif %}">
+                {% if result %}
+                    <div style="font-size:1.35rem;font-weight:700;">{% trans "Correct!" %}</div>
+                    <div class="subtitle">{% trans "Great job!" %}</div>
+                    <div class="subtitle">
+                        {% if game_type == "correct_spelling" and correct_word %}
+                            {% blocktrans with word=correct_word %}You fixed the spelling of {{ word }}!{% endblocktrans %}
+                        {% elif game_type == "rearrange_spelling" and correct_word %}
+                            {% blocktrans with word=correct_word %}You unscrambled {{ word }}!{% endblocktrans %}
+                        {% elif game_type == "math" and correct_answer is not None %}
+                            {% blocktrans with answer=correct_answer %}The answer was {{ answer }}.{% endblocktrans %}
+                        {% elif game_type == "animal" and animal_name %}
+                            {% blocktrans with name=animal_name %}{{ name }} was the match!{% endblocktrans %}
+                        {% elif game_type == "fruit" and fruit_name %}
+                            {% blocktrans with name=fruit_name %}{{ name }} was the right fruit!{% endblocktrans %}
+                        {% elif game_type == "time" and correct_time %}
+                            {% blocktrans with time=correct_time %}The clock showed {{ time }}.{% endblocktrans %}
+                        {% else %}
+                            {% trans "Get ready for the next challenge." %}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div style="font-size:1.35rem;font-weight:700;">{% trans "Incorrect" %}</div>
+                    <div class="subtitle">{% trans "Let's try that again." %}</div>
+                    <div class="subtitle">
+                        {% if game_type == "correct_spelling" and correct_word %}
+                            {% blocktrans with word=attempt_word|default:correct_word %}Fix the spelling of {{ word }}.{% endblocktrans %}
+                        {% elif game_type == "rearrange_spelling" and correct_word %}
+                            {% blocktrans with word=correct_word %}Unscramble the letters to spell {{ word }}.{% endblocktrans %}
+                        {% elif game_type == "math" and user_answer is not None %}
+                            {% blocktrans with answer=user_answer %}You entered {{ answer }}. Try again!{% endblocktrans %}
+                        {% else %}
+                            {% trans "Take another look and give it another go." %}
+                        {% endif %}
+                    </div>
+                    {% if user_answer and game_type == "correct_spelling" %}
+                    <div class="subtitle" style="font-size:0.9rem;opacity:0.85;">{% blocktrans with answer=user_answer %}You typed “{{ answer }}”.{% endblocktrans %}</div>
+                    {% elif user_answer and game_type == "rearrange_spelling" %}
+                    <div class="subtitle" style="font-size:0.9rem;opacity:0.85;">{% blocktrans with answer=user_answer %}You entered “{{ answer }}”.{% endblocktrans %}</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% if result %}
+            <audio autoplay src="{% static 'quiz/sounds/correct.mp3' %}"></audio>
+        {% endif %}
+    {% endif %}
+    <div id="game-board" class="game-board{% if result is not None %} is-hidden-during-feedback{% endif %}" aria-live="polite">
     {% if game_type == "math" %}
         <h2>{{ question }}</h2>
         <form method="post">{% csrf_token %}
-            <input type="number" name="answer" required autofocus style="width:100%;max-width:350px;padding:12px;font-size:1.15rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;" />
+            <input type="number" name="answer" required autofocus style="width:100%;max-width:320px;padding:12px;font-size:1.1rem;border-radius:9px;border:1.5px solid #007bff;margin-bottom:12px;text-align:center;" />
             <button type="submit">Submit</button>
         </form>
     {% elif game_type == "animal" %}
-        <div style="margin: 30px 0;">
-            <img src="{{ animal_image_url }}" alt="Animal" style="max-width:320px;max-height:320px;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);background:#fff;" />
+        <div class="game-figure">
+            <img src="{{ animal_image_url }}" alt="Animal" />
         </div>
         <div style="margin-bottom:18px;">{{ summary }}</div>
         <form method="post">{% csrf_token %}
-            {% for option in options %}
+            <div class="game-choice-grid">
+                {% for option in options %}
                 <button type="submit" name="answer" value="{{ option }}" class="game-button">{{ option }}</button>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </form>
     {% elif game_type == "fruit" %}
-        <div style="margin: 30px 0;">
-            <img src="{{ fruit_image_url }}" alt="Fruit" style="max-width:320px;max-height:320px;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.15);background:#fff;" />
+        <div class="game-figure">
+            <img src="{{ fruit_image_url }}" alt="Fruit" />
         </div>
         <div style="margin-bottom:18px;">{{ summary }}</div>
         <form method="post">{% csrf_token %}
-            {% for option in options %}
+            <div class="game-choice-grid">
+                {% for option in options %}
                 <button type="submit" name="answer" value="{{ option }}" class="game-button">{{ option }}</button>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </form>
     {% elif game_type == "spelling" %}
         <div style="max-width:420px;margin:32px auto 0 auto;padding:24px 18px 18px 18px;background:#f8faff;border-radius:18px;box-shadow:0 5px 18px rgba(25,118,210,0.08);position:relative;">
-            <button onclick="window.history.back()" aria-label="Back" style="position:absolute;top:14px;left:14px;background:none;border:none;cursor:pointer;z-index:10;padding:0;">
-                <svg width="32" height="32" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M26 32C19.3726 32 14 26.6274 14 20C14 13.3726 19.3726 8 26 8" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10 20L18.5 13.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10 20L18.5 26.5" stroke="#1976d2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
             <h2 style="margin-top:0;">Spell the word you hear:</h2>
             <button type="button" class="game-button" onclick="speakWord('{{ spelling_word|escapejs }}')">🔊 Play Word</button>
             <form method="post" style="margin-top:18px;">{% csrf_token %}
@@ -107,42 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="submit">Submit</button>
         </form>
     {% endif %}
-    <audio id="correct-sound" src="{% static 'quiz/sounds/correct.mp3' %}" preload="auto"></audio>
-    <audio id="incorrect-sound" src="{% static 'quiz/sounds/incorrect.mp3' %}" preload="auto"></audio>
-    {% if result is not None %}
-        <div id="feedback" style="margin-top:20px;font-size:1.3rem;">
-            {% if result %}
-                <span class="feedback-correct"><span class="icon-check">✔️</span> <span style='color:#1ca21c;font-weight:bold;'>Correct!</span></span>
-                {% if game_type == "correct_spelling" and correct_word %}
-                    <div style="margin-top:6px;">You fixed <strong>{{ attempt_word }}</strong>. Correct spelling: <strong>{{ correct_word }}</strong>.</div>
-                {% elif game_type == "rearrange_spelling" and correct_word %}
-                    <div style="margin-top:6px;">Great job! The word was <strong>{{ correct_word }}</strong>.</div>
-                {% endif %}
-                <script>
-                    document.getElementById('correct-sound').play();
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                        window.location.href = window.location.pathname;
-                    }, 5000);
-                </script>
-            {% else %}
-                <span class="feedback-incorrect"><span class="icon-x">❌</span> <span style='color:#e53935;font-weight:bold;'>Incorrect!</span> Please try again.</span>
-                {% if game_type == "correct_spelling" and correct_word %}
-                    <div style="margin-top:6px;">Correct spelling: <strong>{{ correct_word }}</strong>.</div>
-                    {% if user_answer %}<div style="font-size:0.95rem;">You typed: <em>{{ user_answer }}</em>.</div>{% endif %}
-                {% elif game_type == "rearrange_spelling" and correct_word %}
-                    <div style="margin-top:6px;">The word was <strong>{{ correct_word }}</strong>. Rearrange the letters and try again!</div>
-                    {% if user_answer %}<div style="font-size:0.95rem;">You typed: <em>{{ user_answer }}</em>.</div>{% endif %}
-                {% endif %}
-                <script>
-                    document.getElementById('incorrect-sound').play();
-                    setTimeout(function() {
-                        document.getElementById('feedback').style.display = 'none';
-                    }, 5000);
-                </script>
-            {% endif %}
-        </div>
-    {% endif %}
+    </div>
     <script>
     function speakWord(word) {
         if ('speechSynthesis' in window) {
@@ -155,4 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     </script>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ block.super }}
+{% include "quiz/includes/game_feedback_script.html" %}
 {% endblock %}
